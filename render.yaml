@@ -1,18 +1,38 @@
-# Render Blueprint: serves the practice page as a static site.
-# The problem files are committed, so the build only copies the page and
-# problem folders into dist/. The tools/ folder (generators, knowledge map,
-# notes) is NOT published.
+# Render Blueprint: one Node web service that serves the practice page and the
+# accounts API. Accounts, progress and every answer attempt are kept in a
+# SQLite file on a persistent disk (disks need a paid plan; starter is enough).
+# The tools/ folder (generators, knowledge map, notes) is never served.
 services:
   - type: web
-    name: bebras-practice
-    runtime: static
-    buildCommand: sh tools/build_site.sh
-    staticPublishPath: ./dist
-    headers:
-      # always revalidate, so rebuilt problem sets show up right away
-      - path: /*
-        name: Cache-Control
-        value: no-cache
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
+    # a new name: the old "bebras-practice" service is a static site, and Render
+    # cannot turn a static site into a web service
+    name: kerbopple
+    runtime: node
+    domains:
+      - kerbopple.com
+      - www.kerbopple.com
+    plan: starter
+    buildCommand: "true"
+    startCommand: npm start
+    healthCheckPath: /api/me
+    disk:
+      name: bebras-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DB_PATH
+        value: /var/data/bebras.db
+      - key: NODE_VERSION
+        value: "24"
+      # Students must type this code to make an account. Set it in the Render dashboard.
+      - key: REGISTRATION_CODE
+        sync: false
+      # Sends confirmation and password-reset emails. Set both in the Render dashboard.
+      - key: RESEND_API_KEY
+        sync: false
+      # A sender on a domain verified in Resend, e.g. "Bebras Practice <practice@yourdomain.com>"
+      - key: EMAIL_FROM
+        sync: false
+      # Where links in emails point. Must be the address students use, since sign-in cookies are per address.
+      - key: APP_URL
+        value: https://kerbopple.com

@@ -13,7 +13,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
 
-let DATA, state, cur = null, tries = 0, hintsShown = 0, solved = false, selected = new Set(), lastTags = [];
+let DATA, state, cur = null, shownAt = 0, tries = 0, hintsShown = 0, solved = false, selected = new Set(), lastTags = [];
 
 function loadScript(src) {
   return new Promise((resolve) => {
@@ -46,7 +46,8 @@ function defaultState() {
     seen: {}, done: {}, log: [], tally: { right: 0, total: 0 }, misconceptionCounts: {}
   };
 }
-function save() { store.set("bebras-practice-local", state); }
+// signed in: progress goes to the server; otherwise it stays in this browser
+function save() { if (!Account.saveState(state)) store.set("bebras-practice-local", state); }
 function levels(fam) { return Object.keys(DATA.bank[fam]).map(Number).sort((a, b) => a - b); }
 
 function pick(fam, level) {
@@ -150,7 +151,7 @@ function routeText(path) { return path.map(x => x === "N" ? "north shore" : x ==
 function next() {
   renderTabs();
   cur = pick(state.fam, state.level[state.fam]);
-  tries = 0; hintsShown = 0; solved = false; selected = new Set(); lastTags = [];
+  tries = 0; hintsShown = 0; solved = false; selected = new Set(); lastTags = []; shownAt = Date.now();
   save(); render();
 }
 
@@ -203,8 +204,11 @@ function wrongTags(i) {
   return d ? d.misconceptions : [];
 }
 
-function record(correct, tags) {
+// Called once per try. Every try is logged to the account (if signed in); only first tries move the level.
+function record(correct, tags, answer) {
   const fam = state.fam;
+  Account.logAttempt({ family: fam, level: cur.level, seed: cur.seed, questionType: cur.question_type, try: tries,
+    correct, answer, tags, hints: hintsShown, ms: Date.now() - shownAt });
   if (tries === 1) {
     state.tally.total++; if (correct) state.tally.right++;
     state.log.push({ fam, level: cur.level, seed: cur.seed, correct, tags, t: Date.now() });
@@ -228,7 +232,7 @@ function answerMC(i, btn) {
   if (solved) return;
   tries++;
   const ok = i === cur.answer_index, tags = ok ? [] : wrongTags(i);
-  record(ok, tags);
+  record(ok, tags, { choice: i, option: cur.options[i] });
   if (ok) {
     btn.classList.add("right"); solved = true;
     document.querySelectorAll(".opt").forEach(b => b.disabled = true);
@@ -247,7 +251,7 @@ function answerNumber() {
   tries++;
   const v = Math.round(+raw), ok = v === cur.answer_value;
   const tags = ok ? [] : (cur.value_tags[String(v)] || []);
-  record(ok, tags);
+  record(ok, tags, v);
   if (ok) { solved = true; $("#numans").disabled = true; finish(); return; }
   $("#fb").innerHTML = `<div class="feedback bad">${v} is not right. Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.</div>`;
   renderCoach();
@@ -315,7 +319,7 @@ function submitBuild() {
   tries++;
   const ok = sameSet(sub, edgeSet(cur.answer_path));
   const tags = ok ? [] : Object.entries(cur.misconception_paths).filter(([k, p]) => sameSet(sub, edgeSet(p))).map(([k]) => k);
-  record(ok, tags);
+  record(ok, tags, [...sub]);
   if (ok) { solved = true; finish(); return; }
   const sum = [...document.querySelectorAll("#map g.walkway.sel")].reduce((s, x) => s + +x.dataset.w, 0);
   $("#fb").innerHTML = `<div class="feedback bad">That crossing works, but it uses ${sum} planks. A cheaper one exists. Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.</div>`;
@@ -356,7 +360,7 @@ function setupPress() {
         if (gateEval(tree, selected, ["AND", "OR"])) tags.push("BOTH_AS_EITHER");
       }
     }
-    record(ok, tags);
+    record(ok, tags, [...selected].sort((a, b) => a - b));
     if (ok) { solved = true; document.querySelector("#map .bulb").classList.add("lit"); finish(); return; }
     $("#fb").innerHTML = `<div class="feedback bad">${lit ? `The light is on, but it can be done with fewer than ${selected.size} beavers.` : "The light stays off."} Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.</div>`;
     renderCoach();
@@ -401,7 +405,7 @@ function setupCells() {
       else if (rowsEven && !colsEven) tags = ["PARITY_ROWS_ONLY"];
       else if (colsEven && !rowsEven) tags = ["PARITY_COLS_ONLY"];
     }
-    record(ok, tags);
+    record(ok, tags, [...selected].sort());
     if (ok) { solved = true; cells.forEach(b => { if (want.has(b.dataset.k)) b.classList.add("right"); }); finish(); return; }
     $("#fb").innerHTML = `<div class="feedback bad">Not quite. Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.</div>`;
     renderCoach();
@@ -424,8 +428,11 @@ function renderCoach() {
   $("#coachBody").innerHTML = h;
   $("#reset").addEventListener("click", () => {
     const m = $("#resetMsg");
-    if (m.dataset.armed) { try { localStorage.removeItem("bebras-practice-local"); } catch (e) {} location.reload(); }
-    m.dataset.armed = "1"; m.textContent = "Click again to clear levels and history.";
+    if (m.dataset.armed) {
+      if (Account.signedIn) { state = defaultState(); lastTags = []; save(); next(); return; } // saved answers are kept
+      try { localStorage.removeItem("bebras-practice-local"); } catch (e) {} location.reload(); return;
+    }
+    m.dataset.armed = "1"; m.textContent = Account.signedIn ? "Click again to reset levels. Your saved answers are kept." : "Click again to clear levels and history.";
   });
 }
 
@@ -434,9 +441,12 @@ function renderCoach() {
     $("#card").innerHTML = `<p class="loaderr">Could not find coach.js or a manifest.js in ${FAMS.join("/, ")}/. Keep index.html in the same folder as those, or run tools/build_problems.py to recreate them.</p>`;
     return;
   }
-  const { bank, missing } = await loadAll();
+  const loading = loadAll();
+  const acct = await Account.init(); // shows the sign-in form when served by server.js
+  if (acct.user) $("#card").innerHTML = "<p>Loading problems…</p>";
+  const { bank, missing } = await loading;
   DATA = { bank, coach: BEBRAS.coachData };
-  const saved = store.get("bebras-practice-local", {}), base = defaultState();
+  const saved = (acct.user ? acct.state : store.get("bebras-practice-local", {})) || {}, base = defaultState();
   state = Object.assign(base, saved);
   ["level", "streak", "misses"].forEach(k => { state[k] = Object.assign(defaultState()[k], saved[k] || {}); });
   FAMS.forEach(f => { const lv = levels(f); if (!lv.includes(state.level[f])) state.level[f] = lv[0]; });

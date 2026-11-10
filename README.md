@@ -4,14 +4,45 @@ A practice page for nine puzzle families built from the Bebras example and pract
 
 ## Run it
 
-Double-click `index.html`. It opens in any modern browser straight from disk; no server or internet connection is needed. (Fonts load from Google Fonts when online; offline it falls back to system fonts.)
+**With student accounts** (Node 22.13 or newer, no `npm install` needed):
 
-Progress (level, history, misconception counts) is saved in that browser only. Clear it with **Reset progress** under Coach notes.
+```
+npm start                                  # http://localhost:3000
+REGISTRATION_CODE=beaver npm start         # sign-up needs the family code "beaver"
+```
+
+Each student makes an account with their name, email and a password (at least 8 characters), then confirms the email from a link we send before they can sign in. **Forgot password?** on the sign-in card emails a reset link that works for 1 hour; using it signs the account out everywhere else. Accounts made before email confirmation existed count as confirmed. Their levels and history follow them to any computer, and **every answer attempt** is saved: each try, not just the first, with the answer given, whether it was right, the misconceptions it matched, how many hints were showing and how long the problem had been on screen. Attempts are saved in the browser first and sent to the server, so a dropped connection loses nothing; they are resent later. Students can download their own attempts as a CSV with **Download my answers**. **Reset progress** resets levels but keeps saved attempts.
+
+Everything is in one SQLite file, `data/bebras.db` by default (set `DB_PATH` to move it). To look at every student's attempts:
+
+```
+sqlite3 data/bebras.db "SELECT u.name, a.family, a.level, a.try_number, a.correct, datetime(a.created_at/1000,'unixepoch') FROM attempts a JOIN users u ON u.id = a.user_id ORDER BY a.created_at"
+```
+
+### Email (Resend)
+
+Emails are sent with [Resend](https://resend.com). Set:
+
+- `RESEND_API_KEY`: your Resend API key.
+- `EMAIL_FROM`: the sender, on a domain you have verified in Resend, for example `Bebras Practice <practice@yourdomain.com>`. Without it the sender is Resend's test address `onboarding@resend.dev`, which can only send to the email on your own Resend account.
+- `APP_URL`: the site address the links in emails point to. On Render this defaults to the service's own URL; set it for a custom domain. Locally it defaults to `http://localhost:3000`.
+
+```
+RESEND_API_KEY=re_... EMAIL_FROM="Bebras Practice <practice@yourdomain.com>" npm start
+```
+
+Without `RESEND_API_KEY`, nothing is sent and each email (with its link) is printed in the server's console instead. That is handy for trying things out locally.
+
+Set `REGISTRATION_CODE` on any copy reachable from the internet. Without it, anyone who finds the address can make an account.
+
+**Without a server:** double-click `index.html`. It opens in any modern browser straight from disk, with no sign-in and no internet connection needed. (Fonts load from Google Fonts when online; offline it falls back to system fonts.) Progress (level, history, misconception counts) is then saved in that browser only. Clear it with **Reset progress** under Coach notes.
 
 ## Folder layout
 
 ```
 index.html            page shell
+server.js             web server: accounts, saved progress, attempt log (SQLite)
+account.js            sign-in form and syncing progress/attempts to server.js
 app.js                practice logic: loading, grading, hints, leveling, coach notes
 styles.css            styling (light and dark)
 coach.js              misconception and concept text for the coach panel (generated)
@@ -148,10 +179,12 @@ The merge is safe to run twice; it validates every concept, prerequisite and tas
 
 ## Deploy to Render
 
-The folder is set up as a Render static site (`render.yaml`). Render builds from a Git repository:
+The folder is set up as a Render Node web service with a persistent disk (`render.yaml`). The disk holds the SQLite database, so accounts and attempts survive redeploys. Disks need a paid instance; the starter plan is enough.
 
-1. Put this folder in a GitHub (or GitLab) repository and push it.
-2. In Render, choose **New > Blueprint**, connect the repository, and apply. Render reads `render.yaml`, runs `tools/build_site.sh` and serves `dist/` from its CDN. The free static-site plan is enough.
+1. Push this folder to a GitHub (or GitLab) repository.
+2. In Render, choose **New > Blueprint**, connect the repository, and apply. When asked, set `REGISTRATION_CODE` (the family code students type to sign up), `RESEND_API_KEY` and `EMAIL_FROM`.
 3. Every push redeploys. To change the problem set, run `tools/build_problems.py` locally, commit the new problem files, and push.
 
-`tools/build_site.sh` copies only the page and the problem folders into `dist/`. The generators, checkers, knowledge map and notes in `tools/` are not published. Each browser (and each site address) keeps its own progress, so progress saved while using the page from disk does not carry over to the hosted copy.
+The server only serves the page and the problem folders. `tools/`, `data/` and the server code are never served. Back up the database from the service's **Shell** tab, for example `sqlite3 /var/data/bebras.db ".backup /var/data/backup.db"`, or with Render's disk snapshots.
+
+`tools/build_site.sh` still builds a plain static copy in `dist/` (no accounts) for hosting without a server.

@@ -158,3 +158,13 @@ body{margin:0}
 .shelf.sel.edit::after { content: ""; position: absolute; inset: 12px; border-radius: 50%; background: var(--accent); }
 .shelf.right { border-color: var(--good, #2e9e5b); }
 @media (max-width: 420px) { .shelves { grid-template-columns: repeat(var(--cols), 38px); } .shelf { width: 38px; height: 38px; } }
+
+/* Accounts: sign-in card and the "signed in as" line */
+.account { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 0.9rem; color: var(--muted); }
+.account[hidden] { display: none; }
+.account a, .linkbtn { color: var(--accent); font: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.auth { display: grid; gap: 14px; max-width: 360px; }
+.auth h2 { font-family: var(--f-display); font-weight: 600; margin: 0; }
+.auth label { display: grid; gap: 4px; font-weight: 700; font-size: 0.95rem; }
+.auth input { font: 1rem var(--f-body); padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); min-width: 0; }
+.auth input:focus-visible { outline: 3px solid var(--sun); outline-offset: 1px; border-color: var(--accent); }
