@@ -8,7 +8,6 @@ A practice page for nine puzzle families built from the Bebras example and pract
 
 ```
 npm start                                  # http://localhost:3000
-REGISTRATION_CODE=beaver npm start         # sign-up needs the family code "beaver"
 ```
 
 Each student makes an account with their name, email and a password (at least 8 characters), then confirms the email from a link we send before they can sign in. **Forgot password?** on the sign-in card emails a reset link that works for 1 hour; using it signs the account out everywhere else. Accounts made before email confirmation existed count as confirmed. Their levels and history follow them to any computer, and **every answer attempt** is saved: each try, not just the first, with the answer given, whether it was right, the misconceptions it matched, how many hints were showing and how long the problem had been on screen. Attempts are saved in the browser first and sent to the server, so a dropped connection loses nothing; they are resent later. Students can download their own attempts as a CSV with **Download my answers**. **Reset progress** resets levels but keeps saved attempts.
@@ -33,7 +32,7 @@ RESEND_API_KEY=re_... EMAIL_FROM="Bebras Practice <practice@yourdomain.com>" npm
 
 Without `RESEND_API_KEY`, nothing is sent and each email (with its link) is printed in the server's console instead. That is handy for trying things out locally.
 
-Set `REGISTRATION_CODE` on any copy reachable from the internet. Without it, anyone who finds the address can make an account.
+Anyone who finds the address can make an account; they still have to confirm a real email address first.
 
 **Without a server:** double-click `index.html`. It opens in any modern browser straight from disk, with no sign-in and no internet connection needed. (Fonts load from Google Fonts when online; offline it falls back to system fonts.) Progress (level, history, misconception counts) is then saved in that browser only. Clear it with **Reset progress** under Coach notes.
 
@@ -182,7 +181,7 @@ The merge is safe to run twice; it validates every concept, prerequisite and tas
 The folder is set up as a Render Node web service with a persistent disk (`render.yaml`). The disk holds the SQLite database, so accounts and attempts survive redeploys. Disks need a paid instance; the starter plan is enough.
 
 1. Push this folder to a GitHub (or GitLab) repository.
-2. In Render, choose **New > Blueprint**, connect the repository, and apply. When asked, set `REGISTRATION_CODE` (the family code students type to sign up), `RESEND_API_KEY` and `EMAIL_FROM`.
+2. In Render, choose **New > Blueprint**, connect the repository, and apply. When asked, set `RESEND_API_KEY` and `EMAIL_FROM`.
 3. Every push redeploys. To change the problem set, run `tools/build_problems.py` locally, commit the new problem files, and push.
 
 The server only serves the page and the problem folders. `tools/`, `data/` and the server code are never served. Back up the database from the service's **Shell** tab, for example `sqlite3 /var/data/bebras.db ".backup /var/data/backup.db"`, or with Render's disk snapshots.

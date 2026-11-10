@@ -38,15 +38,15 @@ window.Account = (() => {
     online = true;
     if (link && link[1] === "verify") {
       try { const r = await call("POST", "/api/confirm", { token: link[2] }); user = r.user; afterSignIn(); return r; }
-      catch (e) { if (me.user) { user = me.user; afterSignIn(); return me; } return signInForm(me.registrationCode, "login", e.message); }
+      catch (e) { if (me.user) { user = me.user; afterSignIn(); return me; } return signInForm("login", e.message); }
     }
-    if (link && link[1] === "reset") return signInForm(me.registrationCode, "reset", "", link[2]);
+    if (link && link[1] === "reset") return signInForm("reset", "", link[2]);
     if (me.user) { user = me.user; afterSignIn(); return me; }
-    return signInForm(me.registrationCode);
+    return signInForm();
   }
 
   // One card with several screens: login, register, forgot, reset, sent (check your email).
-  function signInForm(needsCode, startMode = "login", startMsg = "", resetToken = "") {
+  function signInForm(startMode = "login", startMsg = "", resetToken = "") {
     return new Promise((resolve) => {
       let mode = startMode, lastEmail = "";
       const field = (label, name, type, auto, extra = "") =>
@@ -60,7 +60,7 @@ window.Account = (() => {
             <button class="linkbtn" type="button" data-go="forgot">Forgot password?</button>`;
         } else if (mode === "register") {
           fields = field("Your name", "name", "text", "nickname", 'maxlength="60"') + field("Email", "email", "email", "email")
-            + field("Password", "password", "password", "new-password", 'minlength="8"') + (needsCode ? field("Family code", "code", "text", "off") : "");
+            + field("Password", "password", "password", "new-password", 'minlength="8"');
           buttons = `<button class="btn" type="submit">Make account</button><button class="btn ghost" type="button" data-go="login">I already have an account</button>`;
         } else if (mode === "forgot") {
           fields = `<p class="nums" style="margin:0">Type your email and we will send you a link to choose a new password.</p>` + field("Email", "email", "email", "email");

@@ -3,7 +3,7 @@
 // No npm dependencies: uses Node's built-in http, crypto and sqlite (Node 22.13+).
 //
 //   node server.js                 # http://localhost:3000
-//   PORT=8080 DB_PATH=/var/data/bebras.db REGISTRATION_CODE=beaver node server.js
+//   PORT=8080 DB_PATH=/var/data/bebras.db node server.js
 
 "use strict";
 const http = require("node:http");
@@ -15,7 +15,6 @@ const { DatabaseSync } = require("node:sqlite");
 const ROOT = __dirname;
 const PORT = +process.env.PORT || 3000;
 const DB_PATH = process.env.DB_PATH || path.join(ROOT, "data", "bebras.db");
-const REG_CODE = process.env.REGISTRATION_CODE || ""; // empty: anyone can sign up
 const RESEND_KEY = process.env.RESEND_API_KEY || "";   // empty: email links are printed to the console instead
 const EMAIL_FROM = process.env.EMAIL_FROM || "Bebras Practice <onboarding@resend.dev>";
 // links in emails point here; Render sets RENDER_EXTERNAL_URL itself. Never taken from the request's Host header.
@@ -215,7 +214,7 @@ const int = (v) => (Number.isInteger(v) ? v : null);
 // ---------- API
 const api = {
   "GET /api/me"(req, res, user) {
-    if (!user) return send(res, 200, { user: null, registrationCode: !!REG_CODE });
+    if (!user) return send(res, 200, { user: null });
     const row = q.getState.get(user.id);
     send(res, 200, { user, state: row ? JSON.parse(row.state) : null });
   },
@@ -226,7 +225,6 @@ const api = {
     if (!EMAIL_RE.test(email)) return send(res, 400, { error: "Enter a valid email address." });
     if (!name) return send(res, 400, { error: "Enter your name." });
     if (pw.length < 8 || pw.length > 200) return send(res, 400, { error: "Passwords need at least 8 characters." });
-    if (REG_CODE && str(b.code, 200) !== REG_CODE) return send(res, 403, { error: "That family code is not right." });
     if (q.userByEmail.get(email)) return send(res, 409, { error: "An account with that email already exists. Sign in instead." });
     const { lastInsertRowid } = q.addUser.run(email, name, hashPassword(pw), Date.now());
     const sent = await emailLink({ id: Number(lastInsertRowid), email, name }, "verify");
@@ -367,5 +365,5 @@ const server = http.createServer(async (req, res) => {
     if (status === 500) console.error(e);
   }
 });
-server.listen(PORT, () => console.log(`Bebras Practice on http://localhost:${PORT}  (db: ${DB_PATH}${REG_CODE ? ", family code required" : ""}; `
+server.listen(PORT, () => console.log(`Bebras Practice on http://localhost:${PORT}  (db: ${DB_PATH}; `
   + `${RESEND_KEY ? `email via Resend from ${EMAIL_FROM}` : "no RESEND_API_KEY: email links print here"}; links to ${APP_URL})`));

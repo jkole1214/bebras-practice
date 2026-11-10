@@ -23,9 +23,6 @@ services:
         value: /var/data/bebras.db
       - key: NODE_VERSION
         value: "24"
-      # Students must type this code to make an account. Set it in the Render dashboard.
-      - key: REGISTRATION_CODE
-        sync: false
       # Sends confirmation and password-reset emails. Set both in the Render dashboard.
       - key: RESEND_API_KEY
         sync: false
