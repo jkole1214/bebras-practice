@@ -1,0 +1,375 @@
+{
+  "patch_id": "junior-senior-2015",
+  "built": "2026-11-04",
+  "analyst": "Claude",
+  "method": "Every task in the Junior (14-16) and Senior (16-18) 2015 example sets was opened, solved and submitted to the site's practice checker; all answers were confirmed correct. Answers that depend on counting or search (Hard Fireworks, Pirate Hunters, Bowl Factory, Spies, Building a Chip, Kangaroo, Beaver the Alchemist) were also re-derived by exhaustive computation. Descriptions are written fresh; original task wording and artwork are not reproduced.",
+
+  "source_sets": [
+    {"age_group": "Junior", "ages": "14-16", "url": "https://challenge.bebraschallenge.org/index.php?action=user_competition&grp_id=38"},
+    {"age_group": "Senior", "ages": "16-18", "url": "https://challenge.bebraschallenge.org/index.php?action=user_competition&grp_id=39"}
+  ],
+
+  "domains": [
+    {"id": "SOC", "name": "Computers and society", "covers": "security awareness, privacy, licensing and intellectual property, judging online information; tasks with no algorithm where the skill is reading a situation or a rule set precisely"}
+  ],
+
+  "concepts": [
+    {"id": "SECURITY_AWARENESS", "name": "Recognizing online fraud", "domain": "SOC", "prerequisites": [],
+     "description": "Spot the pattern of a scam: an offer that is too good, pressure to pay before anything can be checked, and 'proof' that proves nothing (a scanned ID can be forged or stolen).",
+     "observable_signs": "Student names which part of the message cannot be verified and why it matters.",
+     "tutor_moves": ["Ask: what could the sender fake, and what would you need to see before paying?", "Ask what a copy of an ID actually proves about the person sending it."]},
+    {"id": "LICENSING", "name": "Licenses and permitted use", "domain": "SOC", "prerequisites": [],
+     "description": "A license grants some actions and forbids others; the forbidden action is often distributing a changed version, not making one or charging for copies.",
+     "observable_signs": "Student separates what is done (copy, change, sell) from who receives it (kept private vs shared).",
+     "tutor_moves": ["Make a two-column table: actions the license allows, actions it forbids. Check each option against it.", "Ask whether making something and sharing it are the same action under the rule."]},
+    {"id": "RECURSION", "name": "Recursion and recursive definitions", "domain": "ALG", "prerequisites": [{"id": "TREE", "strength": "firm", "reason": "Recursive structures in these tasks are trees or DAGs."}, {"id": "SEQ_EXEC", "strength": "tentative", "reason": "Unfolding a definition step by step uses the same habit as tracing."}],
+     "description": "Something is defined in terms of smaller versions of itself: a person's abilities in terms of a parent's, an item's cost in terms of its ingredients, a mobile in terms of sub-mobiles.",
+     "observable_signs": "Student solves the smallest pieces first and reuses those results to build larger ones.",
+     "tutor_moves": ["Ask: what do you need to know first before you can answer for this one?", "Have the student write the answer for each leaf, then for each level up."]},
+    {"id": "DAG_COST", "name": "Totals over a dependency graph", "domain": "ALG", "prerequisites": [{"id": "RECURSION", "strength": "firm", "reason": "Each item's total is defined from its inputs' totals."}, {"id": "TOPO_SORT", "strength": "tentative", "reason": "Working bottom-up is a topological order."}],
+     "description": "Compute a total (cost, count) for each item from the totals of the items it is made from, once each, from the bottom up. Like a bill of materials.",
+     "observable_signs": "Student computes and records each intermediate total once and reuses it.",
+     "tutor_moves": ["Ask the student to write each intermediate item's base cost next to it before tackling the final item."]},
+    {"id": "PARSING_NESTED", "name": "Parsing nested notation", "domain": "DATA", "prerequisites": [{"id": "RECURSION", "strength": "firm", "reason": "Brackets inside brackets describe parts inside parts."}, {"id": "TREE", "strength": "firm", "reason": "The parse is a tree."}],
+     "description": "Turn a bracketed expression into the structure it describes by matching brackets and reading each bracket as one node with its children.",
+     "observable_signs": "Student matches brackets correctly and can draw the tree from the text.",
+     "tutor_moves": ["Have the student underline each matching bracket pair in a different color.", "Ask for the top level first: how many things hang from the top stick?"]},
+    {"id": "MODULAR_ARITHMETIC", "name": "Modular arithmetic and cycles", "domain": "DATA", "prerequisites": [{"id": "SEQUENCES_CYCLIC", "strength": "tentative", "reason": "Counting around a circle is the concrete form of working mod n."}],
+     "description": "Stepping k places around n positions visits i, i+k, i+2k, ... wrapping around; whether every position is visited depends on gcd(n, k).",
+     "observable_signs": "Student counts a step size on a circular drawing correctly and can predict one loop vs several.",
+     "tutor_moves": ["Number the dots, then follow one line and count how many numbers it skips."]},
+    {"id": "GRAPH_NEIGHBORHOOD", "name": "Neighborhoods and distance in graphs", "domain": "DATA", "prerequisites": [{"id": "GRAPH_MODEL", "strength": "firm", "reason": "Distance is measured along edges."}],
+     "description": "The set of nodes within k steps of a node; for many real rules (who can see a post) the relevant reach is 2 steps, not 1.",
+     "observable_signs": "Student derives the right distance from the rule before counting.",
+     "tutor_moves": ["Ask: who can see this person's page? And who can see the pages this person posted on?"]},
+    {"id": "AMBIGUOUS_CODES", "name": "Ambiguous and prefix-free codes", "domain": "DATA", "prerequisites": [{"id": "ENCODING_CIPHER", "strength": "tentative", "reason": "Codes as mappings from symbols to words."}],
+     "description": "When one codeword can be the start of another and there are no separators, a received signal can split into words in several ways. Prefix-free codes avoid this.",
+     "observable_signs": "Student finds more than one valid split and can say which property of the code causes it.",
+     "tutor_moves": ["Ask whether any codeword starts with another codeword.", "Ask for a second way to split the signal after the student finds one."]},
+    {"id": "COUNTING_DP", "name": "Counting by building up partial counts", "domain": "ALG", "prerequisites": [{"id": "STATE", "strength": "tentative", "reason": "Partial counts are attached to positions or states."}],
+     "description": "Count the ways to reach the end by recording, for each position, how many ways reach it, and adding those for the next position. Avoids listing every possibility.",
+     "observable_signs": "Student writes a number at each position or node rather than enumerating paths by hand.",
+     "tutor_moves": ["Ask: how many ways are there to reach just this point? Write it down, then move one step on.", "Point out the shortcut on a small grid by comparing with a full listing."]},
+    {"id": "GAME_TREE", "name": "Game trees and optimal play", "domain": "ALG", "prerequisites": [{"id": "STATE", "strength": "firm", "reason": "Positions are states and moves are transitions."}, {"id": "CONDITIONALS", "strength": "tentative", "reason": "For-all and there-exists reasoning over replies."}],
+     "description": "Under optimal play, a side wins only if it has a move that works against every reply. Winning against a careless opponent proves nothing.",
+     "observable_signs": "Student asks what the opponent's best reply is, not just whether a win is possible.",
+     "tutor_moves": ["Play the opponent's side yourself and always pick the best escape.", "Ask: does your plan still work if the other side never makes a mistake?"]},
+    {"id": "IMPOSSIBILITY_PROOF", "name": "Proving something cannot be done", "domain": "LOGIC", "prerequisites": [{"id": "INVARIANT", "strength": "firm", "reason": "Most impossibility arguments rest on something that never changes or a bound that cannot be beaten."}],
+     "description": "Show that no sequence of moves reaches a goal, or that no faster schedule exists, by an argument (an invariant, a counting bound, a parity reason) rather than by failing to find one.",
+     "observable_signs": "Student gives a reason that covers every possible attempt, not a list of attempts that failed.",
+     "tutor_moves": ["Ask: how much can change in one move or one round at most?", "Ask what stays the same after every move."]},
+    {"id": "PARALLEL_SPREAD", "name": "Spreading information in parallel rounds", "domain": "PROC", "prerequisites": [{"id": "STATE", "strength": "firm", "reason": "Each person's knowledge is state."}, {"id": "SIMULATION", "strength": "tentative", "reason": "Rounds are simulated in order."}],
+     "description": "When people meet in pairs each round, what anyone knows can at most double per round, which sets a minimum number of rounds; an odd group wastes a seat every round.",
+     "observable_signs": "Student gives both a schedule and a reason it cannot be shorter.",
+     "tutor_moves": ["Ask: after one round, what is the most anyone can know? After two?", "Ask what happens to the person without a partner."]},
+    {"id": "BUBBLE_SORT", "name": "Passes of adjacent swaps", "domain": "ALG", "prerequisites": [{"id": "SIMULATION", "strength": "firm", "reason": "Each pass is simulated swap by swap."}, {"id": "ORDERING", "strength": "firm", "reason": "Swaps fix out-of-order neighbors."}],
+     "description": "One pass of neighbor swaps carries one extreme element all the way but moves others by at most one place, so the number of passes depends on how far the slowest element must travel.",
+     "observable_signs": "Student distinguishes passes from swaps and simulates the pass in the stated direction.",
+     "tutor_moves": ["Ask: in one pass, how far can the smallest bowl move? How far can the largest?"]},
+    {"id": "BACKTRACKING", "name": "Backtracking search", "domain": "ALG", "prerequisites": [{"id": "STATE_SEARCH", "strength": "firm", "reason": "Backtracking explores a state space depth-first."}],
+     "description": "Try a choice, continue until stuck, undo the last choice and try the next. Forced moves and early dead ends shrink the search quickly.",
+     "observable_signs": "Student keeps track of where they backed up and notices forced moves.",
+     "tutor_moves": ["Ask: from here, how many moves are possible? If only one, take it without guessing."]}
+  ],
+
+  "concept_updates": [
+    {"id": "REACHABILITY", "add_note": "Junior Irrigation System extends this to a DAG with two-way switches (each gate always sends water one way or the other) and ungated forks that feed both sides."},
+    {"id": "GRAPH_ISO", "add_note": "Junior Word Chains requires producing the label mapping, not just detecting a match."},
+    {"id": "SHORTEST_PATH", "add_note": "Senior Building a Chip asks for the number of shortest paths on a grid with obstacles (see COUNTING_DP)."}
+  ],
+
+  "tasks": [
+    {
+      "key": "super_power_family",
+      "title": "Super Power Family",
+      "appearances": [{"age_group": "Junior", "tier": "A", "grq_id": 10208}],
+      "format": "mc_text",
+      "scenario": "A three-generation family diagram with arrows from each person to their parents. Each person has one trait of their own, and daughters take all of their mother's traits while sons take all of their father's. Pick the one true statement about who has which traits.",
+      "what_it_tests": "Applying a recursive inheritance rule along typed edges (mother vs father) across two generations.",
+      "concepts": ["RECURSION", "TREE", "ELIMINATION"],
+      "solution": ["Work out the grandparents' generation first: each has only their own trait.", "For each parent, add the trait set of the same-sex parent above them.", "For each child, add the same-sex parent's full set to their own trait.", "Check each statement against the computed sets."],
+      "answer": "The statement that the son whose own trait is riding has riding, painting and photography (photography from his father, painting from his father's father).",
+      "common_errors": ["Letting a son inherit through his mother's line.", "Giving a child traits from both parents.", "Stopping at one generation and missing what the parent inherited."],
+      "difficulty_drivers": ["Number of generations", "Mixed-sex sibling groups", "Statements that are true for one sibling and false for another"],
+      "hint_ladder": ["Start at the top of the diagram. What can each grandparent do?", "Is this person a son or a daughter? Which parent do they copy?", "Does the parent have anything they inherited too?"],
+      "generator_template": {"params": {"generations": "3", "people": "8-12", "rule": "same-sex inheritance or another typed rule"}, "validity": "Exactly one statement true; each false statement reflects one rule error."}
+    },
+    {
+      "key": "email_scam",
+      "title": "E-mail Scam",
+      "appearances": [
+        {"age_group": "Junior", "tier": "A", "grq_id": 421},
+        {"age_group": "Senior", "tier": "A", "grq_id": 435}
+      ],
+      "format": "mc_text",
+      "scenario": "Someone answers a cheap rental listing online. The seller, who is out of town, offers to post the key after a large deposit is paid and attaches a copy of an ID to look trustworthy. Choose the best advice.",
+      "what_it_tests": "Recognizing advance-payment fraud and why an ID copy is not verification.",
+      "concepts": ["SECURITY_AWARENESS"],
+      "solution": ["Note what cannot be checked: the flat, the seller, the ID.", "Note the money is requested before anything is verified.", "The safe advice is not to pay."],
+      "answer": "Do not pay the deposit; it is very likely a scam.",
+      "common_errors": ["Trusting the ID copy as recourse.", "Treating the deposit as refundable without any way to enforce it."],
+      "difficulty_drivers": ["How plausible the offer looks", "How official the 'proof' looks"],
+      "hint_ladder": ["Who could have sent this e-mail?", "What does a copy of an ID prove?"],
+      "generator_template": {"params": {"scenario": "marketplace, rental, prize, tech support", "red_flags": "2-4"}, "validity": "One option is the safe action; each distractor trusts one red flag."}
+    },
+    {
+      "key": "irrigation_system",
+      "title": "Irrigation System",
+      "appearances": [{"age_group": "Junior", "tier": "A", "grq_id": 10207}],
+      "format": "toggle",
+      "scenario": "Water runs downhill from a lake through branching and merging canals to six fields. Some forks have no gate and send water both ways; four gates each send water only left or only right. Set the gates so exactly a given set of fields gets water.",
+      "what_it_tests": "Reachability through two-way switches in a network where channels merge, solved by propagating constraints from the fields that must stay dry.",
+      "concepts": ["REACHABILITY", "CONSTRAINT_SAT", "GRAPH_MODEL"],
+      "solution": ["Find the fields that must stay dry and every route into them.", "Each gate on such a route must point away from it; that fixes some gates.", "Follow the consequences: a fixed gate decides which branch the next gate sees.", "Set the remaining gate to reach the last required field."],
+      "answer": "Upper-left gate left, lower-left gate right, upper-right gate right, lower-right gate left.",
+      "common_errors": ["Treating an ungated fork as a choice (it always feeds both sides).", "Missing that two different gates can feed the same central channel.", "Solving for the wanted fields first and flooding a dry one."],
+      "difficulty_drivers": ["Number of gates", "Merging channels", "Ungated forks that force water to unwanted fields"],
+      "hint_ladder": ["Which fields must stay dry? Trace every way water could reach one of them.", "Can water reach the middle field from more than one gate?", "Once two gates are fixed, which fields already get water?"],
+      "generator_template": {"params": {"fields": "5-8", "gates": "3-5", "ungated_forks": "1-3", "merges": "1-2"}, "validity": "Exactly one gate setting irrigates the target set; brute force over 2^gates confirms."}
+    },
+    {
+      "key": "drawing_stars",
+      "title": "Drawing Stars",
+      "appearances": [
+        {"age_group": "Junior", "tier": "B", "grq_id": 432},
+        {"age_group": "Senior", "tier": "A", "grq_id": 447}
+      ],
+      "format": "mc_text",
+      "scenario": "Star shapes are labeled n:k, meaning n dots on a circle with each dot joined to the k-th dot around. Several labeled examples are shown, including one that falls apart into two separate triangles. Label a new star.",
+      "what_it_tests": "Reading a structure off a drawing and encoding it; stepping around a circle mod n.",
+      "concepts": ["MODULAR_ARITHMETIC", "SEQUENCES_CYCLIC"],
+      "solution": ["Count the dots.", "From one dot, follow a line and count how many positions around the circle it lands from the start."],
+      "answer": "10:4.",
+      "common_errors": ["Miscounting dots on a busy drawing.", "Counting the dots skipped instead of the step (off by one)."],
+      "difficulty_drivers": ["Number of dots", "Step size close to n/2", "Stars that form several separate loops"],
+      "hint_ladder": ["Number the dots around the circle.", "From dot 1, which numbered dot does one line reach?"],
+      "generator_template": {"params": {"n": "5-12", "k": "1 to floor(n/2)"}, "validity": "Rendered star matches n:k; distractors n±1 or k±1; include gcd>1 cases."}
+    },
+    {
+      "key": "popularity",
+      "title": "Popularity",
+      "appearances": [
+        {"age_group": "Junior", "tier": "C", "grq_id": 10214},
+        {"age_group": "Senior", "tier": "B", "grq_id": 10219}
+      ],
+      "format": "mc_text",
+      "scenario": "Seven people in a friendship network. Each posts a photo of themselves on every friend's page, and anyone can see their own page and their friends' pages. Whose photo is seen by the most people?",
+      "what_it_tests": "Deriving the right reach (2 steps) from the visibility rule and computing neighborhoods.",
+      "concepts": ["GRAPH_NEIGHBORHOOD", "GRAPH_MODEL"],
+      "solution": ["A photo on a friend's page is seen by that friend and that friend's friends.", "So a person's photo reaches everyone within two steps.", "Count the two-step neighborhood for each candidate."],
+      "answer": "Chio, whose two-step neighborhood covers all seven people.",
+      "common_errors": ["Picking the person with most friends (two people tie on that).", "Counting only direct friends."],
+      "difficulty_drivers": ["Ties in degree", "Graph size", "Rules that imply distance 2 or 3"],
+      "hint_ladder": ["Where does this person's photo end up?", "Who can look at those pages?", "Two people have three friends. Who reaches more people?"],
+      "generator_template": {"params": {"nodes": "6-10", "edges": "7-14", "reach": "2"}, "validity": "Unique maximum 2-hop reach that is not the unique maximum degree."}
+    },
+    {
+      "key": "word_chains",
+      "title": "Word Chains",
+      "appearances": [
+        {"age_group": "Junior", "tier": "C", "grq_id": 10213},
+        {"age_group": "Senior", "tier": "B", "grq_id": 10216}
+      ],
+      "format": "mc_image",
+      "scenario": "Six short words are joined whenever they differ by one letter. The labels are wiped and the cards are rearranged in a new layout with the same connections. Choose the labeling that puts every word back in the right place.",
+      "what_it_tests": "Producing a graph isomorphism (the mapping), using a triangle and the shapes hanging off each hub.",
+      "concepts": ["GRAPH_ISO", "GRAPH_MODEL", "INVARIANT"],
+      "solution": ["Find the degree-3 nodes in both drawings.", "Find the triangle; it fixes the two hubs and one more word.", "Tell the hubs apart by what hangs off them: a single leaf or a chain of two.", "Place the rest and check every edge."],
+      "answer": "The option with the leaf word at the top, attached to the hub that has a single leaf, and the two-word tail on the other hub.",
+      "common_errors": ["Matching by position in the drawing.", "Swapping the two hubs.", "Checking only some edges."],
+      "difficulty_drivers": ["Symmetric structures", "Number of nodes", "Distractors that preserve degrees but not adjacency"],
+      "hint_ladder": ["Which words have three connections?", "Find three words all joined to each other.", "One hub has one word hanging off it; the other has two in a row."],
+      "generator_template": {"params": {"nodes": "6-8", "edges": "6-9"}, "validity": "Graph has a unique labeled embedding up to automorphism; distractors break exactly one edge each."}
+    },
+    {
+      "key": "hard_fireworks",
+      "title": "Hard Fireworks",
+      "appearances": [
+        {"age_group": "Junior", "tier": "C", "grq_id": 423, "format": "number_entry"},
+        {"age_group": "Senior", "tier": "B", "grq_id": 438, "format": "mc_text", "note": "Senior copy is titled Fireworks and offers 0-4 as options."}
+      ],
+      "format": "number_entry",
+      "scenario": "Five words are sent as sequences of two kinds of firework, with codewords of length one to three and no gaps between words. Some codewords begin with others. How many different messages could an 8-firework signal mean?",
+      "what_it_tests": "Counting all segmentations of a string under a non-prefix-free code.",
+      "concepts": ["AMBIGUOUS_CODES", "COUNTING_DP", "ENCODING_CIPHER"],
+      "solution": ["At each position, list the codewords that match starting there.", "Count ways to reach the end: ways at a position add up from every codeword that ends there.", "Or list the parses as a tree and count leaves."],
+      "answer": "4.",
+      "common_errors": ["Finding one parse and stopping.", "Missing parses that use the one-symbol word.", "Counting the same word sequence twice."],
+      "difficulty_drivers": ["Signal length", "How many codewords are prefixes of others", "Free entry vs multiple choice"],
+      "hint_ladder": ["Does any codeword start with another codeword?", "From the first firework, which words could begin the message?", "Write how many ways there are to read the first k fireworks, for each k."],
+      "generator_template": {"params": {"alphabet": "2 symbols", "codewords": "4-6, length 1-3", "signal_length": "6-10"}, "validity": "Answer computed by DP; at least 3 parses; MC distractors include 1 (greedy) and answer±1."}
+    },
+    {
+      "key": "pirate_hunters",
+      "title": "Pirate Hunters",
+      "appearances": [
+        {"age_group": "Junior", "tier": "C", "grq_id": 10212},
+        {"age_group": "Senior", "tier": "C", "grq_id": 10220}
+      ],
+      "format": "mc_text",
+      "scenario": "Two chasers and a runner on a ring of seven spaces, played on an interactive board. Chasers move one step to a free space; the runner jumps two spaces; the runner is caught only when both of its jump targets are occupied. Chasers move first. With best play, how fast can the runner be caught?",
+      "what_it_tests": "Reasoning about optimal play for both sides, and recognizing that the answer can be 'never'.",
+      "concepts": ["GAME_TREE", "IMPOSSIBILITY_PROOF", "INVARIANT"],
+      "solution": ["Notice the start already traps the runner, but chasers must move first and break the trap.", "Check every chaser move: the runner always has a free jump.", "Argue it repeats: whatever the chasers do, the runner restores an escape."],
+      "answer": "The police can never force a capture.",
+      "common_errors": ["Playing a few games against a careless runner and reporting a short win.", "Assuming chasers may pass."],
+      "difficulty_drivers": ["Board size", "Whether the answer is a number or 'never'", "Interactive board that invites trial play"],
+      "hint_ladder": ["Before anyone moves, is the runner already trapped?", "Why does it matter that the chasers must move first?", "Can the runner always undo what the chasers just did?"],
+      "generator_template": {"params": {"ring": "6-9", "chasers": "2", "runner_jump": "2-3"}, "validity": "Answer from exhaustive game search; include positions where the answer is 'never'."}
+    },
+    {
+      "key": "bowl_factory",
+      "title": "Bowl Factory",
+      "appearances": [
+        {"age_group": "Junior", "tier": "C", "grq_id": 10211},
+        {"age_group": "Senior", "tier": "B", "grq_id": 10218}
+      ],
+      "format": "number_entry",
+      "scenario": "Six bowls pass along a belt. Each worker makes one pass, swapping neighboring bowls that are out of order, in the direction shown by a worked example. How many workers are needed to sort a given order?",
+      "what_it_tests": "Simulating bubble-sort passes and understanding that one pass moves one item fully but others only one place.",
+      "concepts": ["BUBBLE_SORT", "SIMULATION"],
+      "solution": ["Confirm the pass direction from the worked example.", "Simulate one pass at a time until sorted, or find the bowl that must move furthest one step per pass."],
+      "answer": "4.",
+      "common_errors": ["Counting swaps instead of passes.", "Simulating in the wrong direction.", "Assuming one pass sorts most of the list."],
+      "difficulty_drivers": ["List length", "Pass direction", "Items far from their place against the pass direction"],
+      "hint_ladder": ["Check the example: which bowl moves all the way in one pass?", "Which bowl here has the furthest to go the slow way?"],
+      "generator_template": {"params": {"n": "5-8", "direction": "left or right"}, "validity": "Answer by simulation; distractors: swaps count, inversions count, n-1."}
+    },
+    {
+      "key": "beaver_tutorials",
+      "title": "Beaver Tutorials",
+      "appearances": [{"age_group": "Senior", "tier": "A", "grq_id": 441}],
+      "format": "mc_text",
+      "scenario": "A teacher finds a scanned book under an open license that allows copying and even selling exact copies with credit, but forbids distributing modified versions. Which proposed action breaks the license?",
+      "what_it_tests": "Applying a license precisely: the line is distributing a derivative, not commercial use or private modification.",
+      "concepts": ["LICENSING"],
+      "solution": ["List what the license allows: copying, sharing, selling unchanged copies.", "List what it forbids: sharing a changed version.", "A translation is a changed version; handing it to students shares it."],
+      "answer": "Giving students his own translation of a chapter.",
+      "common_errors": ["Assuming selling is forbidden.", "Assuming translating at all is forbidden, even for private use."],
+      "difficulty_drivers": ["Number of license conditions", "Options that sound wrong but are allowed"],
+      "hint_ladder": ["Does the license forbid making changes, or sharing changes?", "Is a translation a changed version?"],
+      "generator_template": {"params": {"license": "variants of attribution, no-derivatives, non-commercial, share-alike"}, "validity": "Exactly one option breaks the stated rules."}
+    },
+    {
+      "key": "beaver_the_alchemist",
+      "title": "Beaver the Alchemist",
+      "appearances": [{"age_group": "Senior", "tier": "B", "grq_id": 10217}],
+      "format": "mc_text",
+      "scenario": "Recipes turn a base item into intermediate items and those into a final item; each conversion uses up its inputs. How many base items does one final item take?",
+      "what_it_tests": "Computing totals over a recipe DAG bottom-up, remembering consumed items cannot be reused.",
+      "concepts": ["DAG_COST", "RECURSION"],
+      "solution": ["Cost each intermediate item in base items, simplest first.", "Reuse those totals for items made from them.", "Add up the final recipe's inputs."],
+      "answer": "11.",
+      "common_errors": ["Counting only base items listed directly in the final recipe.", "Reusing one intermediate for two recipes."],
+      "difficulty_drivers": ["Recipe depth", "Items used in several recipes"],
+      "hint_ladder": ["How many base items is the simplest item worth?", "Write each item's cost next to it before the final one."],
+      "generator_template": {"params": {"items": "4-6", "depth": "3-4"}, "validity": "Unique total; distractors from direct-only and shared-reuse errors."}
+    },
+    {
+      "key": "spies",
+      "title": "Spies",
+      "appearances": [{"age_group": "Senior", "tier": "C", "grq_id": 10222}],
+      "format": "number_entry",
+      "scenario": "A group shares secrets by meeting in pairs, each person in at most one meeting per round, pooling everything they know. A worked example shows six people finishing in three rounds. What is the fewest rounds for five people?",
+      "what_it_tests": "Parallel information spreading, a doubling lower bound, and the cost of an odd group.",
+      "concepts": ["PARALLEL_SPREAD", "IMPOSSIBILITY_PROOF"],
+      "solution": ["Knowledge can at most double per round, so three rounds is the floor for five people.", "With five, someone sits out each round; check that three rounds cannot finish.", "Show a four-round schedule."],
+      "answer": "4.",
+      "common_errors": ["Answering 3 because fewer people should not be slower.", "Assuming one new secret per person per round."],
+      "difficulty_drivers": ["Group size", "Odd vs even", "Asking for the bound vs a schedule"],
+      "hint_ladder": ["After one round, what is the most anyone knows?", "What happens to the person left without a partner?"],
+      "generator_template": {"params": {"n": "4-9"}, "validity": "Answer by exhaustive search over matchings (feasible for n up to 8 or 9)."}
+    },
+    {
+      "key": "building_a_chip",
+      "title": "Building a Chip",
+      "appearances": [{"age_group": "Senior", "tier": "C", "grq_id": 10223}],
+      "format": "mc_text",
+      "scenario": "A grid of contacts, some already used. A wire must run from S to R in horizontal and vertical steps without touching used contacts. How many different shortest wires are there?",
+      "what_it_tests": "Counting shortest paths on a grid with obstacles by building up counts layer by layer.",
+      "concepts": ["COUNTING_DP", "SHORTEST_PATH", "GRAPH_MODEL"],
+      "solution": ["Find the shortest length from S to R around the obstacles.", "Label each contact with how many shortest ways reach it: the sum of its neighbors one step closer.", "Read the count at R."],
+      "answer": "15 (the shortest wires are 13 steps long).",
+      "common_errors": ["Giving the length (13) instead of the count.", "Including paths that are not shortest.", "Missing routes around an obstacle."],
+      "difficulty_drivers": ["Grid size", "Obstacle placement", "Whether obstacles force detours"],
+      "hint_ladder": ["How long is the shortest wire?", "Write at each contact the number of shortest ways to get there."],
+      "generator_template": {"params": {"grid": "5x7 to 7x10", "obstacles": "4-8 short segments"}, "validity": "Count by BFS DP; distractors include the length and an off-by-obstacle count."}
+    },
+    {
+      "key": "kangaroo",
+      "title": "Kangaroo",
+      "appearances": [{"age_group": "Senior", "tier": "C", "grq_id": 10221}],
+      "format": "mc_text",
+      "scenario": "A jumper starts on the leftmost of ten plates and may jump two forward or three back, never landing on a plate twice. If it visits every plate, which plate is last?",
+      "what_it_tests": "Finding a Hamiltonian path by backtracking, using forced moves.",
+      "concepts": ["BACKTRACKING", "STATE_SEARCH"],
+      "solution": ["From the left end, the first moves are forced.", "Follow forced moves; when there is a choice, try one and back up at dead ends.", "Only one tour visits all plates."],
+      "answer": "I (the ninth plate).",
+      "common_errors": ["Assuming the tour ends at the far end.", "Giving up at the first dead end."],
+      "difficulty_drivers": ["Number of plates", "Jump sizes", "How many branches exist"],
+      "hint_ladder": ["From the first plate, how many jumps are possible?", "Where can you never get stuck?"],
+      "generator_template": {"params": {"plates": "8-14", "jumps": "+a / -b with small a, b"}, "validity": "Exactly one full tour exists (or ask for the count)."}
+    },
+    {
+      "key": "mobiles",
+      "title": "Mobiles",
+      "appearances": [{"age_group": "Senior", "tier": "C", "grq_id": 10224}],
+      "format": "mc_image",
+      "scenario": "A hanging mobile is described by nested brackets: each bracket gives a position on its parent stick and either a number of figures or another stick. A worked example pairs a short description with its picture. Pick the picture for a three-level description.",
+      "what_it_tests": "Parsing a recursive bracket notation into a tree and matching it to a drawing.",
+      "concepts": ["PARSING_NESTED", "RECURSION", "TREE"],
+      "solution": ["Match brackets to find the top stick's two children.", "Parse each child the same way.", "Compare chain lengths and which side holds the nested stick."],
+      "answer": "The picture where the left sub-stick has a 4-figure chain and a small stick with one figure at each end, and the right sub-stick has a 6-figure chain and a 3-figure chain (the fourth picture).",
+      "common_errors": ["Mismatching brackets.", "Putting the nested stick on the wrong side.", "Off-by-one chain lengths."],
+      "difficulty_drivers": ["Nesting depth", "Number of children per stick"],
+      "hint_ladder": ["How many things hang from the top stick?", "Which of them is itself a stick?"],
+      "generator_template": {"params": {"depth": "2-4", "children": "2-3"}, "validity": "Rendered pictures differ by one structural change each."}
+    }
+  ],
+
+  "appearances_for_existing_tasks": [
+    {"key": "beaver_logs", "add": [{"age_group": "Junior", "tier": "A", "grq_id": 10206}]},
+    {"key": "fair_share", "add": [{"age_group": "Junior", "tier": "A", "grq_id": 10205}]},
+    {"key": "throw_the_dice", "add": [{"age_group": "Junior", "tier": "B", "grq_id": 427}]},
+    {"key": "stack_computer", "add": [{"age_group": "Junior", "tier": "B", "grq_id": 424}, {"age_group": "Senior", "tier": "A", "grq_id": 439}]},
+    {"key": "beaver_lunch", "add": [{"age_group": "Junior", "tier": "B", "grq_id": 10210}]},
+    {"key": "theatre", "add": [{"age_group": "Junior", "tier": "B", "grq_id": 10209}]},
+    {"key": "you_wont_find_it", "add": [{"age_group": "Senior", "tier": "A", "grq_id": 10215}]}
+  ],
+
+  "misconceptions": [
+    {"id": "DEGREE_NOT_REACH", "concept": "GRAPH_NEIGHBORHOOD", "description": "Answers a reach question with the node that has the most direct connections.", "remediation": "Ask the student to list everyone who would actually see the item, step by step.", "families": []},
+    {"id": "FIRST_PARSE_ONLY", "concept": "AMBIGUOUS_CODES", "description": "Finds one way to read a signal and assumes it is the only one.", "remediation": "Ask for a second reading starting with a different first word.", "families": []},
+    {"id": "LENGTH_FOR_COUNT", "concept": "COUNTING_DP", "description": "Gives how long the shortest route is when asked how many shortest routes there are.", "remediation": "Have the student restate the question, then ask what number goes at each grid point.", "families": []},
+    {"id": "TRIAL_PLAY_AS_PROOF", "concept": "GAME_TREE", "description": "Wins a few games against a weak opponent and reports that as what happens under best play.", "remediation": "Play the opponent yourself and always choose the best escape.", "families": []},
+    {"id": "FEWER_MEANS_FASTER", "concept": "PARALLEL_SPREAD", "description": "Assumes a smaller group always finishes in no more rounds, missing the odd-group effect.", "remediation": "Have the student try to schedule the smaller group in the example's number of rounds and see where it fails.", "families": []},
+    {"id": "SWAPS_FOR_PASSES", "concept": "BUBBLE_SORT", "description": "Counts individual swaps when asked for the number of passes (workers).", "remediation": "Ask what one worker does to the whole set as it goes by.", "families": []},
+    {"id": "SHARED_INTERMEDIATE", "concept": "DAG_COST", "description": "Uses one intermediate item for two recipes, forgetting it is consumed.", "remediation": "Ask the student to physically lay out tokens and remove them as they are used.", "families": []},
+    {"id": "MAKE_VS_SHARE", "concept": "LICENSING", "description": "Treats making a changed copy and distributing it as the same act under a license.", "remediation": "Ask: who ends up with the changed version?", "families": []}
+  ],
+
+  "progression": {
+    "reuse": "The 2015 example sets form one ladder. Tasks introduced as hard for a younger group reappear one tier easier for the next group up: Benjamin C to Cadet B, Cadet C to Junior B, Junior C to Senior B. Some recur across three groups (Stack Computer: Cadet C, Junior B, Senior A). Only about half of each upper set is new.",
+    "what_changes_with_age": [
+      "Benjamin and Cadet hard tiers ask the student to execute or check something: trace a rule, follow a path, validate against a schema.",
+      "Junior hard tiers ask the student to reason about all possibilities: count every reading of a signal, compare everyone's reach, predict a game under best play.",
+      "Senior hard tiers ask for a count or an optimum with a proof-like justification: fewest rounds and why fewer is impossible, number of shortest routes, the unique complete tour, parsing a recursive notation.",
+      "Counting questions ('how many ways') do not appear below Junior. Questions whose answer is 'impossible' first appear at Junior.",
+      "A 'computers and society' strand (fraud, licensing) appears only from Junior up, always in the easiest tier."
+    ],
+    "implications_for_the_tutor": [
+      "Use the Junior and Senior C tasks to set the ceiling for strong 12-year-olds; several of them (Popularity, Hard Fireworks, Bowl Factory, Kangaroo) need no new knowledge, only more careful reasoning.",
+      "Build new generator families around question types rather than size: count the ways (fireworks, chip), prove a minimum (spies), decide under optimal play (pirate hunters), find the unique tour (kangaroo).",
+      "Counting by partial sums (COUNTING_DP) is the single highest-value new concept: it unlocks Hard Fireworks, Building a Chip, and counting variants of the existing Lake Crossing and Rule Tracer families."
+    ]
+  },
+
+  "generator_candidates": [
+    {"source_task": "hard_fireworks", "why": "Fully computable by DP; tunable by code ambiguity and length; natural distractors (greedy parse = 1, off-by-one)."},
+    {"source_task": "building_a_chip", "why": "Reuses the grid and picture-checker approach; answer by BFS counting; distractor 'length instead of count' is built in."},
+    {"source_task": "popularity", "why": "Small random graphs; validity rule 'max 2-hop reach is not max degree' is easy to enforce."},
+    {"source_task": "spies", "why": "Answer by search over matchings; good for teaching lower bounds; small parameter space (n = 4 to 9)."},
+    {"source_task": "kangaroo", "why": "Backtracking with uniqueness check; vary jump sizes and plate count."},
+    {"source_task": "bowl_factory", "why": "Pure simulation; vary direction and permutation; distractors from swaps and inversions."}
+  ]
+}

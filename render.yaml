@@ -1,0 +1,18 @@
+# Render Blueprint: serves the practice page as a static site.
+# The problem files are committed, so the build only copies the page and
+# problem folders into dist/. The tools/ folder (generators, knowledge map,
+# notes) is NOT published.
+services:
+  - type: web
+    name: bebras-practice
+    runtime: static
+    buildCommand: sh tools/build_site.sh
+    staticPublishPath: ./dist
+    headers:
+      # always revalidate, so rebuilt problem sets show up right away
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bebras Practice</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script>
+  // Registry the problem files call into. Loaded before everything else.
+  window.BEBRAS = {
+    files: {}, problems: {}, coachData: null,
+    manifest(fam, list) { this.files[fam] = list; },
+    add(fam, p) { (this.problems[fam] = this.problems[fam] || []).push(p); },
+    coach(d) { this.coachData = d; }
+  };
+</script>
+<script src="coach.js"></script>
+<script src="rule-tracer/manifest.js"></script>
+<script src="lake-crossing/manifest.js"></script>
+<script src="signal-lamp/manifest.js"></script>
+<script src="robot-routes/manifest.js"></script>
+<script src="nuts-and-bolts/manifest.js"></script>
+<script src="box-rows/manifest.js"></script>
+<script src="lights-on/manifest.js"></script>
+<script src="bead-rules/manifest.js"></script>
+<script src="pantry-map/manifest.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Bebras Practice</h1>
+    <div class="tabs" role="tablist" aria-label="Puzzle type">
+      <button class="tab" role="tab" data-fam="rule-tracer">Rule Tracer</button>
+      <button class="tab" role="tab" data-fam="lake-crossing">Lake Crossing</button>
+      <button class="tab" role="tab" data-fam="signal-lamp">Signal Lamp</button>
+      <button class="tab" role="tab" data-fam="robot-routes">Robot Routes</button>
+      <button class="tab" role="tab" data-fam="nuts-and-bolts">Nuts and Bolts</button>
+      <button class="tab" role="tab" data-fam="box-rows">Box Rows</button>
+      <button class="tab" role="tab" data-fam="lights-on">Lights On</button>
+      <button class="tab" role="tab" data-fam="bead-rules">Bead Rules</button>
+      <button class="tab" role="tab" data-fam="pantry-map">Pantry Map</button>
+    </div>
+  </div>
+  <div class="ladder">
+    <span>Level</span><div class="rungs" id="rungs"></div>
+    <label class="auto"><input type="checkbox" id="auto" checked> Adjust level automatically</label>
+  </div>
+  <section class="card" id="card" aria-live="polite"><p>Loading problems…</p></section>
+  <details class="coach" id="coach">
+    <summary>Coach notes</summary>
+    <div id="coachBody"></div>
+  </details>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
