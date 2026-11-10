@@ -8,9 +8,8 @@ services:
     # cannot turn a static site into a web service
     name: kerbopple
     runtime: node
-    domains:
-      - kerbopple.com
-      - www.kerbopple.com
+    # Custom domains (kerbopple.com, www.kerbopple.com) are added in the dashboard,
+    # not here: listing a domain another service still holds makes the sync fail.
     plan: starter
     buildCommand: "true"
     startCommand: npm start
