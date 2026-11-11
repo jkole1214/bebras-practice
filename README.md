@@ -1,4 +1,4 @@
-# Bebras Practice
+# Kerbopple
 
 A practice page for nine puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
@@ -74,11 +74,11 @@ sqlite3 data/bebras.db "SELECT u.name, a.family, a.level, a.try_number, a.correc
 Emails are sent with [Resend](https://resend.com). Set:
 
 - `RESEND_API_KEY`: your Resend API key.
-- `EMAIL_FROM`: the sender, on a domain you have verified in Resend, for example `Bebras Practice <practice@yourdomain.com>`. Without it the sender is Resend's test address `onboarding@resend.dev`, which can only send to the email on your own Resend account.
+- `EMAIL_FROM`: the sender, on a domain you have verified in Resend, for example `Kerbopple <practice@yourdomain.com>`. Without it the sender is Resend's test address `onboarding@resend.dev`, which can only send to the email on your own Resend account.
 - `APP_URL`: the site address the links in emails point to. On Render this defaults to the service's own URL; set it for a custom domain. Locally it defaults to `http://localhost:3000`.
 
 ```
-RESEND_API_KEY=re_... EMAIL_FROM="Bebras Practice <practice@yourdomain.com>" npm start
+RESEND_API_KEY=re_... EMAIL_FROM="Kerbopple <practice@yourdomain.com>" npm start
 ```
 
 Without `RESEND_API_KEY`, nothing is sent and each email (with its link) is printed in the server's console instead. That is handy for trying things out locally.

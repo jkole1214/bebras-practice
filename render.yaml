@@ -26,7 +26,7 @@ services:
       # Sends confirmation and password-reset emails. Set both in the Render dashboard.
       - key: RESEND_API_KEY
         sync: false
-      # A sender on a domain verified in Resend, e.g. "Bebras Practice <practice@yourdomain.com>"
+      # A sender on a domain verified in Resend, e.g. "Kerbopple <practice@yourdomain.com>"
       - key: EMAIL_FROM
         sync: false
       # Where links in emails point. Must be the address students use, since sign-in cookies are per address.

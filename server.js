@@ -1,4 +1,4 @@
-// Bebras Practice server: serves the page and a small JSON API for family
+// Kerbopple server: serves the page and a small JSON API for family
 // accounts, saved progress, and a log of every answer attempt.
 //
 // Accounts: only parents sign up (email + password, confirmed by email). A parent
@@ -22,7 +22,7 @@ const ROOT = __dirname;
 const PORT = +process.env.PORT || 3000;
 const DB_PATH = process.env.DB_PATH || path.join(ROOT, "data", "bebras.db");
 const RESEND_KEY = process.env.RESEND_API_KEY || "";   // empty: email links are printed to the console instead
-const EMAIL_FROM = process.env.EMAIL_FROM || "Bebras Practice <onboarding@resend.dev>";
+const EMAIL_FROM = process.env.EMAIL_FROM || "Kerbopple <onboarding@resend.dev>";
 // links in emails point here; Render sets RENDER_EXTERNAL_URL itself. Never taken from the request's Host header.
 const APP_URL = (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`).replace(/\/+$/, "");
 const TOKEN_HOURS = { verify: 48, reset: 1 };
@@ -236,8 +236,8 @@ async function emailLink(user, purpose) {
   q.addToken.run(sha256(token), user.id, purpose, now, now + TOKEN_HOURS[purpose] * 3600e3);
   const link = `${APP_URL}/#${purpose}=${token}`;
   const [subject, line, button] = purpose === "verify"
-    ? ["Confirm your Bebras Practice account", "Click the button below to confirm your email and start practicing.", "Confirm my email"]
-    : ["Reset your Bebras Practice password", "Someone asked to reset your password. If it was you, click the button below. It works for 1 hour.", "Choose a new password"];
+    ? ["Confirm your Kerbopple account", "Click the button below to confirm your email and start practicing.", "Confirm my email"]
+    : ["Reset your Kerbopple password", "Someone asked to reset your password. If it was you, click the button below. It works for 1 hour.", "Choose a new password"];
   const text = `Hi ${user.name},\n\n${line}\n\n${link}\n\nIf you did not ask for this, you can ignore this email.`;
   const html = `<div style="font-family:system-ui,sans-serif;font-size:16px;line-height:1.5;color:#16233b;max-width:480px">
     <p>Hi ${escHTML(user.name)},</p><p>${line}</p>
@@ -518,5 +518,5 @@ const server = http.createServer(async (req, res) => {
     if (status === 500) console.error(e);
   }
 });
-server.listen(PORT, () => console.log(`Bebras Practice on http://localhost:${PORT}  (db: ${DB_PATH}; `
+server.listen(PORT, () => console.log(`Kerbopple on http://localhost:${PORT}  (db: ${DB_PATH}; `
   + `${RESEND_KEY ? `email via Resend from ${EMAIL_FROM}` : "no RESEND_API_KEY: email links print here"}; links to ${APP_URL})`));

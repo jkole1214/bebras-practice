@@ -1,7 +1,7 @@
 {
   "name": "bebras-practice",
   "private": true,
-  "description": "Bebras practice page with student accounts",
+  "description": "Kerbopple: practice puzzles and an adaptive tutor, with family accounts",
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning server.js"
   },

@@ -1,4 +1,4 @@
-// Bebras Practice: loads problem files from each family folder (FAMS),
+// Kerbopple: loads problem files from each family folder (FAMS),
 // then runs the practice loop. Works from file:// (no server needed) because
 // problem files are loaded as <script> tags that call BEBRAS.add(...).
 
