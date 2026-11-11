@@ -32,17 +32,20 @@
     <h1>Bebras Practice</h1>
     <div class="account" id="account" hidden></div>
     <button class="linkbtn" id="progressBtn" hidden>Progress</button>
-    <div class="tabs" role="tablist" aria-label="Puzzle type">
-      <button class="tab" role="tab" data-fam="practice">Practice</button>
-      <button class="tab" role="tab" data-fam="rule-tracer">Rule Tracer</button>
-      <button class="tab" role="tab" data-fam="lake-crossing">Lake Crossing</button>
-      <button class="tab" role="tab" data-fam="signal-lamp">Signal Lamp</button>
-      <button class="tab" role="tab" data-fam="robot-routes">Robot Routes</button>
-      <button class="tab" role="tab" data-fam="nuts-and-bolts">Nuts and Bolts</button>
-      <button class="tab" role="tab" data-fam="box-rows">Box Rows</button>
-      <button class="tab" role="tab" data-fam="lights-on">Lights On</button>
-      <button class="tab" role="tab" data-fam="bead-rules">Bead Rules</button>
-      <button class="tab" role="tab" data-fam="pantry-map">Pantry Map</button>
+    <div class="modes" role="group" aria-label="How to practice">
+      <button class="mode" data-mode="practice" aria-pressed="true">Practice <span class="sub">mixed for you</span></button>
+      <button class="mode" data-mode="pick" aria-pressed="false">Pick a puzzle</button>
+    </div>
+    <div class="tabs" id="famTabs" role="group" aria-label="Puzzle type" hidden>
+      <button class="tab" data-fam="rule-tracer">Rule Tracer</button>
+      <button class="tab" data-fam="lake-crossing">Lake Crossing</button>
+      <button class="tab" data-fam="signal-lamp">Signal Lamp</button>
+      <button class="tab" data-fam="robot-routes">Robot Routes</button>
+      <button class="tab" data-fam="nuts-and-bolts">Nuts and Bolts</button>
+      <button class="tab" data-fam="box-rows">Box Rows</button>
+      <button class="tab" data-fam="lights-on">Lights On</button>
+      <button class="tab" data-fam="bead-rules">Bead Rules</button>
+      <button class="tab" data-fam="pantry-map">Pantry Map</button>
     </div>
   </div>
   <div class="ladder">

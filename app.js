@@ -68,7 +68,9 @@ function pick(fam, level, preferTag) {
 }
 
 function renderTabs() {
-  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.fam === state.fam));
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-pressed", t.dataset.fam === state.fam));
+  document.querySelectorAll(".mode").forEach(m => m.setAttribute("aria-pressed", (m.dataset.mode === "practice") === (state.fam === PRACTICE)));
+  $("#famTabs").hidden = state.fam === PRACTICE;
   $(".ladder").hidden = state.fam === PRACTICE;
   if (state.fam === PRACTICE) return;
   const rungs = $("#rungs"); rungs.innerHTML = "";
@@ -514,7 +516,14 @@ function renderCoach() {
   if (state.fam !== PRACTICE && !FAMS.includes(state.fam)) state.fam = PRACTICE;
   TX = Tutor.index(bank, DATA.coach);
   FAMS.forEach(f => { const lv = levels(f); if (!lv.includes(state.level[f])) state.level[f] = lv[0]; });
-  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => { state.fam = t.dataset.fam; save(); next(); }));
+  // Practice (the tutor mixes puzzle types) is the default; "Pick a puzzle" opens the last type picked.
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => { state.fam = state.lastFam = t.dataset.fam; save(); next(); }));
+  document.querySelectorAll(".mode").forEach(m => m.addEventListener("click", () => {
+    const fam = m.dataset.mode === "practice" ? PRACTICE : FAMS.includes(state.lastFam) ? state.lastFam : FAMS[0];
+    if (fam === state.fam) return;
+    if (fam !== PRACTICE) state.lastFam = fam;
+    state.fam = fam; save(); next();
+  }));
   next();
   $("#progressBtn").hidden = false;
   $("#progressBtn").addEventListener("click", () => Progress.open());
