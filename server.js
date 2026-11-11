@@ -484,7 +484,7 @@ function compact(r) {
 
 // ---------- static files: only the page and the problem folders (never tools/, data/ or this file)
 const FAMILY_DIRS = new Set([...fs.readFileSync(path.join(ROOT, "index.html"), "utf8").matchAll(/src="([a-z-]+)\/manifest\.js"/g)].map(m => m[1]));
-const TOP_FILES = new Set(["index.html", "app.js", "account.js", "tutor.js", "progress.js", "styles.css", "coach.js"]);
+const TOP_FILES = new Set(["index.html", "app.js", "account.js", "tutor.js", "progress.js", "sound.js", "styles.css", "coach.js"]);
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8" };
 
 function serveStatic(req, res) {

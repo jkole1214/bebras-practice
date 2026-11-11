@@ -177,6 +177,13 @@ body{margin:0}
 /* Tutor: why this puzzle came up (Practice tab) */
 .why { margin: -8px 0 0; font-size: 0.9rem; color: var(--muted); font-style: italic; }
 #progressBtn { font-size: 0.95rem; }
+.topbtns { display: flex; align-items: center; gap: 14px; }
+.iconbtn { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; padding: 0; }
+.iconbtn svg path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.iconbtn svg .spk { fill: currentColor; }
+.iconbtn[aria-pressed="true"] { color: var(--accent); }
+.iconbtn[aria-pressed="true"] .mute, .iconbtn[aria-pressed="false"] .waves { display: none; }
+.iconbtn:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
 
 /* Progress page */
 .progress { display: grid; gap: 18px; min-width: 0; }

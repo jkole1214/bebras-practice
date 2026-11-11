@@ -31,7 +31,12 @@
   <div class="top">
     <h1>Kerbopple</h1>
     <div class="account" id="account" hidden></div>
-    <button class="linkbtn" id="progressBtn" hidden>Progress</button>
+    <div class="topbtns">
+      <button class="iconbtn" id="soundBtn" aria-pressed="true" aria-label="Sound" title="Sound on or off">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" class="spk"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" class="waves"/><path d="M16 9l5 6M21 9l-5 6" class="mute"/></svg>
+      </button>
+      <button class="linkbtn" id="progressBtn" hidden>Progress</button>
+    </div>
     <div class="modes" role="group" aria-label="How to practice">
       <button class="mode" data-mode="practice" aria-pressed="true">Practice <span class="sub">mixed for you</span></button>
       <button class="mode" data-mode="pick" aria-pressed="false">Pick a puzzle</button>
@@ -58,6 +63,7 @@
     <div id="coachBody"></div>
   </details>
 </div>
+<script src="sound.js"></script>
 <script src="tutor.js"></script>
 <script src="account.js"></script>
 <script src="progress.js"></script>

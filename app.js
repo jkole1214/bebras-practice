@@ -254,6 +254,7 @@ function wrongTags(i) {
 // Called once per try. Every try is logged to the account (if signed in); only first tries move the level.
 function record(correct, tags, answer) {
   const fam = curFam;
+  if (correct) Sound.right(); else Sound.miss();
   Account.logAttempt({ family: fam, level: cur.level, seed: cur.seed, questionType: cur.question_type, try: tries,
     correct, answer, tags, hints: hintsShown, ms: Date.now() - shownAt });
   if (tries === 1) {
@@ -525,6 +526,9 @@ function renderCoach() {
     state.fam = fam; save(); next();
   }));
   next();
+  const soundBtn = $("#soundBtn"), showSound = () => soundBtn.setAttribute("aria-pressed", Sound.on);
+  showSound();
+  soundBtn.addEventListener("click", () => { Sound.set(!Sound.on); showSound(); if (Sound.on) Sound.right(); });
   $("#progressBtn").hidden = false;
   $("#progressBtn").addEventListener("click", () => Progress.open());
   Progress.welcome();
