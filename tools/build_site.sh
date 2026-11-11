@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")/.."
 rm -rf dist
 mkdir -p dist
-cp index.html app.js account.js styles.css coach.js dist/
+cp index.html app.js account.js tutor.js progress.js styles.css coach.js dist/
 for dir in $(grep -o 'src="[a-z-]*/manifest.js"' index.html | sed 's/src="\(.*\)\/manifest.js"/\1/'); do
   mkdir -p "dist/$dir"
   cp "$dir"/*.js "dist/$dir/"

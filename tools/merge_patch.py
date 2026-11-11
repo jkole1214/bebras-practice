@@ -85,6 +85,10 @@ def merge(m, p):
         else:
             m["generator_candidates"] = p["generator_candidates"]
 
+    # findings from the students' own answers (tools/observe.py): a snapshot, so the newest replaces the last
+    if "data_observations" in p:
+        m["data_observations"] = p["data_observations"]
+
     # formats used by new tasks
     m["formats"].setdefault("number_entry", "Type a number and save.")
     for k, v in p.get("formats", {}).items():
@@ -123,6 +127,9 @@ def validate(m):
     for x in m["misconceptions"]:
         if x["concept"] not in cids:
             errs.append(f"misconception {x['id']}: unknown concept {x['concept']}")
+    for o in m.get("data_observations", {}).get("items", []):
+        if "concept" in o and o["concept"] not in cids:
+            errs.append(f"observation {o['id']}: unknown concept {o['concept']}")
     for r in m.get("reasoning_moves", []):
         for k in r["used_in"]:
             if k not in keys:

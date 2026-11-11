@@ -2,6 +2,49 @@
 
 A practice page for nine puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
+## The tutor
+
+The **Practice** tab (the first tab, and the default for new students) is a tutor. It chooses the puzzle type and level for each puzzle from the student's first tries. The other tabs still work as before: one puzzle type, with its own level ladder.
+
+- **Concept mastery.** Each problem tests concepts from the knowledge map. Every first try updates an estimate for those concepts.
+  - Recent tries count more.
+  - A right answer on a hard level, or a miss on an easy one, says more.
+  - A right first try after a hint counts as part right.
+  - Each concept is shown as Not started, Just started, Learning, Shaky or Shown.
+- **What comes next.** The tutor favors concepts not yet shown, and holds back a puzzle type until its prerequisites from other types are shown. It brings in new types one at a time. Once a type's concepts are shown, it comes back as spaced review, more often the longer it has been. Sessions stay mixed: never the same type three times in a row.
+- **Stepping back.** When the same misconception comes up twice within a student's last 8 first tries, the tutor takes a short detour. It goes to an easier level of the same type whose problems can catch that mistake: the easiest one, at most two levels down. For example, repeated `INDIRECTION_OUTSIDE_IN` on Box Rows level 5 goes back to level 3. If no easier level catches it, it goes to a prerequisite concept that isn't shown yet. The detour ends after two right first tries or four puzzles, and the student returns to their usual levels. Detour puzzles don't move the level ladder.
+- **Why this puzzle.** A short line under the puzzle header tells the student why it came up.
+
+**Progress** (next to the tabs) shows, for one student:
+
+- concepts by domain;
+- what the tutor is working on;
+- the most frequent misconceptions, each with what to try;
+- the puzzles missed on the first try, with the first answer and the right one. Each has an **Open** button, which shows that exact puzzle again without moving levels;
+- a grid of first-try results by puzzle type and level.
+
+A parent can switch between their kids. Without a server, the page shows this browser's history.
+
+The tutor's logic is in `tutor.js`, and `node tools/test_tutor.js` tests it against the real problem bank.
+
+### Findings from the kids' own answers
+
+A parent can download the family's answers from the bottom of the progress page. Then:
+
+```
+python3 tools/observe.py kerbopple-export.json        # or the server's .db file
+python3 tools/merge_patch.py tools/bebras_knowledge_map.json tools/observations_patch.json
+```
+
+The script prints and saves:
+
+- first-try difficulty per level;
+- levels that seem out of order;
+- distractors offered many times but never picked;
+- wrong answers that match no named misconception.
+
+The merge stores these in the map as `data_observations`. Each merge replaces the previous one, and student names are never included. The export file holds names, so keep it out of the repository; `.gitignore` covers `kerbopple-export*.json`.
+
 ## Run it
 
 **With student accounts** (Node 22.13 or newer, no `npm install` needed):
@@ -10,7 +53,15 @@ A practice page for nine puzzle families built from the Bebras example and pract
 npm start                                  # http://localhost:3000
 ```
 
-Each student makes an account with their name, email and a password (at least 8 characters), then confirms the email from a link we send before they can sign in. **Forgot password?** on the sign-in card emails a reset link that works for 1 hour; using it signs the account out everywhere else. Accounts made before email confirmation existed count as confirmed. Their levels and history follow them to any computer, and **every answer attempt** is saved: each try, not just the first, with the answer given, whether it was right, the misconceptions it matched, how many hints were showing and how long the problem had been on screen. Attempts are saved in the browser first and sent to the server, so a dropped connection loses nothing; they are resent later. Students can download their own attempts as a CSV with **Download my answers**. **Reset progress** resets levels but keeps saved attempts.
+Accounts are per family:
+
+- **Parents sign up.** Only parents make accounts: name, email and a password of at least 8 characters. They confirm the email from a link we send.
+- **Parents add their kids.** On the **Family** page (in the bar at the top), a parent adds each kid with a name, a username and a password they choose (at least 6 characters). The same page lets them rename a kid, change their username, set a new password, download a kid's answers, or remove a kid. Removing a kid deletes all of that kid's answers.
+- **Kids sign in with a username** the parent chooses on the Family page (3 to 20 letters, digits, dots, dashes or underscores, starting with a letter; unique across the site and not case-sensitive). Parents sign in with their email; anything with an `@` is treated as an email. A kid cannot sign in until the parent's email is confirmed. Kids who had accounts before usernames existed get one made from their name the first time the new server starts; the server log prints each one.
+- **Password resets go to the parent.** **Forgot password?** on the sign-in card emails the parent a link that works for 1 hour; it resets the parent's password and signs the parent out everywhere else. Kids who forget their password ask a parent to set a new one; that signs the kid out everywhere.
+- **Older accounts.** Accounts made before family accounts existed became parent accounts, with their history kept. Accounts made before email confirmation existed count as confirmed.
+
+Levels and history follow each kid to any computer, and **every answer attempt** is saved: each try, not just the first, with the answer given, whether it was right, the misconceptions it matched, how many hints were showing and how long the problem had been on screen. Attempts are saved in the browser first and sent to the server, so a dropped connection loses nothing; they are resent later. Kids can download their own attempts as a CSV with **Download my answers**; parents download each kid's from the Family page. **Reset progress** resets levels but keeps saved attempts.
 
 Everything is in one SQLite file, `data/bebras.db` by default (set `DB_PATH` to move it). To look at every student's attempts:
 
@@ -32,7 +83,7 @@ RESEND_API_KEY=re_... EMAIL_FROM="Bebras Practice <practice@yourdomain.com>" npm
 
 Without `RESEND_API_KEY`, nothing is sent and each email (with its link) is printed in the server's console instead. That is handy for trying things out locally.
 
-Anyone who finds the address can make an account; they still have to confirm a real email address first.
+Anyone who finds the address can make a family account; they still have to confirm a real email address first, and they only ever see their own family.
 
 **Without a server:** double-click `index.html`. It opens in any modern browser straight from disk, with no sign-in and no internet connection needed. (Fonts load from Google Fonts when online; offline it falls back to system fonts.) Progress (level, history, misconception counts) is then saved in that browser only. Clear it with **Reset progress** under Coach notes.
 
@@ -40,11 +91,13 @@ Anyone who finds the address can make an account; they still have to confirm a r
 
 ```
 index.html            page shell
-server.js             web server: accounts, saved progress, attempt log (SQLite)
+server.js             web server: family accounts, saved progress, attempt log (SQLite)
 account.js            sign-in form and syncing progress/attempts to server.js
-app.js                practice logic: loading, grading, hints, leveling, coach notes
+app.js                practice logic: loading, grading, hints, leveling, coach notes, Practice tab
+tutor.js              the tutor: concept mastery, what to practice next, stepping back
+progress.js           progress page (parents can switch between their kids) and the Family page
 styles.css            styling (light and dark)
-coach.js              misconception and concept text for the coach panel (generated)
+coach.js              misconception and concept text, prerequisites and domains (generated)
 rule-tracer/          Rule Tracer problems, one file each, plus manifest.js
 lake-crossing/        Lake Crossing problems, one file each, plus manifest.js
 signal-lamp/          Signal Lamp problems, one file each, plus manifest.js
@@ -68,7 +121,9 @@ python3 tools/build_problems.py                    # 12 per level (default)
 python3 tools/build_problems.py --per-level 30 --seed 5000
 ```
 
-This deletes the existing problem files in every family folder, generates new ones, runs every problem through its independent checker (failures are skipped and counted), and rewrites both manifests and `coach.js`. Different `--seed` values give different problems.
+`python3 tools/build_problems.py --coach-only` rewrites only `coach.js`, for example after a change to the knowledge map, and does not need networkx.
+
+A full build deletes the existing problem files in every family folder, generates new ones, runs every problem through its independent checker (failures are skipped and counted), and rewrites both manifests and `coach.js`. Different `--seed` values give different problems.
 
 To check problems without rebuilding, the checkers take a JSON list of problems:
 

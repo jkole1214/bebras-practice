@@ -12,10 +12,12 @@ them straight from disk (browsers block fetch() on file:// pages, but allow
 Usage (from anywhere):
     python3 tools/build_problems.py                 # 12 per level, seeds from 1000
     python3 tools/build_problems.py --per-level 30 --seed 5000
+    python3 tools/build_problems.py --coach-only    # rewrite coach.js only (no networkx needed)
 Requires: Python 3.9+, networkx (pip install networkx) for the Lake Crossing checker.
 """
 
 import argparse
+import importlib
 import json
 import os
 import sys
@@ -27,75 +29,66 @@ sys.path.insert(0, HERE)
 
 import conditional_trace as ct          # noqa: E402
 import shortest_path as sp              # noqa: E402
-import check_conditional_trace as ck1   # noqa: E402
-import check_shortest_path as ck2       # noqa: E402
 import signal_code as scg               # noqa: E402
-import check_signal_code as ck3         # noqa: E402
 import grid_routes as grg               # noqa: E402
-import check_grid_routes as ck4         # noqa: E402
 import conveyor as cvg                  # noqa: E402
-import check_conveyor as ck5            # noqa: E402
 import pointer_lists as plg             # noqa: E402
-import check_pointer_lists as ck6       # noqa: E402
 import logic_gates as lgg               # noqa: E402
-import check_logic_gates as ck7         # noqa: E402
 import bead_grammar as bgg              # noqa: E402
-import check_bead_grammar as ck8        # noqa: E402
 import parity_grid as pgg               # noqa: E402
-import check_parity_grid as ck9         # noqa: E402
 
 FAMILIES = {
     "rule-tracer": {
-        "module": ct, "checker": ck1, "levels": len(ct.LADDER), "title": "Rule Tracer",
+        "module": ct, "checker": "check_conditional_trace", "levels": len(ct.LADDER), "title": "Rule Tracer",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "rule_text", "options",
                  "answer_index", "answer_value", "entry", "value_tags", "distractors", "concepts",
                  "explanation", "hints"],
     },
     "lake-crossing": {
-        "module": sp, "checker": ck2, "levels": len(sp.LADDER), "title": "Lake Crossing",
+        "module": sp, "checker": "check_shortest_path", "levels": len(sp.LADDER), "title": "Lake Crossing",
         "keep": ["family", "level", "question_type", "seed", "prompt", "svg", "options",
                  "answer_index", "answer_path", "answer_cost", "distractors",
                  "misconception_paths", "concepts", "explanation", "hints",
                  "answer_value", "optimal_paths", "entry", "value_tags"],
     },
     "signal-lamp": {
-        "module": scg, "checker": ck3, "levels": len(scg.LADDER), "title": "Signal Lamp",
+        "module": scg, "checker": "check_signal_code", "levels": len(scg.LADDER), "title": "Signal Lamp",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "codebook", "signal", "options",
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints"],
     },
     "robot-routes": {
-        "module": grg, "checker": ck4, "levels": len(grg.LADDER), "title": "Robot Routes",
+        "module": grg, "checker": "check_grid_routes", "levels": len(grg.LADDER), "title": "Robot Routes",
         "keep": ["family", "level", "question_type", "seed", "scene", "svg", "prompt", "question", "options",
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints"],
     },
     "nuts-and-bolts": {
-        "module": cvg, "checker": ck5, "levels": len(cvg.LADDER), "title": "Nuts and Bolts",
+        "module": cvg, "checker": "check_conveyor", "levels": len(cvg.LADDER), "title": "Nuts and Bolts",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints"],
     },
     "lights-on": {
-        "module": lgg, "checker": ck7, "levels": len(lgg.LADDER), "title": "Lights On",
+        "module": lgg, "checker": "check_logic_gates", "levels": len(lgg.LADDER), "title": "Lights On",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints", "svg"],
     },
     "bead-rules": {
-        "module": bgg, "checker": ck8, "levels": len(bgg.LADDER), "title": "Bead Rules",
+        "module": bgg, "checker": "check_bead_grammar", "levels": len(bgg.LADDER), "title": "Bead Rules",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints"],
     },
     "pantry-map": {
-        "module": pgg, "checker": ck9, "levels": len(pgg.LADDER), "title": "Pantry Map",
+        "module": pgg, "checker": "check_parity_grid", "levels": len(pgg.LADDER), "title": "Pantry Map",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints", "pick", "cell_tags"],
     },
     "box-rows": {
-        "module": plg, "checker": ck6, "levels": len(plg.LADDER), "title": "Box Rows",
+        "module": plg, "checker": "check_pointer_lists", "levels": len(plg.LADDER), "title": "Box Rows",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints"],
@@ -106,6 +99,7 @@ FAMILIES = {
 def build(per_level, seed0):
     report = {}
     for folder, f in FAMILIES.items():
+        checker = importlib.import_module(f["checker"])
         out_dir = os.path.join(ROOT, folder)
         os.makedirs(out_dir, exist_ok=True)
         for name in os.listdir(out_dir):
@@ -120,7 +114,7 @@ def build(per_level, seed0):
                 except RuntimeError:
                     seed += 1
                     continue
-                if f["checker"].check(p):
+                if checker.check(p):
                     failed += 1
                     seed += 1
                     continue
@@ -135,7 +129,12 @@ def build(per_level, seed0):
         with open(os.path.join(out_dir, "manifest.js"), "w") as fh:
             fh.write(f'BEBRAS.manifest("{folder}", {json.dumps(files)});\n')
         report[folder] = {"written": len(files), "rejected_by_checker": failed}
+    write_coach()
+    return report
 
+
+def write_coach():
+    """coach.js: names, misconception texts, ladder notes, and what the tutor needs from the map."""
     m = json.load(open(os.path.join(HERE, "bebras_knowledge_map.json")))
     extra = {**scg.MISCONCEPTIONS, **grg.MISCONCEPTIONS, **sp.COUNT_MISCONCEPTIONS, **ct.COUNT_EXTRA_MISCONCEPTIONS,
              **cvg.MISCONCEPTIONS, **plg.MISCONCEPTIONS, **lgg.MISCONCEPTIONS, **bgg.MISCONCEPTIONS,
@@ -157,15 +156,23 @@ def build(per_level, seed0):
                     "lights-on": [l["note"] for l in lgg.LADDER],
                     "bead-rules": [l["note"] for l in bgg.LADDER],
                     "pantry-map": [l["note"] for l in pgg.LADDER]},
+        # for the tutor (tutor.js): the prerequisite graph and the domains
+        "prereqs": {c["id"]: [[p["id"], p["strength"]] for p in c["prerequisites"]] for c in m["concepts"]},
+        "conceptDomain": {c["id"]: c["domain"] for c in m["concepts"]},
+        "domains": {d["id"]: d["name"] for d in m["domains"]},
     }
     with open(os.path.join(ROOT, "coach.js"), "w") as fh:
         fh.write("BEBRAS.coach(" + json.dumps(coach, ensure_ascii=False) + ");\n")
-    return report
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--per-level", type=int, default=12)
     ap.add_argument("--seed", type=int, default=1000)
+    ap.add_argument("--coach-only", action="store_true", help="rewrite coach.js without regenerating problems")
     a = ap.parse_args()
-    print(json.dumps(build(a.per_level, a.seed), indent=2))
+    if a.coach_only:
+        write_coach()
+        print("coach.js written")
+    else:
+        print(json.dumps(build(a.per_level, a.seed), indent=2))

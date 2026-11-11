@@ -1,5 +1,11 @@
-// Bebras Practice server: serves the page and a small JSON API for student
+// Bebras Practice server: serves the page and a small JSON API for family
 // accounts, saved progress, and a log of every answer attempt.
+//
+// Accounts: only parents sign up (email + password, confirmed by email). A parent
+// adds an account for each kid, choosing the kid's username and password. Kids
+// sign in with their username; parents with their email. Usernames are unique
+// across the whole site. Password-reset emails go to the parent and reset the
+// parent's password; the parent changes kids' passwords on the Family page.
 // No npm dependencies: uses Node's built-in http, crypto and sqlite (Node 22.13+).
 //
 //   node server.js                 # http://localhost:3000
@@ -30,11 +36,14 @@ db.exec(`
   PRAGMA journal_mode = WAL;
   PRAGMA foreign_keys = ON;
   CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,   -- ids are never reused: a removed kid's unsent answers cannot land on a new account
+    email TEXT UNIQUE,              -- parents only
+    username TEXT UNIQUE,           -- kids only, lowercase; kids sign in with it
     name TEXT NOT NULL,
     pw_hash TEXT NOT NULL,
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    email_verified_at INTEGER,
+    parent_id INTEGER REFERENCES users(id) ON DELETE CASCADE   -- set for kids
   );
   CREATE TABLE IF NOT EXISTS sessions (
     token_hash TEXT PRIMARY KEY,
@@ -76,8 +85,48 @@ db.exec(`
 if (!db.prepare("PRAGMA table_info(users)").all().some(c => c.name === "email_verified_at")) {
   db.exec("ALTER TABLE users ADD COLUMN email_verified_at INTEGER; UPDATE users SET email_verified_at = created_at;");
 }
+// before family accounts every user had their own email: they all become parents.
+// SQLite cannot drop NOT NULL from email in place, so the table is rebuilt.
+if (!db.prepare("PRAGMA table_info(users)").all().some(c => c.name === "parent_id")) {
+  db.exec(`PRAGMA foreign_keys = OFF;
+    BEGIN;
+    CREATE TABLE users_new (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE, name TEXT NOT NULL, pw_hash TEXT NOT NULL,
+      created_at INTEGER NOT NULL, email_verified_at INTEGER, parent_id INTEGER REFERENCES users(id) ON DELETE CASCADE);
+    INSERT INTO users_new (id, email, name, pw_hash, created_at, email_verified_at)
+      SELECT id, email, name, pw_hash, created_at, email_verified_at FROM users;
+    DROP TABLE users;
+    ALTER TABLE users_new RENAME TO users;
+    COMMIT;
+    PRAGMA foreign_keys = ON;`);
+}
+db.exec("CREATE INDEX IF NOT EXISTS users_parent ON users (parent_id)");
+// kids used to sign in with their parent's email: give each one a username made from their name
+if (!db.prepare("PRAGMA table_info(users)").all().some(c => c.name === "username")) {
+  db.exec("ALTER TABLE users ADD COLUMN username TEXT");
+  const set = db.prepare("UPDATE users SET username = ? WHERE id = ?"), taken = db.prepare("SELECT 1 FROM users WHERE username = ?");
+  for (const k of db.prepare("SELECT id, name FROM users WHERE parent_id IS NOT NULL ORDER BY id").all()) {
+    let base = k.name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]/g, "").slice(0, 16);
+    if (!/^[a-z]/.test(base)) base = "kid" + base;
+    if (base.length < 3) base = (base + "kid").slice(0, 16);
+    let u = base;
+    for (let i = 2; taken.get(u); i++) u = base + i;
+    set.run(u, k.id);
+    console.log(`Kid ${k.id} (${k.name}) now signs in as ${u}`);
+  }
+}
+db.exec("CREATE UNIQUE INDEX IF NOT EXISTS users_username ON users (username)");
 const q = {
-  userByEmail: db.prepare("SELECT * FROM users WHERE email = ?"),
+  userByEmail: db.prepare("SELECT * FROM users WHERE email = ? AND parent_id IS NULL"),
+  kidsOf: db.prepare("SELECT * FROM users WHERE parent_id = ? ORDER BY name COLLATE NOCASE, id"),
+  kidByUsername: db.prepare("SELECT * FROM users WHERE username = ? AND parent_id IS NOT NULL"),
+  usernameTaken: db.prepare("SELECT id FROM users WHERE username = ?"),
+  addKid: db.prepare("INSERT INTO users (name, username, pw_hash, created_at, parent_id) VALUES (?, ?, ?, ?, ?)"),
+  renameUser: db.prepare("UPDATE users SET name = ? WHERE id = ?"),
+  setUsername: db.prepare("UPDATE users SET username = ? WHERE id = ?"),
+  dropUser: db.prepare("DELETE FROM users WHERE id = ? AND parent_id = ?"),
+  kidStats: db.prepare(`SELECT u.id, u.name, u.username, u.created_at, COUNT(a.id) AS attempts, COALESCE(SUM(a.try_number = 1), 0) AS puzzles,
+      MAX(a.created_at) AS last_at
+    FROM users u LEFT JOIN attempts a ON a.user_id = u.id WHERE u.parent_id = ? GROUP BY u.id, u.name, u.username, u.created_at ORDER BY u.name COLLATE NOCASE, u.id`),
   addUser: db.prepare("INSERT INTO users (email, name, pw_hash, created_at) VALUES (?, ?, ?, ?)"),
   userById: db.prepare("SELECT * FROM users WHERE id = ?"),
   markVerified: db.prepare("UPDATE users SET email_verified_at = ? WHERE id = ? AND email_verified_at IS NULL"),
@@ -89,7 +138,7 @@ const q = {
   dropTokens: db.prepare("DELETE FROM email_tokens WHERE user_id = ? AND purpose = ?"),
   dropExpiredTokens: db.prepare("DELETE FROM email_tokens WHERE expires_at <= ?"),
   addSession: db.prepare("INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)"),
-  session: db.prepare("SELECT u.id, u.email, u.name FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?"),
+  session: db.prepare("SELECT u.id, u.email, u.username, u.name, u.parent_id FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?"),
   dropSession: db.prepare("DELETE FROM sessions WHERE token_hash = ?"),
   dropExpired: db.prepare("DELETE FROM sessions WHERE expires_at <= ?"),
   getState: db.prepare("SELECT state FROM progress WHERE user_id = ?"),
@@ -99,6 +148,8 @@ const q = {
     (user_id, client_id, family, level, seed, question_type, try_number, correct, answer, misconceptions, hints_shown, ms_on_problem, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
   attempts: db.prepare("SELECT * FROM attempts WHERE user_id = ? ORDER BY created_at, id"),
+  familyAttempts: db.prepare(`SELECT * FROM attempts WHERE user_id IN (SELECT id FROM users WHERE id = ? OR parent_id = ?)
+    ORDER BY user_id, created_at, id`),
   summary: db.prepare(`SELECT family, COUNT(*) AS attempts,
       SUM(try_number = 1) AS first_tries, SUM(try_number = 1 AND correct) AS first_try_right
     FROM attempts WHERE user_id = ? GROUP BY family ORDER BY family`)
@@ -117,6 +168,19 @@ function checkPassword(pw, stored) {
 }
 // a password hash to compare against when the email is unknown, so timing does not reveal which emails exist
 const DUMMY_HASH = hashPassword(crypto.randomBytes(16).toString("hex"));
+const pub = (u) => ({ id: u.id, email: u.email || null, username: u.username || null, name: u.name, role: u.parent_id ? "kid" : "parent" });
+const isParent = (u) => !!u && !u.parent_id;
+// a parent sees their own data and their kids'; a kid sees only their own
+function canSee(user, id) {
+  if (id === user.id) return true;
+  const u = q.userById.get(id);
+  return !!u && isParent(user) && u.parent_id === user.id;
+}
+const KID_PW_MIN = 6;
+// 3-20 letters, digits, dots, dashes or underscores, starting with a letter. Never an email.
+const USERNAME_RE = /^[a-z][a-z0-9._-]{2,19}$/;
+const usernameError = (u) => USERNAME_RE.test(u) ? null
+  : "Usernames are 3 to 20 letters or digits (dots, dashes and underscores are fine too), starting with a letter.";
 const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
 
 function startSession(res, req, userId) {
@@ -216,14 +280,14 @@ const api = {
   "GET /api/me"(req, res, user) {
     if (!user) return send(res, 200, { user: null });
     const row = q.getState.get(user.id);
-    send(res, 200, { user, state: row ? JSON.parse(row.state) : null });
+    send(res, 200, { user: pub(user), state: row ? JSON.parse(row.state) : null });
   },
   async "POST /api/register"(req, res) {
     if (throttled(req)) return send(res, 429, { error: "Too many tries. Wait a few minutes." });
     const b = await readJSON(req);
     const email = str(b.email, 200).toLowerCase(), name = str(b.name, 60), pw = typeof b.password === "string" ? b.password : "";
     if (!EMAIL_RE.test(email)) return send(res, 400, { error: "Enter a valid email address." });
-    if (!name) return send(res, 400, { error: "Enter your name." });
+    if (!name) return send(res, 400, { error: "Enter your name." });   // the parent's
     if (pw.length < 8 || pw.length > 200) return send(res, 400, { error: "Passwords need at least 8 characters." });
     if (q.userByEmail.get(email)) return send(res, 409, { error: "An account with that email already exists. Sign in instead." });
     const { lastInsertRowid } = q.addUser.run(email, name, hashPassword(pw), Date.now());
@@ -246,7 +310,7 @@ const api = {
     q.markVerified.run(Date.now(), u.id);
     startSession(res, req, u.id);
     const row = q.getState.get(u.id);
-    send(res, 200, { user: { id: u.id, email: u.email, name: u.name }, state: row ? JSON.parse(row.state) : null });
+    send(res, 200, { user: pub(u), state: row ? JSON.parse(row.state) : null });
   },
   async "POST /api/forgot"(req, res) {
     if (throttled(req)) return send(res, 429, { error: "Too many tries. Wait a few minutes." });
@@ -267,19 +331,24 @@ const api = {
     q.markVerified.run(Date.now(), u.id);  // the link proves they read this inbox
     startSession(res, req, u.id);
     const row = q.getState.get(u.id);
-    send(res, 200, { user: { id: u.id, email: u.email, name: u.name }, state: row ? JSON.parse(row.state) : null });
+    send(res, 200, { user: pub(u), state: row ? JSON.parse(row.state) : null });
   },
   async "POST /api/login"(req, res) {
     if (throttled(req)) return send(res, 429, { error: "Too many tries. Wait a few minutes." });
     const b = await readJSON(req);
-    const email = str(b.email, 200).toLowerCase(), pw = typeof b.password === "string" ? b.password : "";
-    const u = q.userByEmail.get(email);
-    const ok = checkPassword(pw, u ? u.pw_hash : DUMMY_HASH) && !!u;
-    if (!ok) return send(res, 401, { error: "That email and password do not match." });
-    if (!u.email_verified_at) return send(res, 403, { error: "Confirm your email first. Look for our email, or send it again.", unconfirmed: true });
+    // parents type their email, kids their username
+    const login = str(b.login ?? b.email, 200).toLowerCase(), pw = typeof b.password === "string" ? b.password : "";
+    const found = login.includes("@") ? q.userByEmail.get(login) : q.kidByUsername.get(login);
+    const u = found && checkPassword(pw, found.pw_hash) ? found : null;
+    if (!found) checkPassword(pw, DUMMY_HASH);   // same work either way, so timing does not reveal which names exist
+    if (!u) return send(res, 401, { error: login.includes("@") ? "That email and password do not match." : "That username and password do not match." });
+    const parent = u.parent_id ? q.userById.get(u.parent_id) : u;
+    if (!parent.email_verified_at) return send(res, 403, u.parent_id
+      ? { error: "Your parent needs to confirm their email first. Ask them to look for our email." }
+      : { error: "Your email needs confirming first. Look for our email, or send it again.", unconfirmed: true });
     startSession(res, req, u.id);
     const row = q.getState.get(u.id);
-    send(res, 200, { user: { id: u.id, email: u.email, name: u.name }, state: row ? JSON.parse(row.state) : null });
+    send(res, 200, { user: pub(u), state: row ? JSON.parse(row.state) : null });
   },
   "POST /api/logout"(req, res) {
     const t = tokenOf(req);
@@ -319,19 +388,103 @@ const api = {
     if (!user) return send(res, 401, { error: "Log in first." });
     send(res, 200, { families: q.summary.all(user.id) });
   },
+  // Every try, compact, for the progress page. Kids see their own; parents can pass ?user=ID for their kids.
+  "GET /api/history"(req, res, user) {
+    if (!user) return send(res, 401, { error: "Log in first." });
+    const want = Number(new URL(req.url, "http://x").searchParams.get("user")) || user.id;
+    if (!canSee(user, want)) return send(res, 403, { error: "You can only see your own family." });
+    const u = q.userById.get(want);
+    if (!u) return send(res, 404, { error: "No such student." });
+    const row = q.getState.get(u.id);
+    let tutor = null;
+    try { tutor = row ? JSON.parse(row.state).tutor || null : null; } catch (e) {}
+    send(res, 200, { student: { id: u.id, name: u.name }, tutor, attempts: q.attempts.all(u.id).map(compact) });
+  },
+  // ---- a parent's kids
+  "GET /api/kids"(req, res, user) {
+    if (!isParent(user)) return send(res, 403, { error: "Only for parents." });
+    send(res, 200, { kids: q.kidStats.all(user.id) });
+  },
+  async "POST /api/kids"(req, res, user) {
+    if (!isParent(user)) return send(res, 403, { error: "Only for parents." });
+    const b = await readJSON(req);
+    const name = str(b.name, 40), username = str(b.username, 40).toLowerCase(), pw = typeof b.password === "string" ? b.password : "";
+    const kids = q.kidsOf.all(user.id);
+    if (!name) return send(res, 400, { error: "Enter your kid's name." });
+    if (usernameError(username)) return send(res, 400, { error: usernameError(username) });
+    if (q.usernameTaken.get(username)) return send(res, 409, { error: `The username ${username} is taken. Try another.` });
+    if (kids.length >= 12) return send(res, 400, { error: "A family can have up to 12 kids." });
+    if (kids.some(k => k.name.toLowerCase() === name.toLowerCase())) return send(res, 409, { error: `You already have a kid called ${name}.` });
+    if (pw.length < KID_PW_MIN || pw.length > 200) return send(res, 400, { error: `Kids' passwords need at least ${KID_PW_MIN} characters.` });
+    const { lastInsertRowid } = q.addKid.run(name, username, hashPassword(pw), Date.now(), user.id);
+    send(res, 200, { kid: { id: Number(lastInsertRowid), name, username } });
+  },
+  async "POST /api/kids/update"(req, res, user) {
+    if (!isParent(user)) return send(res, 403, { error: "Only for parents." });
+    const b = await readJSON(req);
+    const kid = q.userById.get(int(b.id));
+    if (!kid || kid.parent_id !== user.id) return send(res, 404, { error: "No such kid." });
+    if (b.name !== undefined) {
+      const name = str(b.name, 40);
+      if (!name) return send(res, 400, { error: "Enter a name." });
+      if (q.kidsOf.all(user.id).some(k => k.id !== kid.id && k.name.toLowerCase() === name.toLowerCase())) return send(res, 409, { error: `You already have a kid called ${name}.` });
+      q.renameUser.run(name, kid.id);
+    }
+    if (b.username !== undefined) {
+      const username = str(b.username, 40).toLowerCase();
+      if (usernameError(username)) return send(res, 400, { error: usernameError(username) });
+      const other = q.usernameTaken.get(username);
+      if (other && other.id !== kid.id) return send(res, 409, { error: `The username ${username} is taken. Try another.` });
+      q.setUsername.run(username, kid.id);
+    }
+    if (b.password !== undefined) {
+      const pw = typeof b.password === "string" ? b.password : "";
+      if (pw.length < KID_PW_MIN || pw.length > 200) return send(res, 400, { error: `Kids' passwords need at least ${KID_PW_MIN} characters.` });
+      q.setPassword.run(hashPassword(pw), kid.id);
+      q.dropUserSessions.run(kid.id);   // signed out everywhere; they sign in with the new one
+    }
+    send(res, 200, { ok: true });
+  },
+  // Deletes the kid's account with all their answers and progress.
+  async "POST /api/kids/delete"(req, res, user) {
+    if (!isParent(user)) return send(res, 403, { error: "Only for parents." });
+    const b = await readJSON(req);
+    const r = q.dropUser.run(int(b.id), user.id);
+    if (!Number(r.changes)) return send(res, 404, { error: "No such kid." });
+    send(res, 200, { ok: true });
+  },
+  // The family's answers, for tools/observe.py. Names but no emails.
+  "GET /api/export.json"(req, res, user) {
+    if (!isParent(user)) return send(res, 403, "Only for parents.");
+    const people = [q.userById.get(user.id), ...q.kidsOf.all(user.id)];
+    const body = { exported_at: new Date().toISOString(), students: people.map(u => ({ id: u.id, name: u.name })),
+      attempts: q.familyAttempts.all(user.id, user.id).map(r => ({ user: r.user_id, ...compact(r) })) };
+    send(res, 200, JSON.stringify(body), { "Content-Type": "application/json", "Content-Disposition": `attachment; filename="kerbopple-export.json"` });
+  },
   "GET /api/attempts.csv"(req, res, user) {
     if (!user) return send(res, 401, "Log in first.");
+    const want = Number(new URL(req.url, "http://x").searchParams.get("user")) || user.id;
+    if (!canSee(user, want)) return send(res, 403, "You can only see your own family.");
+    const who = q.userById.get(want);
     const cols = ["created_at", "family", "level", "seed", "question_type", "try_number", "correct", "answer", "misconceptions", "hints_shown", "ms_on_problem"];
     const cell = (v) => { const s = v === null ? "" : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-    const lines = [cols.join(",")].concat(q.attempts.all(user.id).map(r =>
+    const lines = [cols.join(",")].concat(q.attempts.all(want).map(r =>
       cols.map(c => cell(c === "created_at" ? new Date(r[c]).toISOString() : r[c])).join(",")));
-    send(res, 200, lines.join("\n") + "\n", { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="bebras-attempts.csv"` });
+    send(res, 200, lines.join("\n") + "\n", { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${who.name.replace(/[^A-Za-z0-9 _-]/g, "").trim() || "student"}-answers.csv"` });
   }
 };
 
+function compact(r) {
+  let answer = null, tags = [];
+  try { answer = r.answer === null ? null : JSON.parse(r.answer); } catch (e) {}
+  try { tags = JSON.parse(r.misconceptions || "[]"); } catch (e) {}
+  return { fam: r.family, level: r.level, seed: r.seed, qt: r.question_type, try: r.try_number, correct: !!r.correct,
+    answer, tags, hints: r.hints_shown, ms: r.ms_on_problem, t: r.created_at };
+}
+
 // ---------- static files: only the page and the problem folders (never tools/, data/ or this file)
 const FAMILY_DIRS = new Set([...fs.readFileSync(path.join(ROOT, "index.html"), "utf8").matchAll(/src="([a-z-]+)\/manifest\.js"/g)].map(m => m[1]));
-const TOP_FILES = new Set(["index.html", "app.js", "account.js", "styles.css", "coach.js"]);
+const TOP_FILES = new Set(["index.html", "app.js", "account.js", "tutor.js", "progress.js", "styles.css", "coach.js"]);
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8" };
 
 function serveStatic(req, res) {

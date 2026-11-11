@@ -1,5 +1,8 @@
-// Student accounts. When the page is served by server.js, students sign in and
-// their progress and every answer attempt are saved on the server. When the page
+// Family accounts. A parent signs up and adds their kids (on the Family page in
+// progress.js), choosing each kid's username and password. Kids sign in with their
+// username, parents with their email.
+// When the page is served by server.js, progress and every answer attempt are
+// saved on the server. When the page
 // is opened straight from disk (file://) there is no server, and the page works
 // as before with progress kept in this browser only.
 
@@ -50,20 +53,22 @@ window.Account = (() => {
     return new Promise((resolve) => {
       let mode = startMode, lastEmail = "";
       const field = (label, name, type, auto, extra = "") =>
-        `<label>${label}<input name="${name}" type="${type}" autocomplete="${auto}" required ${extra}${name === "email" && lastEmail ? ` value="${esc(lastEmail)}"` : ""}></label>`;
+        `<label>${label}<input name="${name}" type="${type}" autocomplete="${auto}" required ${extra}${(name === "email" || name === "login") && lastEmail ? ` value="${esc(lastEmail)}"` : ""}></label>`;
       const draw = (msg = "", ok = "", resend = false) => {
-        const titles = { login: "Sign in", register: "Make an account", forgot: "Forgot your password?", reset: "Choose a new password", sent: "Check your email" };
+        const titles = { login: "Sign in", register: "Make a family account", forgot: "Forgot your password?", reset: "Choose a new password", sent: "Check your email" };
         let fields = "", buttons = "";
         if (mode === "login") {
-          fields = field("Email", "email", "email", "email") + field("Password", "password", "password", "current-password");
-          buttons = `<button class="btn" type="submit">Sign in</button><button class="btn ghost" type="button" data-go="register">Make a new account</button>
+          fields = field("Username, or email for parents", "login", "text", "username", 'autocapitalize="none" spellcheck="false"')
+            + field("Password", "password", "password", "current-password");
+          buttons = `<button class="btn" type="submit">Sign in</button><button class="btn ghost" type="button" data-go="register">Parents: make a family account</button>
             <button class="linkbtn" type="button" data-go="forgot">Forgot password?</button>`;
         } else if (mode === "register") {
-          fields = field("Your name", "name", "text", "nickname", 'maxlength="60"') + field("Email", "email", "email", "email")
+          fields = `<p class="nums" style="margin:0">For parents. After you confirm your email, you add an account for each kid and choose their username and password.</p>`
+            + field("Your name", "name", "text", "nickname", 'maxlength="60"') + field("Your email", "email", "email", "email")
             + field("Password", "password", "password", "new-password", 'minlength="8"');
           buttons = `<button class="btn" type="submit">Make account</button><button class="btn ghost" type="button" data-go="login">I already have an account</button>`;
         } else if (mode === "forgot") {
-          fields = `<p class="nums" style="margin:0">Type your email and we will send you a link to choose a new password.</p>` + field("Email", "email", "email", "email");
+          fields = `<p class="nums" style="margin:0">Parents: type your email and we will send you a link to choose a new password. Kids: ask a parent, who can change your password on the Family page.</p>` + field("Email", "email", "email", "email");
           buttons = `<button class="btn" type="submit">Send me a link</button><button class="btn ghost" type="button" data-go="login">Back to sign in</button>`;
         } else if (mode === "reset") {
           fields = field("New password", "password", "password", "new-password", 'minlength="8"');
@@ -91,6 +96,7 @@ window.Account = (() => {
           e.preventDefault();
           const f = Object.fromEntries(new FormData(e.target));
           if (f.email) lastEmail = f.email.trim();
+          if (f.login) lastEmail = f.login.trim().includes("@") ? f.login.trim() : "";
           const btn = e.target.querySelector("button[type=submit]");
           if (btn) btn.disabled = true;
           try {
@@ -100,7 +106,7 @@ window.Account = (() => {
               const r = await call("POST", "/api/register", f);
               mode = "sent";
               if (r.emailFailed) draw(`Your account is made, but the email to ${r.email} could not be sent.`, "", true);
-              else draw("", `We sent a link to ${r.email}. Open it to confirm your email, then you can start. Check spam if you do not see it.`, true);
+              else draw("", `We sent a link to ${r.email}. Open it to confirm your email, then add your kids. Check spam if you do not see it.`, true);
             } else if (mode === "forgot") {
               await call("POST", "/api/forgot", f);
               mode = "sent"; draw("", `If ${lastEmail} has an account, a link to choose a new password is on its way. It works for 1 hour.`);
@@ -132,8 +138,10 @@ window.Account = (() => {
     if (!bar) return;
     bar.hidden = false;
     bar.innerHTML = `<span>Signed in as <b>${esc(user.name)}</b></span>
-      <a href="/api/attempts.csv" download>Download my answers</a>
+      ${user.role === "parent" ? `<button class="linkbtn" id="familyBtn">Family</button>` : `<a href="/api/attempts.csv" download>Download my answers</a>`}
       <button class="linkbtn" id="logout">Sign out</button>`;
+    const fb = $("#familyBtn");
+    if (fb) fb.addEventListener("click", () => Progress.family());
     $("#logout").addEventListener("click", async () => {
       await flush();
       if (pendingState) await saveNow();
@@ -183,5 +191,5 @@ window.Account = (() => {
     if (ok && ls.get(outboxKey(), []).length) flush();
   }
 
-  return { init, saveState, logAttempt, get signedIn() { return !!user; }, get online() { return online; } };
+  return { init, saveState, logAttempt, get signedIn() { return !!user; }, get user() { return user; }, get online() { return online; } };
 })();

@@ -168,3 +168,55 @@ body{margin:0}
 .auth label { display: grid; gap: 4px; font-weight: 700; font-size: 0.95rem; }
 .auth input { font: 1rem var(--f-body); padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); min-width: 0; }
 .auth input:focus-visible { outline: 3px solid var(--sun); outline-offset: 1px; border-color: var(--accent); }
+
+/* Tutor: why this puzzle came up (Practice tab) */
+.why { margin: -8px 0 0; font-size: 0.9rem; color: var(--muted); font-style: italic; }
+#progressBtn { font-size: 0.95rem; }
+
+/* Progress page */
+.progress { display: grid; gap: 18px; min-width: 0; }
+.progress h2 { font-family: var(--f-display); font-weight: 600; font-size: 1.4rem; margin: 0; }
+.progress h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.1rem; margin: 0 0 6px; }
+.progress h4 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 12px 0 4px; }
+.progress p { margin: 4px 0; }
+.ptop { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.picker { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 0.9rem; }
+.picker select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.tile { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: grid; gap: 2px; }
+.tile b { font: 600 1.5rem var(--f-display); font-variant-numeric: tabular-nums; }
+.tile span { font-size: 0.85rem; color: var(--muted); }
+.psec { border-top: 1px solid var(--line); padding-top: 14px; min-width: 0; }
+ul.concepts, ul.mis, ul.missed { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+ul.concepts li { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name chip" "meter count"; gap: 4px 10px; align-items: center; }
+ul.concepts .cname { grid-area: name; }
+ul.concepts .chip { grid-area: chip; justify-self: end; }
+ul.concepts .meter { grid-area: meter; }
+ul.concepts .nums { grid-area: count; justify-self: end; }
+.chip { font-size: 0.78rem; font-weight: 700; border-radius: 999px; padding: 2px 10px; background: var(--code-bg); color: var(--muted); border: 1px solid var(--line); white-space: nowrap; }
+.chip.st-shown { background: var(--good-bg); color: var(--good); border-color: transparent; }
+.chip.st-shaky { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+.chip.st-learning { color: var(--ink); }
+.meter { display: block; height: 6px; border-radius: 3px; background: var(--code-bg); border: 1px solid var(--line); overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); border-radius: 0 3px 3px 0; }
+ul.mis li, ul.missed li { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.btn.small { padding: 4px 12px; font-size: 0.9rem; margin-left: auto; }
+.ans { font-family: var(--f-mono); font-size: 0.92em; }
+.gridwrap { overflow-x: auto; }
+table.lvgrid { border-collapse: separate; border-spacing: 3px; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+table.lvgrid th { font-weight: 600; color: var(--muted); padding: 2px 6px; }
+table.lvgrid th[scope="row"] { text-align: left; white-space: nowrap; color: var(--ink); }
+table.lvgrid td { text-align: center; min-width: 38px; padding: 4px 2px; border-radius: 6px; border: 1px solid var(--line); }
+table.lvgrid td.hi { background: var(--good-bg); color: var(--good); border-color: transparent; font-weight: 700; }
+table.lvgrid td.lo { background: var(--bad-bg); color: var(--bad); border-color: transparent; font-weight: 700; }
+table.lvgrid td.empty { color: var(--muted); }
+table.lvgrid td.none { border: 0; }
+.progress .tag { font: 500 0.78rem var(--f-mono); color: var(--ink); background: var(--code-bg); border-radius: 6px; padding: 1px 6px; overflow-wrap: anywhere; }
+ul.kids { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+ul.kids li { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: grid; gap: 6px; min-width: 0; }
+ul.kids .row { gap: 6px 14px; }
+.kidform .msg:empty { display: none; }
+.numin.wide { width: auto; flex: 1 1 180px; min-width: 0; }
+.linkbtn.danger { color: var(--bad); }
+.kidadd { max-width: 420px; }
+.progress a { color: var(--accent); }
