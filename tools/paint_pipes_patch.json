@@ -1,0 +1,194 @@
+{
+  "patch_id": "paint-pipes-family",
+  "built": "2026-11-12",
+  "analyst": "Claude",
+  "method": "Claude built a new generator family, parallel_spread (folder paint-pipes, shown as Paint Pipes), from the Virus generator candidate. It keeps the task's idea (two colours spread through a network at the same time; a tank reached by both, even one already coloured, turns to mud and stops) under an original theme and wording. Every problem passes check_parallel_spread.py, which rebuilds the network from the picture and simulates again with set-based code; corrupting the answer, the marked option, a starting colour or a pipe is caught in all 720 mutation trials.",
+  "generator_families": [
+    {
+      "id": "parallel_spread",
+      "module": "parallel_spread.py",
+      "checker": "check_parallel_spread.py",
+      "folder": "paint-pipes",
+      "source_tasks": [
+        "virus"
+      ],
+      "concepts": [
+        "PARALLEL_SPREAD",
+        "SIMULATION",
+        "GRAPH_NEIGHBORHOOD"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "after",
+          "tanks": [
+            6,
+            7
+          ],
+          "density": 0.5,
+          "minutes": 2,
+          "note": "One colour. Count the tanks with paint after 2 minutes; paint moves one pipe per minute."
+        },
+        {
+          "level": 2,
+          "question": "final",
+          "tanks": [
+            7,
+            8
+          ],
+          "density": 0.45,
+          "apart": [
+            3,
+            99
+          ],
+          "require": [
+            "SEQUENTIAL_SPREAD"
+          ],
+          "note": "Two colours start far apart and meet in the middle; count one colour at the end."
+        },
+        {
+          "level": 3,
+          "question": "final",
+          "tanks": [
+            8,
+            9
+          ],
+          "density": 0.45,
+          "apart": [
+            3,
+            99
+          ],
+          "require": [
+            "FIRST_COLOR_STAYS"
+          ],
+          "note": "The colours meet across a pipe, so two tanks that already had a colour turn to mud."
+        },
+        {
+          "level": 4,
+          "question": "final",
+          "tanks": [
+            8,
+            9
+          ],
+          "density": 0.45,
+          "apart": [
+            1,
+            1
+          ],
+          "require": [
+            "PROTECTED_SOURCES"
+          ],
+          "note": "The two starting tanks are joined by a pipe, so both turn to mud in the first minute."
+        },
+        {
+          "level": 5,
+          "question": "final",
+          "tanks": [
+            10,
+            11
+          ],
+          "density": 0.4,
+          "apart": [
+            1,
+            3
+          ],
+          "require": [
+            "FIRST_COLOR_STAYS"
+          ],
+          "entry": "number",
+          "note": "A bigger network, with a typed answer instead of choices."
+        }
+      ],
+      "misconceptions": [
+        "COUNTS_MUD",
+        "FIRST_COLOR_STAYS",
+        "FLOWS_ALL_THE_WAY",
+        "FORGETS_START",
+        "MINUTE_OFF_BY_ONE",
+        "MUD_STILL_FLOWS",
+        "PROTECTED_SOURCES",
+        "SEQUENTIAL_SPREAD"
+      ]
+    }
+  ],
+  "generator_candidate_updates": [
+    {
+      "source_task": "virus",
+      "status": "built"
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "MINUTE_OFF_BY_ONE",
+      "concept": "SIMULATION",
+      "description": "Runs the spread for one minute too few or one too many.",
+      "remediation": "Have the student write 'minute 1', 'minute 2' and so on, and list what changes under each.",
+      "families": [
+        "parallel_spread"
+      ]
+    },
+    {
+      "id": "FLOWS_ALL_THE_WAY",
+      "concept": "SIMULATION",
+      "description": "Lets the paint run through every connected tank at once, ignoring that it moves one pipe per minute.",
+      "remediation": "Ask how far the paint can get in the very first minute.",
+      "families": [
+        "parallel_spread"
+      ]
+    },
+    {
+      "id": "FORGETS_START",
+      "concept": "SIMULATION",
+      "description": "Counts only the tanks the paint flowed into and leaves out the tank it was poured into.",
+      "remediation": "Ask what colour the starting tank is at the end.",
+      "families": [
+        "parallel_spread"
+      ]
+    },
+    {
+      "id": "FIRST_COLOR_STAYS",
+      "concept": "PARALLEL_SPREAD",
+      "description": "Thinks a tank that already has a colour can never change, so only tanks reached by both colours in the same minute turn to mud.",
+      "remediation": "Find two neighbouring tanks of different colours and ask what flows into each one in the next minute.",
+      "families": [
+        "parallel_spread"
+      ]
+    },
+    {
+      "id": "MUD_STILL_FLOWS",
+      "concept": "PARALLEL_SPREAD",
+      "description": "Lets mud keep pushing colour into its neighbours, so mud spreads.",
+      "remediation": "Reread the rule about mud with the student, then redo the minute where the first mud appears.",
+      "families": [
+        "parallel_spread"
+      ]
+    },
+    {
+      "id": "COUNTS_MUD",
+      "concept": "SIMULATION",
+      "description": "Counts the mud tanks as if they still had the asked colour.",
+      "remediation": "Ask the student to name each tank they counted and say its colour at the end.",
+      "families": [
+        "parallel_spread"
+      ]
+    }
+  ],
+  "misconception_updates": [
+    {
+      "id": "PROTECTED_SOURCES",
+      "description": "Treats the two starting places as safe even when both colours reach them.",
+      "remediation": "Ask what flows into each starting tank in the first minute.",
+      "families": [
+        "parallel_spread"
+      ]
+    },
+    {
+      "id": "SEQUENTIAL_SPREAD",
+      "description": "Spreads one colour all the way first and then the other, instead of both together, minute by minute.",
+      "remediation": "Have the student colour both fronts for minute 1, then for minute 2.",
+      "families": [
+        "parallel_spread"
+      ]
+    }
+  ]
+}

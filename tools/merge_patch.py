@@ -61,7 +61,20 @@ def merge(m, p):
     mis = by(m.get("misconceptions", []), "id")
     for x in p.get("misconceptions", []):
         mis.setdefault(x["id"], x)
+    for u in p.get("misconception_updates", []):     # e.g. reword, or list the families that now catch it
+        if u["id"] in mis:
+            mis[u["id"]].update({k: v for k, v in u.items() if k != "id"})
     m["misconceptions"] = list(mis.values())
+
+    # built generator families (replaced by id) and status changes on candidates
+    fams = by(m.get("generator_families", []), "id")
+    for g in p.get("generator_families", []):
+        fams[g["id"]] = g
+    m["generator_families"] = list(fams.values())
+    for u in p.get("generator_candidate_updates", []):
+        for g in m.get("generator_candidates", []):
+            if g["source_task"] == u["source_task"]:
+                g.update({k: v for k, v in u.items() if k != "source_task"})
 
     # progression and generator candidates
     prog = m.setdefault("progression", {})

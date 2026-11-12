@@ -36,6 +36,7 @@ import pointer_lists as plg             # noqa: E402
 import logic_gates as lgg               # noqa: E402
 import bead_grammar as bgg              # noqa: E402
 import parity_grid as pgg               # noqa: E402
+import parallel_spread as psg           # noqa: E402
 
 FAMILIES = {
     "rule-tracer": {
@@ -86,6 +87,12 @@ FAMILIES = {
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints", "pick", "cell_tags"],
+    },
+    "paint-pipes": {
+        "module": psg, "checker": "check_parallel_spread", "levels": len(psg.LADDER), "title": "Paint Pipes",
+        "keep": ["family", "level", "question_type", "seed", "scene", "svg", "prompt", "question", "options",
+                 "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
+                 "explanation", "hints"],
     },
     "box-rows": {
         "module": plg, "checker": "check_pointer_lists", "levels": len(plg.LADDER), "title": "Box Rows",
@@ -138,7 +145,7 @@ def write_coach():
     m = json.load(open(os.path.join(HERE, "bebras_knowledge_map.json")))
     extra = {**scg.MISCONCEPTIONS, **grg.MISCONCEPTIONS, **sp.COUNT_MISCONCEPTIONS, **ct.COUNT_EXTRA_MISCONCEPTIONS,
              **cvg.MISCONCEPTIONS, **plg.MISCONCEPTIONS, **lgg.MISCONCEPTIONS, **bgg.MISCONCEPTIONS,
-             **pgg.MISCONCEPTIONS}
+             **pgg.MISCONCEPTIONS, **psg.MISCONCEPTIONS}
     for k, v in extra.items():
         if k not in {x["id"] for x in m["misconceptions"]}:
             m["misconceptions"].append({"id": k, **v})
@@ -155,7 +162,8 @@ def write_coach():
                     "box-rows": [l["note"] for l in plg.LADDER],
                     "lights-on": [l["note"] for l in lgg.LADDER],
                     "bead-rules": [l["note"] for l in bgg.LADDER],
-                    "pantry-map": [l["note"] for l in pgg.LADDER]},
+                    "pantry-map": [l["note"] for l in pgg.LADDER],
+                    "paint-pipes": [l["note"] for l in psg.LADDER]},
         # for the tutor (tutor.js): the prerequisite graph and the domains
         "prereqs": {c["id"]: [[p["id"], p["strength"]] for p in c["prerequisites"]] for c in m["concepts"]},
         "conceptDomain": {c["id"]: c["domain"] for c in m["concepts"]},

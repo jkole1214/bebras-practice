@@ -147,7 +147,8 @@ function render() {
     decode: "Decode the signal", count: "Count", inverse: "Find the signal", length: "Shortest route", count_routes: "Count cheapest crossings",
     valid: "Which belt works", depth: "Fullest bucket", stack: "Two sizes", repair: "Fix the belt", lookup: "Look it up",
     choose: "Which beavers", press: "Light the bulb", fewest: "Fewest beavers", can: "Can it be made", cannot: "Which cannot",
-    erased1: "Find the missing dot", erased2: "Find two missing dots", changed: "Find the change", fill: "Fill the checks" }[p.question_type];
+    erased1: "Find the missing dot", erased2: "Find two missing dots", changed: "Find the change", fill: "Fill the checks",
+    after: "Follow the paint", final: "When the paint stops" }[p.question_type];
   const kindShown = p.family === "pointer_lists" && p.question_type === "inverse" ? "Work backward"
     : p.family === "logic_gates" && p.question_type === "count" ? "Count the ways"
     : p.family === "bead_grammar" && p.question_type === "count" ? "Count the necklaces" : kind;

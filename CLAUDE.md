@@ -11,8 +11,8 @@ Calibrating difficulty against Bebras as a whole doesn't matter. What matters is
 - `tutor.js`: the adaptive tutor's pure functions, run by `engine.js` on the server. Tested by `node tools/test_tutor.js`.
 - Problem files are `.js` (`BEBRAS.add("folder", {...})`) with a `manifest.js` per folder, read by `engine.js` at startup (restart the server after a rebuild). They are never served: answer keys stay on the server.
 - `account.js`, `server.js`: accounts, the practice API and storage (see below).
-- Nine family folders: `rule-tracer`, `lake-crossing`, `signal-lamp`, `robot-routes`, `nuts-and-bolts`, `box-rows`, `lights-on`, `bead-rules`, `pantry-map`. A module's `family` value can differ from its folder name (for example `conveyor` → `nuts-and-bolts`).
-- `tools/`: generators (`<module>.py`), independent checkers (`check_<module>.py`), `build_problems.py`, the knowledge map `bebras_knowledge_map.json` (69 tasks, 61 concepts, 77 misconceptions, 9 families, 16 generator candidates), analysis patches with `merge_patch.py`, and `notes.md`, which has a note on each official task. `tools/` is never served.
+- Ten family folders: `rule-tracer`, `lake-crossing`, `signal-lamp`, `robot-routes`, `nuts-and-bolts`, `box-rows`, `lights-on`, `bead-rules`, `pantry-map`, `paint-pipes`. A module's `family` value can differ from its folder name (for example `conveyor` → `nuts-and-bolts`, `parallel_spread` → `paint-pipes`).
+- `tools/`: generators (`<module>.py`), independent checkers (`check_<module>.py`), `build_problems.py`, the knowledge map `bebras_knowledge_map.json` (69 tasks, 61 concepts, 83 misconceptions, 10 families, 16 generator candidates), analysis patches with `merge_patch.py`, and `notes.md`, which has a note on each official task. `tools/` is never served.
 
 ## Accounts and storage
 
@@ -43,7 +43,7 @@ Calibrating difficulty against Bebras as a whole doesn't matter. What matters is
 
 ## Workflow
 
-- After any generator change, run `python3 tools/build_problems.py`. The rejected count must stay at 0, or explain why it isn't. Current output: 12 per level, 600 problems.
+- After any generator change, run `python3 tools/build_problems.py`. The rejected count must stay at 0, or explain why it isn't. Current output: 12 per level, 660 problems. The build needs `networkx`. Bead Rules is not deterministic: a rebuild changes its wrong options, so restore `bead-rules/` with git unless you changed that generator.
 - Record new analysis of official tasks as a patch merged with `tools/merge_patch.py map.json patch.json`, rather than hand-editing the map.
 - Test pages in a browser at phone width, in light and dark mode, with no horizontal scroll.
 - Don't commit or push unless asked.
@@ -52,6 +52,6 @@ Calibrating difficulty against Bebras as a whole doesn't matter. What matters is
 ## Roadmap (priority order)
 
 1. **Adaptive tutor (built, runs on the server).** Practice mode, the Progress page (parents switch between their kids) and `tools/observe.py`, which writes `data_observations` into the map. The details are in the README. Still open: tune the thresholds in `tutor.js` once there is real data.
-2. **More families** from `generator_candidates`: Virus, Maze, Treasure Box, Colorful Tower, Favorite Gem, the 2015 candidates and game trees. Concepts that have no family yet, and the SOC domain, are not covered.
+2. **More families** from `generator_candidates`: Maze, Treasure Box, Colorful Tower, Favorite Gem, the 2015 candidates and game trees. Concepts that have no family yet, and the SOC domain, are not covered.
 3. **More analysis** (optional): other years' USA practice challenges, and Kits/Castors.
 4. **Small items:** an "explain it back" step after a miss, worksheet export, and per-user accuracy on level select.
