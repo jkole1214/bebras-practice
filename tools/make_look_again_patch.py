@@ -121,6 +121,13 @@ LOOK_AGAIN = {
     "COUNTS_REPEATS": "Some people hear the news from two friends. Did you tick each person only once?",
     "MOST_FRIENDS_WINS": "Count two steps out from the person with the most friends. Does that really reach the most people?",
     "JOINS_A_MISSED_PERSON": "A new friend also tells all of their own friends. Whose friends cover everyone who is missed?",
+
+    # Frog Hops (a fixed hop forward or back, every stone once)
+    "STOPS_AT_DEAD_END": "The frog got stuck with stones left. Where was the last stone it had two hops to choose from? Try the other one.",
+    "FAR_END_IS_LAST": "Does the frog have to finish at the far end? Follow its hops one at a time and see where it really stops.",
+    "HOPS_WRONG_SIZE": "Count the spots on each hop, water spots too. Is every hop exactly the right size?",
+    "SWAPS_HOP_DIRECTIONS": "Which hop goes forward, and which goes back? Check each hop against the rule again.",
+    "LANDS_TWICE": "Does the frog land on any stone more than once?",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -131,7 +138,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (82 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (87 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

@@ -19,14 +19,15 @@ function rightAnswer(p) {
   if (p.entry === "number") return { value: p.answer_value };
   if (p.entry === "code") return { code: p.answer_value };
   if (p.entry === "bricks") return { bricks: { ...p.answer_value } };
+  if (p.entry === "hops") return { hops: p.answer_value.slice(1) };
   return { choice: p.answer_index };
 }
 function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push([...Array(n).keys()].filter(i => m >> i & 1).map(i => i + 1)); return out; }
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 13);
-  assert.ok(all.length >= 840, String(all.length));
+  assert.equal(B.fams.length, 14);
+  assert.ok(all.length >= 900, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {
@@ -90,6 +91,29 @@ test("pyramids: a wrong brick is tagged from the student's own bricks under it",
   }
 });
 
+test("frog trips: played back from the start, with dead ends, wrong hops and repeats tagged", () => {
+  const trips = all.filter(([, p]) => p.entry === "hops");
+  assert.ok(trips.length >= 24);
+  for (const [, p] of trips) {
+    const sc = p.scene, stones = new Set(sc.stones), seq = p.answer_value.slice(1);
+    for (const fwdFirst of [true, false]) {   // always taking the preferred hop gets stuck on some run
+      const path = [sc.start];
+      for (;;) {
+        const at = path[path.length - 1], opts = (fwdFirst ? [at + sc.fwd, at - sc.back] : [at - sc.back, at + sc.fwd]).filter(y => stones.has(y) && !path.includes(y));
+        if (!opts.length) break;
+        path.push(opts[0]);
+      }
+      if (path.length < stones.size) assert.deepEqual(E.check(p, { hops: path.slice(1) }).tags, ["STOPS_AT_DEAD_END"]);
+    }
+    assert.ok(E.check(p, { hops: seq.slice(0, 1) }).invalid || E.check(p, { hops: seq.slice(0, 1) }).tags[0] === "STOPS_AT_DEAD_END");
+    assert.deepEqual(E.check(p, { hops: [...seq, sc.start] }).tags, sc.stones.includes(sc.start) && [sc.fwd, -sc.back].includes(sc.start - seq[seq.length - 1]) ? ["LANDS_TWICE"] : ["HOPS_WRONG_SIZE", "LANDS_TWICE"]);
+    if (stones.has(sc.start + sc.back)) assert.deepEqual(E.check(p, { hops: [sc.start + sc.back] }).tags, ["SWAPS_HOP_DIRECTIONS"]);
+    const water = [...Array(sc.spots).keys()].map(i => i + 1).find(n => !stones.has(n));
+    if (water) assert.ok(E.check(p, { hops: [water] }).invalid);
+    assert.ok(E.check(p, { hops: [] }).invalid);
+  }
+});
+
 test("circuits: wrong presses are tagged, and a lit bulb with too many buttons is EXTRA_BUTTONS", () => {
   for (const [, p] of all.filter(([, p]) => p.entry === "press")) {
     const r = E.check(p, { buttons: [] });
@@ -130,7 +154,7 @@ test("the page is never sent an answer, distractor tags or the explanation", () 
 
 test("every misconception tag a wrong answer can carry has a look-again question", () => {
   const tags = new Set(["EXTRA_BUTTONS", "XOR_AS_OR", "BOTH_AS_EITHER", "PARITY_CORNER", "PARITY_ROWS_ONLY", "PARITY_COLS_ONLY",
-    "COPIES_A_SUPPORT", "MATCH_MEANS_CHANGE"]);
+    "COPIES_A_SUPPORT", "MATCH_MEANS_CHANGE", "STOPS_AT_DEAD_END", "HOPS_WRONG_SIZE", "SWAPS_HOP_DIRECTIONS", "LANDS_TWICE"]);
   for (const [, p] of all) {
     (p.distractors || []).forEach(d => d.misconceptions.forEach(t => tags.add(t)));
     Object.values(p.value_tags || {}).flat().forEach(t => tags.add(t));

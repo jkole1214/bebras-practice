@@ -150,6 +150,7 @@ function optionHTML(o) {
   if (cur && cur.family === "code_clues") return codeHTML(o);
   if (cur && cur.family === "conveyor") return beltHTML(o, false);
   if (cur && cur.family === "bead_grammar") return tokensHTML(o);
+  if (cur && cur.family === "stone_hops") return Array.isArray(o) ? `<span class="trip">${o.join(" → ")}</span>` : "Stone " + o;
   if (cur && cur.family === "logic_gates") return esc(o.length ? "Buttons " + o.join(", ") : "Nobody");
   if (Array.isArray(o)) return `<span class="dice" aria-hidden="true">${o.map(v => FACES[v]).join("")}</span><span class="nums">${o.join(", ")}</span>`;
   if (cur && cur.family === "signal_code" && cur.question_type === "inverse") return flashHTML(o);
@@ -178,7 +179,8 @@ function render() {
     : p.family === "bead_grammar" && p.question_type === "count" ? "Count the necklaces"
     : p.family === "code_clues" ? { choose: "Pick the code", crack: "Crack the code" }[p.question_type]
     : p.family === "brick_rule" ? { fill: "Build the pyramid", count: "Count the bricks", hidden: "Work backward" }[p.question_type]
-    : p.family === "friend_reach" ? { reach: "Who hears it", who: "Whose news spreads most", befriend: "One new friend" }[p.question_type] : kind;
+    : p.family === "friend_reach" ? { reach: "Who hears it", who: "Whose news spreads most", befriend: "One new friend" }[p.question_type]
+    : p.family === "stone_hops" ? { check: "Check the trip", last: "Last stone", tour: "Tap the trip" }[p.question_type] : kind;
   const famTitle = page.mode === PRACTICE || servedAs !== "ladder" ? `<span>${esc(COACH.titles[p.fam])}</span>` : "";
   let body = `<div class="meta">${famTitle}<span>Level ${p.level}</span><span>${kindShown}</span></div>`
     + (why ? `<p class="why">${esc(why)}</p>` : "") + `<p class="prompt">${esc(p.prompt)}</p>`;
@@ -190,13 +192,17 @@ function render() {
   if (p.family === "parity_grid") body += shelvesHTML(p);
   if (p.family === "code_clues") body += lockHTML(p);
   if (["conveyor", "pointer_lists", "bead_grammar", "parity_grid", "code_clues"].includes(p.family) && p.question) body += `<p class="prompt"><b>${esc(p.question)}</b></p>`;
-  if (p.svg) body += `<div class="map${p.question_type === "build" || p.entry === "press" || p.entry === "bricks" ? " build" : ""}" id="map">${p.svg}</div>`;
+  if (p.svg) body += `<div class="map${p.question_type === "build" || p.entry === "press" || p.entry === "bricks" || p.entry === "hops" ? " build" : ""}" id="map">${p.svg}</div>`;
   if (p.svg && p.question) body += `<p class="prompt"><b>${esc(p.question)}</b></p>`;
   if (p.question_type === "build") {
     body += `<p class="nums" style="margin:0">Tap walkways to select them. Tap again to remove one.</p>
       <div class="row"><button class="btn" id="submit">Check my crossing</button><button class="btn ghost" id="clear">Clear</button><span class="nums" id="selsum"></span></div>`;
   } else if (p.entry === "press" || p.entry === "cells" || p.entry === "bricks") {
     body += `<div class="row"><button class="btn" id="submit">Check</button><button class="btn ghost" id="clear">Clear</button><span class="nums" id="selsum"></span></div>`;
+  } else if (p.entry === "hops") {
+    body += `<p class="nums" style="margin:0">Tap stones in the order the frog lands on them.</p>
+      <div class="row"><button class="btn" id="submit">Check my trip</button><button class="btn ghost" id="undo">Undo</button><button class="btn ghost" id="clear">Clear</button></div>
+      <p class="nums trip" id="selsum"></p>`;
   } else if (p.entry === "code") {
     body += `<div class="wheels" id="wheels">${Array.from({ length: p.scene.slots }, (_, i) => `<button class="wheel" data-w="${i}" aria-label="wheel ${i + 1}, empty"></button>`).join("")}</div>
       <div class="palette">${p.scene.pool.map(ch => `<button class="symbtn" data-s="${ch}" aria-label="${SYM[ch][0]}">${symSVG(ch)}</button>`).join("")}</div>
@@ -204,7 +210,7 @@ function render() {
   } else if (p.entry === "number") {
     body += `<form class="row" id="numform"><input id="numans" type="number" inputmode="numeric" min="0" class="numin" aria-label="Your answer"><button class="btn" type="submit">Check</button></form>`;
   } else {
-    body += `<div class="options${["signal_code", "conveyor", "bead_grammar"].includes(p.family) ? " wide" : ""}">${p.options.map((o, i) => `<button class="opt" data-i="${i}">${optionHTML(o)}</button>`).join("")}</div>`;
+    body += `<div class="options${["signal_code", "conveyor", "bead_grammar"].includes(p.family) || (p.family === "stone_hops" && p.question_type === "check") ? " wide" : ""}">${p.options.map((o, i) => `<button class="opt" data-i="${i}">${optionHTML(o)}</button>`).join("")}</div>`;
   }
   body += `<div id="fb"></div><div class="row"><button class="btn ghost" id="hint">Show a hint</button><button class="btn" id="next" hidden>Next puzzle</button><span class="tally"></span></div>`;
   card.innerHTML = body;
@@ -217,6 +223,7 @@ function render() {
   if (p.entry === "cells") setupCells();
   if (p.entry === "code") setupCode();
   if (p.entry === "bricks") setupBricks();
+  if (p.entry === "hops") setupHops();
   if (p.entry === "number") $("#numform").addEventListener("submit", e => { e.preventDefault(); answerNumber(); });
   renderCoach();
 }
@@ -375,6 +382,48 @@ function setupBricks() {
     renderCoach();
   });
   $("#clear").addEventListener("click", () => { if (solved) return; Object.keys(col).forEach(k => delete col[k]); bricks.forEach(paint); update(); });
+}
+
+// ---- Frog Hops: tap stones in order; each hop is drawn as an arc (forward above, back below) and the frog follows
+function setupHops() {
+  const sc = cur.scene, svg = document.querySelector("#map svg"), layer = svg.querySelector(".hoplayer"), frog = svg.querySelector("g.frog");
+  const stones = document.querySelectorAll("#map g.spot.stone"), trip = [];
+  const X = (n) => +svg.querySelector(`g.spot[data-n="${n}"] circle`).getAttribute("cx");
+  const ROW = +stones[0].querySelector("circle").getAttribute("cy");
+  const legal = (x, y) => y - x === sc.fwd || x - y === sc.back;
+  const draw = () => {
+    const path = [sc.start, ...trip];
+    layer.innerHTML = trip.map((y, i) => {
+      const x = path[i], x0 = X(x), x1 = X(y), up = y > x, h = 14 + 5 * Math.min(6, Math.abs(y - x));
+      const yb = up ? ROW - 17 : ROW + 17, yc = up ? yb - 2 * h : yb + 2 * h, mx = (x0 + x1) / 2, my = (yb + yc) / 2;
+      return `<path d="M${x0} ${yb} Q${mx} ${yc} ${x1} ${yb}" class="hop${legal(x, y) ? "" : " bad"}"/>`
+        + `<g class="hopno"><circle cx="${mx}" cy="${my}" r="8"/><text x="${mx}" y="${my + 4}" text-anchor="middle">${i + 1}</text></g>`;
+    }).join("");
+    stones.forEach(g => g.classList.toggle("sel", path.includes(+g.dataset.n)));
+    frog.setAttribute("transform", `translate(${X(path[path.length - 1]) - X(sc.start)} 0)`);
+    $("#selsum").textContent = trip.length ? "Trip: " + path.join(" → ") : "";
+  };
+  stones.forEach(g => {
+    g.setAttribute("tabindex", "0"); g.setAttribute("role", "button");
+    const tap = () => { if (!solved && trip.length < 40) { trip.push(+g.dataset.n); draw(); } };
+    g.addEventListener("click", tap);
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(); } });
+  });
+  $("#undo").addEventListener("click", () => { if (!solved) { trip.pop(); draw(); } });
+  $("#clear").addEventListener("click", () => { if (!solved) { trip.length = 0; draw(); } });
+  $("#submit").addEventListener("click", async () => {
+    const r = await submit({ hops: trip.slice() });
+    if (!r) return;
+    if (r.correct) { stones.forEach(g => g.classList.add("right")); finish(r); return; }
+    const path = [sc.start, ...trip], i = trip.findIndex((y, k) => !legal(path[k], y)), twice = path.find((y, k) => path.indexOf(y) !== k);
+    const at = path[path.length - 1], left = sc.stones.filter(y => !path.includes(y));
+    const why = i >= 0 ? `The hop from ${path[i]} to ${trip[i]} is not ${sc.fwd} forward or ${sc.back} back.`
+      : twice !== undefined ? `The frog lands on stone ${twice} twice.`
+      : `The frog is stuck on stone ${at}, and stone${left.length > 1 ? "s" : ""} ${left.join(", ")} ${left.length > 1 ? "are" : "is"} left.`;
+    miss(`${why} ${tryAgain()}`);
+    renderCoach();
+  });
+  draw();
 }
 
 // ---- Code Lock: tap symbols onto the wheels, then try the code

@@ -16,7 +16,8 @@
   // Some answer modes are graded live in the page, so their tags are not in the problem file.
   const LIVE_TAGS = {
     press: ["XOR_AS_OR", "BOTH_AS_EITHER", "EXTRA_BUTTONS"],
-    fill: ["PARITY_CORNER", "PARITY_ROWS_ONLY", "PARITY_COLS_ONLY"]
+    fill: ["PARITY_CORNER", "PARITY_ROWS_ONLY", "PARITY_COLS_ONLY"],
+    hops: ["STOPS_AT_DEAD_END", "HOPS_WRONG_SIZE", "SWAPS_HOP_DIRECTIONS", "LANDS_TWICE"]
   };
   const RECENT = 10;          // a first try counts half as much after 10 newer ones on the same concept
   const SHOWN = 0.75, SHAKY = 0.5, MIN_EVIDENCE = 3;
@@ -31,6 +32,7 @@
     Object.keys(p.misconception_paths || {}).forEach(t => s.add(t));
     if (p.entry === "press") LIVE_TAGS.press.forEach(t => s.add(t));
     if (p.entry === "cells" && p.question_type === "fill") LIVE_TAGS.fill.forEach(t => s.add(t));
+    if (p.entry === "hops") LIVE_TAGS.hops.forEach(t => s.add(t));
     return s;
   }
 

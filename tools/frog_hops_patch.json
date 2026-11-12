@@ -1,0 +1,163 @@
+{
+  "patch_id": "frog-hops-family",
+  "built": "2026-11-12",
+  "analyst": "Claude",
+  "method": "Claude built a new generator family, stone_hops (folder frog-hops, shown as Frog Hops), from the Kangaroo generator candidate. It keeps the task's idea (a jumper with one forward and one back jump size must land on every position exactly once, and the search needs forced moves plus backing out of dead ends) under an original story, a frog on stepping stones, with our own wording and pictures. It adds water gaps, which the source does not have; they vary the puzzles and make the hop arithmetic count spots rather than stones. Claude found that with only two hops every puzzle that needs backtracking has exactly one full trip, and that the space is small (tens of puzzles per size), so the generator lists every valid puzzle for a level and seeds index into that list. It adds two kinds of question the source does not ask: picking the one list of stones that follows the rules, and tapping out the whole trip, which the server grades by playing it back. Every problem passes check_stone_hops.py, which rebuilds the row from the picture and counts full trips again with bitmask dynamic programming; every corrupted answer key is caught in the mutation trials.",
+  "generator_families": [
+    {
+      "id": "stone_hops",
+      "module": "stone_hops.py",
+      "checker": "check_stone_hops.py",
+      "folder": "frog-hops",
+      "source_tasks": [
+        "kangaroo"
+      ],
+      "concepts": [
+        "BACKTRACKING",
+        "STATE_SEARCH"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "check",
+          "spots": [
+            6,
+            7
+          ],
+          "water": [
+            0
+          ],
+          "hop": 3,
+          "choices": 0,
+          "note": "Which list of stones follows the hop rule and lands on every stone? Six or seven stones."
+        },
+        {
+          "level": 2,
+          "question": "last",
+          "spots": [
+            7,
+            8,
+            9
+          ],
+          "water": [
+            0,
+            1,
+            2
+          ],
+          "hop": 4,
+          "choices": 1,
+          "note": "Which stone does the frog land on last? It is not always the far end."
+        },
+        {
+          "level": 3,
+          "question": "tour",
+          "spots": [
+            8,
+            9
+          ],
+          "water": [
+            0,
+            1,
+            2
+          ],
+          "hop": 4,
+          "choices": 1,
+          "note": "Tap the frog's whole trip. Back up when a choice gets stuck."
+        },
+        {
+          "level": 4,
+          "question": "last",
+          "spots": [
+            10,
+            11
+          ],
+          "water": [
+            1,
+            2,
+            3
+          ],
+          "hop": 5,
+          "choices": 1,
+          "note": "Which stone is last? Ten or eleven spots, water gaps and longer hops."
+        },
+        {
+          "level": 5,
+          "question": "tour",
+          "spots": [
+            10,
+            11
+          ],
+          "water": [
+            1,
+            2,
+            3
+          ],
+          "hop": 5,
+          "choices": 2,
+          "note": "Tap the whole trip on a longer row, with at least two choices to back out of."
+        }
+      ],
+      "misconceptions": [
+        "FAR_END_IS_LAST",
+        "HOPS_WRONG_SIZE",
+        "LANDS_TWICE",
+        "STOPS_AT_DEAD_END",
+        "SWAPS_HOP_DIRECTIONS"
+      ]
+    }
+  ],
+  "generator_candidate_updates": [
+    {
+      "source_task": "kangaroo",
+      "status": "built",
+      "built_as": "stone_hops"
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "FAR_END_IS_LAST",
+      "concept": "STATE_SEARCH",
+      "description": "Assumes the frog must finish on the stone at the far end of the row.",
+      "remediation": "Follow the hops one at a time and see where the frog really stops.",
+      "families": [
+        "stone_hops"
+      ]
+    },
+    {
+      "id": "HOPS_WRONG_SIZE",
+      "concept": "STATE_SEARCH",
+      "description": "Makes a hop that is not one of the two allowed sizes, often one spot too short or too long.",
+      "remediation": "Count the spots on every hop, water spots included, before moving on.",
+      "families": [
+        "stone_hops"
+      ]
+    },
+    {
+      "id": "LANDS_TWICE",
+      "concept": "STATE_SEARCH",
+      "description": "Lets the frog land on a stone it has already visited.",
+      "remediation": "Cross off each stone as the frog lands on it; a crossed-off stone cannot be used again.",
+      "families": [
+        "stone_hops"
+      ]
+    },
+    {
+      "id": "STOPS_AT_DEAD_END",
+      "concept": "BACKTRACKING",
+      "description": "Follows one choice of hop until the frog is stuck and stops there, instead of going back to the last choice and trying the other hop.",
+      "remediation": "When the frog gets stuck with stones left, go back to the last stone where it had two hops and try the other one.",
+      "families": [
+        "stone_hops"
+      ]
+    },
+    {
+      "id": "SWAPS_HOP_DIRECTIONS",
+      "concept": "STATE_SEARCH",
+      "description": "Mixes up the two hops: goes forward by the back size and back by the forward size.",
+      "remediation": "Write the rule as two arrows (forward a, back b) and check each hop against it.",
+      "families": [
+        "stone_hops"
+      ]
+    }
+  ]
+}

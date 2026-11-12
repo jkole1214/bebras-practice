@@ -1,6 +1,6 @@
 # Kerbopple
 
-A practice page for thirteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
+A practice page for fourteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
 ## The tutor
 
@@ -118,6 +118,7 @@ paint-pipes/          Paint Pipes problems, one file each, plus manifest.js
 code-lock/            Code Lock problems, one file each, plus manifest.js
 brick-pyramid/        Brick Pyramid problems, one file each, plus manifest.js
 pass-it-on/           Pass It On problems, one file each, plus manifest.js
+frog-hops/            Frog Hops problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
@@ -150,7 +151,7 @@ python3 tools/check_bead_grammar.py problems.json
 python3 tools/check_parity_grid.py problems.json
 ```
 
-`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid) and `check_friend_reach.py` (Pass It On) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
+`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On) and `check_stone_hops.py` (Frog Hops) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
 
 ## Levels
 
@@ -254,6 +255,15 @@ For colouring, the server judges each wrong brick against the student's own two 
 
 The people sit on a circle and friendships join near neighbours only, so lines never run through a person. The checker rebuilds the group from the picture and confirms this.
 
+**Frog Hops** (a frog hops a fixed number of spots forward or back and must land on every stone once; the idea of Kangaroo, with our own story and water gaps)
+1. Which list of stones follows the hop rule and lands on every stone? Six or seven stones
+2. Which stone does the frog land on last? It is not always the far end
+3. Tap the frog's whole trip. Back up when a choice gets stuck
+4. Which stone is last? Ten or eleven spots, water gaps and longer hops
+5. Tap the whole trip on a longer row, with at least two choices to back out of
+
+With two hop sizes, every row that needs backing up has exactly one full trip, and there are only tens of such rows per size. So the generator lists every valid puzzle for a level and each seed takes a different one. A tapped trip is graded on the server by playing it back: stopping at a dead end, a hop of the wrong size, swapped hop sizes and landing twice are each tagged.
+
 Box Rows never shows an item where a wrong habit (reading outside-in, counting from 0) happens to give the right answer, so a right answer always means the habit is not there.
 
 With "Adjust level automatically" on, two first-try wins move up a level and two first-try misses move down.
@@ -265,7 +275,7 @@ With "Adjust level automatically" on, two first-try wins move up a level and two
 - the 2015 example sets (38 distinct tasks);
 - the 2022-23 practice challenge (31 distinct tasks).
 
-In total: 69 distinct tasks, 61 concepts with prerequisite edges, 97 tagged misconceptions, the thirteen built generator families, and 16 ranked candidates for new families (the eleven now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
+In total: 69 distinct tasks, 61 concepts with prerequisite edges, 102 tagged misconceptions, the fourteen built generator families, and 16 ranked candidates for new families (the twelve now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
 
 Both analyses after the original Benjamin/Cadet map were added as patches. To apply them to another copy of the map:
 

@@ -2,7 +2,7 @@
   "patch_id": "look-again",
   "built": "2026-11-12",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (82 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (87 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
     {
       "id": "BOTH_AS_EITHER",
@@ -85,6 +85,10 @@
       "look_again": "The bulb lights. Could it light with fewer buttons pressed?"
     },
     {
+      "id": "FAR_END_IS_LAST",
+      "look_again": "Does the frog have to finish at the far end? Follow its hops one at a time and see where it really stops."
+    },
+    {
       "id": "FEWEST_WALKWAYS",
       "look_again": "A route with fewer walkways can still need more planks. Did you add up the numbers?"
     },
@@ -149,6 +153,10 @@
       "look_again": "Write how far each corner is from the start, nearest first. Is heading straight for the goal really shortest?"
     },
     {
+      "id": "HOPS_WRONG_SIZE",
+      "look_again": "Count the spots on each hop, water spots too. Is every hop exactly the right size?"
+    },
+    {
       "id": "IGNORES_CLOSED",
       "look_again": "Cross out every closed corner first. Can a route go through one?"
     },
@@ -175,6 +183,10 @@
     {
       "id": "JOINS_A_MISSED_PERSON",
       "look_again": "A new friend also tells all of their own friends. Whose friends cover everyone who is missed?"
+    },
+    {
+      "id": "LANDS_TWICE",
+      "look_again": "Does the frog land on any stone more than once?"
     },
     {
       "id": "LEFTOVER_ONLY",
@@ -305,8 +317,16 @@
       "look_again": "To reach that line, an earlier test had to be false. Did you check it?"
     },
     {
+      "id": "STOPS_AT_DEAD_END",
+      "look_again": "The frog got stuck with stones left. Where was the last stone it had two hops to choose from? Try the other one."
+    },
+    {
       "id": "STOPS_ONE_EARLY",
       "look_again": "Count the pairs of brackets. Each pair is one lookup. Did you do them all?"
+    },
+    {
+      "id": "SWAPS_HOP_DIRECTIONS",
+      "look_again": "Which hop goes forward, and which goes back? Check each hop against the rule again."
     },
     {
       "id": "TIES_FLIPPED",
