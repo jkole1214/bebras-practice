@@ -399,17 +399,20 @@ def make_final(rng, cfg, seed, tanks, pipes, g):
         # a targeted misconception must never reproduce the right answer (Sequential has two orders: both must miss)
         if any(count(st, ask) == truth for tag, sts in variants.items() if tag in cfg["require"] for st in sts):
             continue
+        # list the mistake this level targets first, so the page's "look again" question asks about it
+        first = cfg["require"] + (["PROTECTED_SOURCES"] if adjacent else [])
+        order = lambda ts: sorted(ts, key=lambda t: (t not in first, first.index(t) if t in first else 0, t))
         entry = cfg.get("entry", "choice")
         if entry == "choice":
             opts = choose_options(rng, truth, wrong)
             if not opts:
                 continue
-            ans, distractors, value_tags = opts.index(truth), [{"option": v, "misconceptions": sorted(wrong[v])} for v in opts if v != truth], {}
+            ans, distractors, value_tags = opts.index(truth), [{"option": v, "misconceptions": order(wrong[v])} for v in opts if v != truth], {}
         else:
             if len(wrong) < 3:
                 continue
             opts, ans, distractors = [], -1, []
-            value_tags = {str(v): sorted(t) for v, t in sorted(wrong.items())}
+            value_tags = {str(v): order(t) for v, t in sorted(wrong.items())}
         what = "have turned to mud" if ask == M else f"are {COLOR_NAME[ask]}"
         question = f"When nothing changes any more, how many tanks {what}?"
         expl = [f"Start: {o} is orange and {b} is blue. Each minute, use the colours from the start of that minute."]

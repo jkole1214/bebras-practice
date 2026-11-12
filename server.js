@@ -412,8 +412,9 @@ const api = {
       JSON.stringify(r.stored), JSON.stringify(r.tags), c.hints, now - c.shownAt, now, c.servedAs);
     if (c.tries === 1) E.afterFirstTry(B, st, r.correct, firstTryEvents(user.id));
     if (r.correct) c.solved = true;
+    const look = r.correct ? null : E.lookAgain(B, c, r.tags);
     saveState(user.id, st);
-    send(res, 200, { correct: r.correct, tags: r.tags, lit: r.lit, tries: c.tries,
+    send(res, 200, { correct: r.correct, tags: r.tags, lit: r.lit, tries: c.tries, look: look || undefined,
       explanation: r.correct ? p.explanation : undefined, page: pageInfo(user.id, st) });
   },
   async "POST /api/settings"(req, res, user) {

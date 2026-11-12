@@ -129,7 +129,7 @@ def wiz_successors(s, rules, view=None):
             outs = {rhs} if view != "GRAMMAR_ORDER_IGNORED" else {"".join(p) for p in itertools.permutations(rhs)}
             for o in outs:
                 out.add(s[:i] + o + s[i + 1:])
-    return out
+    return sorted(out)          # a fixed order, so the explanation's path is the same on every build
 
 
 def wiz_reach(start, rules, maxlen, view=None):
@@ -256,7 +256,7 @@ def make_necklace(rng, cfg, seed):
         views = {v: neck_reach(start, rules, L, v) for v in ("GRAMMAR_WRONG_END", "WRAP_ONE_END")}
         tagged = {}
         for v, reach in views.items():
-            for s in reach:
+            for s in sorted(reach):            # sorted: set order changes between runs
                 if len(s) == L and s not in true:
                     tagged.setdefault(s, set()).add(v)
         qt = cfg["question"]
@@ -267,11 +267,11 @@ def make_necklace(rng, cfg, seed):
             if not true_L or len({t for ts in tagged.values() for t in ts}) < 2 or len(tagged) < 3:
                 continue
             ans = rng.choice(true_L)
-            by = {v: [s for s, ts in tagged.items() if v in ts] for v in views}
+            by = {v: sorted(s for s, ts in tagged.items() if v in ts) for v in views}
             picks = [rng.choice(by["GRAMMAR_WRONG_END"]), rng.choice(by["WRAP_ONE_END"])]
             if picks[0] == picks[1]:
                 continue
-            rest = [s for s in tagged if s not in picks]
+            rest = sorted(s for s in tagged if s not in picks)
             if not rest:
                 continue
             picks.append(rng.choice(rest))
@@ -338,7 +338,7 @@ def make_wizard(rng, cfg, seed):
             continue
         tagged = {}
         for v in ("GRAMMAR_ORDER_IGNORED", "GRAMMAR_ANY_OBJECT"):
-            for s in wiz_reach(start, rules, hi, v):
+            for s in sorted(wiz_reach(start, rules, hi, v)):
                 if lo <= len(s) <= hi and s not in true and mixed(s):
                     tagged.setdefault(s, set()).add(v)
         by = {v: [s for s, ts in tagged.items() if v in ts] for v in ("GRAMMAR_ORDER_IGNORED", "GRAMMAR_ANY_OBJECT")}

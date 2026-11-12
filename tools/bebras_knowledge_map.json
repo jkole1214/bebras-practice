@@ -77,6 +77,11 @@
         "id": "paint-pipes-family",
         "built": "2026-11-12",
         "method": "Claude built a new generator family, parallel_spread (folder paint-pipes, shown as Paint Pipes), from the Virus generator candidate. It keeps the task's idea (two colours spread through a network at the same time; a tank reached by both, even one already coloured, turns to mud and stops) under an original theme and wording. Every problem passes check_parallel_spread.py, which rebuilds the network from the picture and simulates again with set-based code; corrupting the answer, the marked option, a starting colour or a pipe is caught in all 720 mutation trials."
+      },
+      {
+        "id": "look-again",
+        "built": "2026-11-12",
+        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (68 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
       }
     ]
   },
@@ -4710,7 +4715,8 @@
       "remediation": "Show a roll with two equal dice and ask whether each test is true or false.",
       "families": [
         "conditional_trace"
-      ]
+      ],
+      "look_again": "Two of the dice are equal. Is 'greater than' true when the numbers are the same?"
     },
     {
       "id": "REVERSED_COMPARISON",
@@ -4719,7 +4725,8 @@
       "remediation": "Have the student say each test aloud with the actual numbers substituted in, left to right.",
       "families": [
         "conditional_trace"
-      ]
+      ],
+      "look_again": "Read each test out loud with the real numbers in it. Which die has to be bigger?"
     },
     {
       "id": "SKIPS_OUTER_TEST",
@@ -4728,7 +4735,8 @@
       "remediation": "Ask: to reach this line, which earlier test had to be false? Trace from the top with a finger.",
       "families": [
         "conditional_trace"
-      ]
+      ],
+      "look_again": "To reach that line, an earlier test had to be false. Did you check it?"
     },
     {
       "id": "INDEX_CONFUSION",
@@ -4737,7 +4745,8 @@
       "remediation": "Label each die with its position number before evaluating any test.",
       "families": [
         "conditional_trace"
-      ]
+      ],
+      "look_again": "Number the dice 1, 2, 3 from the left before you check any test. Did you use the right die each time?"
     },
     {
       "id": "GREEDY_FROM_START",
@@ -4747,7 +4756,8 @@
       "families": [
         "shortest_path"
       ],
-      "error_direction": "over"
+      "error_direction": "over",
+      "look_again": "The cheapest first walkway is not always part of the cheapest crossing. Where did it lead you?"
     },
     {
       "id": "GREEDY_FROM_END",
@@ -4757,7 +4767,8 @@
       "families": [
         "shortest_path"
       ],
-      "error_direction": "over"
+      "error_direction": "over",
+      "look_again": "Picking the cheapest walkway each time doesn't work from the south shore either. Add up the whole route."
     },
     {
       "id": "FEWEST_WALKWAYS",
@@ -4767,7 +4778,8 @@
       "families": [
         "shortest_path"
       ],
-      "error_direction": "over"
+      "error_direction": "over",
+      "look_again": "A route with fewer walkways can still need more planks. Did you add up the numbers?"
     },
     {
       "id": "NO_BACKTRACKING",
@@ -4777,7 +4789,8 @@
       "families": [
         "shortest_path"
       ],
-      "error_direction": "over"
+      "error_direction": "over",
+      "look_again": "Does any rule say you must always head south? Try a route that steps back north."
     },
     {
       "id": "DROPS_SHORE_WALKWAY",
@@ -4787,7 +4800,8 @@
       "families": [
         "shortest_path"
       ],
-      "error_direction": "under"
+      "error_direction": "under",
+      "look_again": "Point to every walkway on your route as you add. Did you count the ones touching the shores?"
     },
     {
       "id": "SHORES_ONLY",
@@ -4797,7 +4811,8 @@
       "families": [
         "shortest_path"
       ],
-      "error_direction": "under"
+      "error_direction": "under",
+      "look_again": "Trace your route with a finger from shore to shore. Does it really connect?"
     },
     {
       "id": "DEGREE_NOT_REACH",
@@ -4813,7 +4828,8 @@
       "remediation": "Ask for a second reading starting with a different first word.",
       "families": [
         "signal_code"
-      ]
+      ],
+      "look_again": "Could the signal start with a different first word?"
     },
     {
       "id": "LENGTH_FOR_COUNT",
@@ -4823,7 +4839,8 @@
       "families": [
         "grid_routes",
         "shortest_path"
-      ]
+      ],
+      "look_again": "Read the question again. Does it ask how long the best route is, or how many best routes there are?"
     },
     {
       "id": "TRIAL_PLAY_AS_PROOF",
@@ -4867,7 +4884,8 @@
       "remediation": "At each point in the signal, have the student check every code word, shortest first.",
       "families": [
         "signal_code"
-      ]
+      ],
+      "look_again": "At each spot in the signal, did you try every code word, even the shortest one?"
     },
     {
       "id": "COUNTS_DEAD_ENDS",
@@ -4876,7 +4894,8 @@
       "remediation": "Ask: does this reading use up the whole signal? Only complete readings count.",
       "families": [
         "signal_code"
-      ]
+      ],
+      "look_again": "Does each reading you counted use up the whole signal, right to the last flash?"
     },
     {
       "id": "COUNTS_WORD_SETS",
@@ -4885,7 +4904,8 @@
       "remediation": "Ask whether 'east, fog' and 'fog, east' mean the same thing to the sailor.",
       "families": [
         "signal_code"
-      ]
+      ],
+      "look_again": "Are 'east, fog' and 'fog, east' the same message? Count each order on its own."
     },
     {
       "id": "ORDER_SWAP",
@@ -4894,7 +4914,8 @@
       "remediation": "Have the student mark where each word starts in the signal, left to right.",
       "families": [
         "signal_code"
-      ]
+      ],
+      "look_again": "Mark where each word starts in the signal, left to right. Are your words in that order?"
     },
     {
       "id": "MISREAD_SYMBOL",
@@ -4903,7 +4924,8 @@
       "remediation": "Have the student write the signal as S and L letters before decoding.",
       "families": [
         "signal_code"
-      ]
+      ],
+      "look_again": "Write the signal as S and L letters first. Did you read every flash right?"
     },
     {
       "id": "DROPS_WORD",
@@ -4912,7 +4934,8 @@
       "remediation": "Have the student encode their answer back into flashes and compare lengths.",
       "families": [
         "signal_code"
-      ]
+      ],
+      "look_again": "Turn your answer back into flashes. Is it as long as the signal?"
     },
     {
       "id": "COUNTS_BOX_INTERSECTIONS",
@@ -4921,7 +4944,8 @@
       "remediation": "Have the student trace two different routes that pass through the same intersections in a different order.",
       "families": [
         "grid_routes"
-      ]
+      ],
+      "look_again": "Two routes can pass the same corners in a different order. Are you counting routes or corners?"
     },
     {
       "id": "IGNORES_CLOSED",
@@ -4930,7 +4954,8 @@
       "remediation": "Have the student cross out every closed intersection and write 0 there before counting.",
       "families": [
         "grid_routes"
-      ]
+      ],
+      "look_again": "Cross out every closed corner first. Can a route go through one?"
     },
     {
       "id": "FEW_TURNS_ONLY",
@@ -4939,7 +4964,8 @@
       "remediation": "Show one zigzag route of the same length and ask whether it is also shortest.",
       "families": [
         "grid_routes"
-      ]
+      ],
+      "look_again": "Could a zigzag route be just as short?"
     },
     {
       "id": "COUNTS_INTERSECTIONS",
@@ -4948,7 +4974,8 @@
       "remediation": "Ask the student to count the street pieces the robot drives along, not the corners.",
       "families": [
         "grid_routes"
-      ]
+      ],
+      "look_again": "Count the blocks the robot drives along, not the corners it passes."
     },
     {
       "id": "IGNORES_CLOSED_LENGTH",
@@ -4957,7 +4984,8 @@
       "remediation": "Ask the student to trace the route with a finger and stop at the first closed intersection.",
       "families": [
         "grid_routes"
-      ]
+      ],
+      "look_again": "Trace your route with a finger. Does it go through a closed corner?"
     },
     {
       "id": "GREEDY_ROUTE",
@@ -4966,7 +4994,8 @@
       "remediation": "Ask the student to write the distance from the start at every intersection, nearest first.",
       "families": [
         "grid_routes"
-      ]
+      ],
+      "look_again": "Write how far each corner is from the start, nearest first. Is heading straight for the goal really shortest?"
     },
     {
       "id": "ONE_CHEAPEST_ONLY",
@@ -4975,7 +5004,8 @@
       "remediation": "Ask the student to look for a different route with the same total.",
       "families": [
         "shortest_path"
-      ]
+      ],
+      "look_again": "Is there a different route with exactly the same total?"
     },
     {
       "id": "COUNTS_ALL_CROSSINGS",
@@ -4984,7 +5014,8 @@
       "remediation": "Have the student write each route's total next to it and cross out the expensive ones.",
       "families": [
         "shortest_path"
-      ]
+      ],
+      "look_again": "The question counts only crossings with the fewest planks. Did some of yours cost more?"
     },
     {
       "id": "COUNTS_NEAR_CHEAPEST",
@@ -4993,7 +5024,8 @@
       "remediation": "Ask the student to add up the plank numbers exactly for each candidate route.",
       "families": [
         "shortest_path"
-      ]
+      ],
+      "look_again": "Add each route up exactly. Does every one you counted match the cheapest total?"
     },
     {
       "id": "FORGETS_FREE_DIE",
@@ -5002,7 +5034,8 @@
       "remediation": "Ask: does the rule ever look at this die? Then how many faces can it show for each roll you counted?",
       "families": [
         "conditional_trace"
-      ]
+      ],
+      "look_again": "Is there a die the rules never look at? How many faces could it show?"
     },
     {
       "id": "SWAPS_ON_ORIGINAL",
@@ -5018,7 +5051,8 @@
       "remediation": "Ask which rows AND which columns are odd, and look only where they cross.",
       "families": [
         "parity_grid"
-      ]
+      ],
+      "look_again": "Which rows are odd, and which columns are odd? Look where they cross."
     },
     {
       "id": "GRAMMAR_FORWARD_GUESS",
@@ -5027,7 +5061,8 @@
       "remediation": "Ask which rule could have produced the right-hand end, and undo it.",
       "families": [
         "bead_grammar"
-      ]
+      ],
+      "look_again": "Work backward: which rule could have made the end of this necklace? Undo it and keep going."
     },
     {
       "id": "XOR_AS_OR",
@@ -5036,7 +5071,8 @@
       "remediation": "Ask what the gate does when both inputs are on.",
       "families": [
         "logic_gates"
-      ]
+      ],
+      "look_again": "What does an 'only one' box do when both of its wires are on?"
     },
     {
       "id": "TOTALS_ONLY_MATCHING",
@@ -5045,7 +5081,8 @@
       "remediation": "Have the student write the running count under each item.",
       "families": [
         "conveyor"
-      ]
+      ],
+      "look_again": "Write the number of nuts in the bucket under each part. Does a bolt ever find it empty?"
     },
     {
       "id": "INDIRECTION_OUTSIDE_IN",
@@ -5054,7 +5091,8 @@
       "remediation": "Ask which part of the expression can be worked out with what you already know.",
       "families": [
         "pointer_lists"
-      ]
+      ],
+      "look_again": "Which part can you work out right now? Start with the innermost brackets."
     },
     {
       "id": "FIXED_FIRST_ITEM",
@@ -5098,7 +5136,8 @@
       "remediation": "Ask what flows into each starting tank in the first minute.",
       "families": [
         "parallel_spread"
-      ]
+      ],
+      "look_again": "The starting tanks follow the same rules as every other tank. What flows into each of them, and when?"
     },
     {
       "id": "SEQUENTIAL_SPREAD",
@@ -5107,7 +5146,8 @@
       "remediation": "Have the student colour both fronts for minute 1, then for minute 2.",
       "families": [
         "parallel_spread"
-      ]
+      ],
+      "look_again": "Both colours move in the same minute. Colour both of them for minute 1, then minute 2."
     },
     {
       "id": "ONE_SWITCH_COST",
@@ -5130,7 +5170,8 @@
       "remediation": "Ask how many nuts are in the bucket when the belt is empty.",
       "families": [
         "conveyor"
-      ]
+      ],
+      "look_again": "When the belt is empty, how many nuts are still in the bucket?"
     },
     {
       "id": "CHECKS_START_ONLY",
@@ -5139,7 +5180,8 @@
       "remediation": "Keep the running count all the way to the last part.",
       "families": [
         "conveyor"
-      ]
+      ],
+      "look_again": "Did you keep your count going all the way to the end of the belt?"
     },
     {
       "id": "TOTAL_NUTS_FOR_DEPTH",
@@ -5148,7 +5190,8 @@
       "remediation": "Bolts take nuts out as you go. Track the bucket after each part.",
       "families": [
         "conveyor"
-      ]
+      ],
+      "look_again": "Bolts take nuts out as the belt moves. Follow the bucket after each part."
     },
     {
       "id": "LONGEST_RUN_FOR_DEPTH",
@@ -5157,7 +5200,8 @@
       "remediation": "Start each run of nuts from the number already in the bucket.",
       "families": [
         "conveyor"
-      ]
+      ],
+      "look_again": "When a run of nuts starts, are some nuts already in the bucket?"
     },
     {
       "id": "ENDING_COUNT_FOR_DEPTH",
@@ -5175,7 +5219,8 @@
       "remediation": "Draw the pile of nuts and only let a bolt take the top one.",
       "families": [
         "conveyor"
-      ]
+      ],
+      "look_again": "Only the nut on top of the pile can be taken. Does each bolt fit the nut on top?"
     },
     {
       "id": "DIFFERENCE_FOR_REPAIR",
@@ -5184,7 +5229,8 @@
       "remediation": "Count the bolts that found an empty bucket and the nuts left at the end separately.",
       "families": [
         "conveyor"
-      ]
+      ],
+      "look_again": "Equal totals are not enough. Do any bolts arrive before there is a nut for them?"
     },
     {
       "id": "SHORTFALL_ONLY",
@@ -5193,7 +5239,8 @@
       "remediation": "After fixing the early bolts, how many nuts are still in the bucket at the end?",
       "families": [
         "conveyor"
-      ]
+      ],
+      "look_again": "After fixing the early bolts, are any nuts still left in the bucket at the end?"
     },
     {
       "id": "LEFTOVER_ONLY",
@@ -5202,7 +5249,8 @@
       "remediation": "Run the count from the start: does it ever go below zero?",
       "families": [
         "conveyor"
-      ]
+      ],
+      "look_again": "Run the count from the start. Does a bolt ever arrive with no nut waiting?"
     },
     {
       "id": "ZERO_BASED_INDEX",
@@ -5211,7 +5259,8 @@
       "remediation": "Point to the small number above each box and read the box under that number.",
       "families": [
         "pointer_lists"
-      ]
+      ],
+      "look_again": "Read the small number above each box. Which box is box 1?"
     },
     {
       "id": "COUNTS_FROM_RIGHT",
@@ -5220,7 +5269,8 @@
       "remediation": "The box numbers are printed above the row; use them, starting from the left.",
       "families": [
         "pointer_lists"
-      ]
+      ],
+      "look_again": "The box numbers are printed above the row. Which end does box 1 sit at?"
     },
     {
       "id": "POSITION_AS_ANSWER",
@@ -5229,7 +5279,8 @@
       "remediation": "Ask: is this the box's label, or what is written inside it?",
       "families": [
         "pointer_lists"
-      ]
+      ],
+      "look_again": "Is your answer the box's number, or what is written inside the box?"
     },
     {
       "id": "STOPS_ONE_EARLY",
@@ -5238,7 +5289,8 @@
       "remediation": "Count the brackets: each pair is one lookup to do.",
       "families": [
         "pointer_lists"
-      ]
+      ],
+      "look_again": "Count the pairs of brackets. Each pair is one lookup. Did you do them all?"
     },
     {
       "id": "SAME_ROW_EVERY_STEP",
@@ -5247,7 +5299,8 @@
       "remediation": "Before each step, say which row's name is in front of the bracket.",
       "families": [
         "pointer_lists"
-      ]
+      ],
+      "look_again": "Before each step, which row's name is in front of the bracket?"
     },
     {
       "id": "FORWARD_NOT_INVERSE",
@@ -5256,7 +5309,8 @@
       "remediation": "Ask: which box of the outer row holds the target? Then where is that number in the inner row?",
       "families": [
         "pointer_lists"
-      ]
+      ],
+      "look_again": "Work backward: which box in the outer row holds the target?"
     },
     {
       "id": "INVERSE_ONE_STEP",
@@ -5265,7 +5319,8 @@
       "remediation": "You found the box in the outer row. That box number came from the inner row: find it there.",
       "families": [
         "pointer_lists"
-      ]
+      ],
+      "look_again": "You found a box in the outer row. Where does that box number come from in the inner row?"
     },
     {
       "id": "BOTH_AS_EITHER",
@@ -5274,7 +5329,8 @@
       "remediation": "Ask: does this box need one wire or both wires to send a signal on?",
       "families": [
         "logic_gates"
-      ]
+      ],
+      "look_again": "Does that box need one wire on, or both wires on?"
     },
     {
       "id": "EXTRA_BUTTONS",
@@ -5283,7 +5339,8 @@
       "remediation": "Work backward from the bulb and, at each box, choose the cheapest way to make it send a signal.",
       "families": [
         "logic_gates"
-      ]
+      ],
+      "look_again": "The bulb lights. Could it light with fewer buttons pressed?"
     },
     {
       "id": "ONE_ANSWER_ONLY",
@@ -5292,7 +5349,8 @@
       "remediation": "Ask: is there another set that also works? Try listing them in order.",
       "families": [
         "logic_gates"
-      ]
+      ],
+      "look_again": "Is there another set of buttons that also works? Try listing them in order."
     },
     {
       "id": "GRAMMAR_WRONG_END",
@@ -5301,7 +5359,8 @@
       "remediation": "Read the rule again: which end do the new beads go on? Check the end of the necklace first.",
       "families": [
         "bead_grammar"
-      ]
+      ],
+      "look_again": "Read the rule again. Which end do the new beads go on?"
     },
     {
       "id": "WRAP_ONE_END",
@@ -5310,7 +5369,8 @@
       "remediation": "Point to both ends of the necklace. The rule puts one new bead at each.",
       "families": [
         "bead_grammar"
-      ]
+      ],
+      "look_again": "Does the rule add both beads to one end, or one bead at each end?"
     },
     {
       "id": "GRAMMAR_ORDER_IGNORED",
@@ -5319,7 +5379,8 @@
       "remediation": "The rule's objects always come out in the order shown, left to right.",
       "families": [
         "bead_grammar"
-      ]
+      ],
+      "look_again": "A rule's new objects always come out in the order shown. Did you keep that order?"
     },
     {
       "id": "GRAMMAR_ANY_OBJECT",
@@ -5328,7 +5389,8 @@
       "remediation": "Each rule changes only the kind of object on its left side. Which kind is this?",
       "families": [
         "bead_grammar"
-      ]
+      ],
+      "look_again": "Each rule changes only the kind of object on its left side. Was it that kind?"
     },
     {
       "id": "COUNTS_SHORTER_TOO",
@@ -5337,7 +5399,8 @@
       "remediation": "Each necklace in the count must have exactly the number of beads asked for.",
       "families": [
         "bead_grammar"
-      ]
+      ],
+      "look_again": "Does every necklace you counted have exactly the number of beads asked for?"
     },
     {
       "id": "PARITY_MARKED_CROSSING",
@@ -5346,7 +5409,8 @@
       "remediation": "A rubbed-out dot left an empty shelf. Can it be a shelf that still shows a dot?",
       "families": [
         "parity_grid"
-      ]
+      ],
+      "look_again": "A rubbed-out dot leaves an empty shelf. Can it be a shelf that still shows a dot?"
     },
     {
       "id": "PARITY_ROWS_ONLY",
@@ -5355,7 +5419,8 @@
       "remediation": "Now count each column too, including the check row at the bottom.",
       "families": [
         "parity_grid"
-      ]
+      ],
+      "look_again": "Every row is even now. Count each column too, including the check row at the bottom."
     },
     {
       "id": "PARITY_COLS_ONLY",
@@ -5364,7 +5429,8 @@
       "remediation": "Now count each row too, including the check column on the right.",
       "families": [
         "parity_grid"
-      ]
+      ],
+      "look_again": "Every column is even now. Count each row too, including the check column on the right."
     },
     {
       "id": "PARITY_CORNER",
@@ -5373,7 +5439,8 @@
       "remediation": "The corner belongs to both the last row and the last column. Count both.",
       "families": [
         "parity_grid"
-      ]
+      ],
+      "look_again": "The corner shelf belongs to both the last row and the last column. Does it work for both?"
     },
     {
       "id": "MINUTE_OFF_BY_ONE",
@@ -5382,7 +5449,8 @@
       "remediation": "Have the student write 'minute 1', 'minute 2' and so on, and list what changes under each.",
       "families": [
         "parallel_spread"
-      ]
+      ],
+      "look_again": "Write 'minute 1', 'minute 2' and so on, with what changes under each. How many minutes does the question ask about?"
     },
     {
       "id": "FLOWS_ALL_THE_WAY",
@@ -5391,7 +5459,8 @@
       "remediation": "Ask how far the paint can get in the very first minute.",
       "families": [
         "parallel_spread"
-      ]
+      ],
+      "look_again": "Paint moves through one pipe each minute. How far can it get in the first minute?"
     },
     {
       "id": "FORGETS_START",
@@ -5400,7 +5469,8 @@
       "remediation": "Ask what colour the starting tank is at the end.",
       "families": [
         "parallel_spread"
-      ]
+      ],
+      "look_again": "What colour is the tank the paint was poured into?"
     },
     {
       "id": "FIRST_COLOR_STAYS",
@@ -5409,7 +5479,8 @@
       "remediation": "Find two neighbouring tanks of different colours and ask what flows into each one in the next minute.",
       "families": [
         "parallel_spread"
-      ]
+      ],
+      "look_again": "Find an orange tank and a blue tank joined by a pipe. What does each push into the other next minute?"
     },
     {
       "id": "MUD_STILL_FLOWS",
@@ -5418,7 +5489,8 @@
       "remediation": "Reread the rule about mud with the student, then redo the minute where the first mud appears.",
       "families": [
         "parallel_spread"
-      ]
+      ],
+      "look_again": "Read the rule about mud again. Can a mud tank push paint anywhere?"
     },
     {
       "id": "COUNTS_MUD",
@@ -5427,7 +5499,8 @@
       "remediation": "Ask the student to name each tank they counted and say its colour at the end.",
       "families": [
         "parallel_spread"
-      ]
+      ],
+      "look_again": "Name each tank you counted and say its colour at the end. Is any of them mud?"
     }
   ],
   "generator_families": [

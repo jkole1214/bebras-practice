@@ -151,8 +151,11 @@ def write_coach():
             m["misconceptions"].append({"id": k, **v})
     coach = {
         "titles": {k: v["title"] for k, v in FAMILIES.items()},
+        # look_again: the question the student sees after a wrong try with this tag (tools/make_look_again_patch.py)
         "misconceptions": {x["id"]: {"concept": x["concept"], "description": x["description"],
-                                     "remediation": x["remediation"]} for x in m["misconceptions"]},
+                                     "remediation": x["remediation"],
+                                     **({"look_again": x["look_again"]} if x.get("look_again") else {})}
+                           for x in m["misconceptions"]},
         "concepts": {c["id"]: c["name"] for c in m["concepts"]},
         "ladders": {"rule-tracer": [l["note"] for l in ct.LADDER],
                     "lake-crossing": [l["note"] for l in sp.LADDER],

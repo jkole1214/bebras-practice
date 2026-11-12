@@ -99,6 +99,29 @@ test("the page is never sent an answer, distractor tags or the explanation", () 
   }
 });
 
+test("every misconception tag a wrong answer can carry has a look-again question", () => {
+  const tags = new Set(["EXTRA_BUTTONS", "XOR_AS_OR", "BOTH_AS_EITHER", "PARITY_CORNER", "PARITY_ROWS_ONLY", "PARITY_COLS_ONLY"]);
+  for (const [, p] of all) {
+    (p.distractors || []).forEach(d => d.misconceptions.forEach(t => tags.add(t)));
+    Object.values(p.value_tags || {}).flat().forEach(t => tags.add(t));
+    Object.keys(p.misconception_paths || {}).forEach(t => tags.add(t));
+    Object.values(p.cell_tags || {}).flat().forEach(t => tags.add(t));
+  }
+  const missing = [...tags].filter(t => !(B.coach.misconceptions[t] || {}).look_again);
+  assert.deepEqual(missing, []);
+});
+
+test("look again prefers a question not yet shown on this puzzle, and stays quiet without tags", () => {
+  const cur = {};
+  const a = E.lookAgain(B, cur, ["SEQUENTIAL_SPREAD", "PROTECTED_SOURCES"]);
+  const b = E.lookAgain(B, cur, ["SEQUENTIAL_SPREAD", "PROTECTED_SOURCES"]);
+  assert.equal(a, B.coach.misconceptions.SEQUENTIAL_SPREAD.look_again);
+  assert.equal(b, B.coach.misconceptions.PROTECTED_SOURCES.look_again);
+  assert.equal(E.lookAgain(B, cur, ["SEQUENTIAL_SPREAD", "PROTECTED_SOURCES"]), a);
+  assert.equal(E.lookAgain(B, {}, []), null);
+  assert.equal(E.lookAgain(B, {}, ["NOT_A_TAG"]), null);
+});
+
 const firstTry = (st, correct) => { E.afterFirstTry(B, st, correct, []); };
 test("two first-try wins move up a level, two misses move down; off when auto is unchecked", () => {
   const st = E.freshState(B); st.mode = "box-rows";

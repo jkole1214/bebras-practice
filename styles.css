@@ -78,6 +78,7 @@ pre.rule .o { background: var(--sun); color: #16233b; border-radius: 4px; paddin
 .feedback { border-radius: 12px; padding: 12px 16px; font-weight: 700; }
 .feedback.good { background: var(--good-bg); color: var(--good); }
 .feedback.bad { background: var(--bad-bg); color: var(--bad); }
+.look { margin-top: 8px; border-left: 4px solid var(--sun); background: var(--code-bg); border-radius: 8px; padding: 10px 14px; }
 .hintbox { border-left: 4px solid var(--sun); padding: 6px 0 6px 14px; display: grid; gap: 6px; }
 .explain { background: var(--code-bg); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; font-size: 0.98rem; }
 .explain p { margin: 0; white-space: pre-wrap; }

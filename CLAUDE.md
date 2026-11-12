@@ -30,7 +30,7 @@ Calibrating difficulty against Bebras as a whole doesn't matter. What matters is
 
 - **Single scene model.** One scene model drives both the picture and the solver. Pictures carry `data-*` attributes so checkers can read them.
 - **Independent checkers.** A checker never imports its generator. Where possible it rebuilds the problem from the picture and solves it again with different code. Every checker gets a mutation test: corrupt the answer key and the checker must catch it.
-- **Tagged distractors.** Every wrong option comes from a named misconception solver, such as `XOR_AS_OR` or `INDIRECTION_OUTSIDE_IN`. Typed answers use `value_tags`. Untagged distractors are not allowed.
+- **Tagged distractors.** Every wrong option comes from a named misconception solver, such as `XOR_AS_OR` or `INDIRECTION_OUTSIDE_IN`. Typed answers use `value_tags`. Untagged distractors are not allowed. Every tag needs a kid-facing `look_again` question (add it in `tools/make_look_again_patch.py`, merge the patch, rebuild `coach.js`); `tools/test_engine.js` fails on a tag without one. List the tag a level targets first, since the page asks about the first tag that has a question.
 - **Rejected problems.** Reject a problem when:
   - the answer is guessable (the smallest, largest or visually shortest option);
   - more than one answer is correct, unless the format grades by evaluating the answer (`press`, `build`);
@@ -43,7 +43,7 @@ Calibrating difficulty against Bebras as a whole doesn't matter. What matters is
 
 ## Workflow
 
-- After any generator change, run `python3 tools/build_problems.py`. The rejected count must stay at 0, or explain why it isn't. Current output: 12 per level, 660 problems. The build needs `networkx`. Bead Rules is not deterministic: a rebuild changes its wrong options, so restore `bead-rules/` with git unless you changed that generator.
+- After any generator change, run `python3 tools/build_problems.py`. The rejected count must stay at 0, or explain why it isn't. Current output: 12 per level, 660 problems. The build needs `networkx` and gives the same files on every run.
 - Record new analysis of official tasks as a patch merged with `tools/merge_patch.py map.json patch.json`, rather than hand-editing the map.
 - Test pages in a browser at phone width, in light and dark mode, with no horizontal scroll.
 - Don't commit or push unless asked.
@@ -54,4 +54,4 @@ Calibrating difficulty against Bebras as a whole doesn't matter. What matters is
 1. **Adaptive tutor (built, runs on the server).** Practice mode, the Progress page (parents switch between their kids) and `tools/observe.py`, which writes `data_observations` into the map. The details are in the README. Still open: tune the thresholds in `tutor.js` once there is real data.
 2. **More families** from `generator_candidates`: Maze, Treasure Box, Colorful Tower, Favorite Gem, the 2015 candidates and game trees. Concepts that have no family yet, and the SOC domain, are not covered.
 3. **More analysis** (optional): other years' USA practice challenges, and Kits/Castors.
-4. **Small items:** an "explain it back" step after a miss, worksheet export, and per-user accuracy on level select.
+4. **Small items:** worksheet export, and per-user accuracy on level select. (The "look again" step after a miss is built.)

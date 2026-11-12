@@ -11,7 +11,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;
 
 // COACH: titles, ladders, concept and misconception text (coach.js). page: levels, counts and mode from the server.
 // cur: the puzzle on screen (no answer in it). servedAs: "ladder", "remedy" (a tutor detour) or "lookback".
-let COACH, page = null, cur = null, servedAs = "ladder", why = "", tries = 0, hintsShown = 0, solved = false, busy = false, selected = new Set(), lastTags = [];
+let COACH, page = null, cur = null, servedAs = "ladder", why = "", tries = 0, hintsShown = 0, solved = false, busy = false, selected = new Set(), lastTags = [], look = null;
 
 async function api(url, body) {
   try { return await Account.call("POST", url, body || {}); }
@@ -43,7 +43,7 @@ async function openProblem(fam, level, seed) {
 function show(d) {
   if (!d) return;
   cur = d.puzzle; servedAs = d.servedAs; why = d.why || ""; tries = d.tries || 0; hintsShown = d.hints || 0;
-  solved = false; selected = new Set(); lastTags = []; page = d.page;
+  solved = false; selected = new Set(); lastTags = []; look = null; page = d.page;
   renderTabs(); render();
   for (let i = 0; i < hintsShown; i++) drawHints();
 }
@@ -193,6 +193,8 @@ function drawTally() {
 }
 const tryAgain = () => `Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.`;
 const say = (cls, html) => { $("#fb").innerHTML = `<div class="feedback ${cls}">${html}</div>`; };
+// a wrong try: the message, then the server's "look again" question about the likely mistake, if it sent one
+const miss = (html) => { say("bad", html); if (look) $("#fb").insertAdjacentHTML("beforeend", `<div class="look"><b>Look again.</b> ${esc(look)}</div>`); };
 
 // Sends one try. Resolves with the server's verdict, or null when there is nothing to show
 // (not a real try, or the server could not be reached; the message is already on screen).
@@ -206,6 +208,7 @@ async function submit(answer) {
     tries = r.tries; page = r.page;
     if (r.correct) { Sound.right(); solved = true; } else Sound.miss();
     if (r.tags.length) lastTags = r.tags;
+    look = r.look || null;
     drawTally();
     return r;
   } catch (e) {
@@ -223,7 +226,7 @@ async function answerMC(i, btn) {
     finish(r);
   } else {
     btn.classList.add("wrong"); btn.disabled = true;
-    say("bad", `Not quite. ${tryAgain()}`);
+    miss(`Not quite. ${tryAgain()}`);
     renderCoach();
   }
 }
@@ -234,7 +237,7 @@ async function answerNumber() {
   const v = Math.round(+raw), r = await submit({ value: v });
   if (!r) return;
   if (r.correct) { $("#numans").disabled = true; finish(r); return; }
-  say("bad", `${v} is not right. ${tryAgain()}`);
+  miss(`${v} is not right. ${tryAgain()}`);
   renderCoach();
 }
 
@@ -283,7 +286,7 @@ function setupBuild() {
     if (!r) return;
     if (r.correct) { finish(r); return; }
     const sum = [...document.querySelectorAll("#map g.walkway.sel")].reduce((s, x) => s + +x.dataset.w, 0);
-    say("bad", `That crossing works, but it uses ${sum} planks. A cheaper one exists. ${tryAgain()}`);
+    miss(`That crossing works, but it uses ${sum} planks. A cheaper one exists. ${tryAgain()}`);
     renderCoach();
   });
 }
@@ -306,7 +309,7 @@ function setupPress() {
     const n = selected.size, r = await submit({ buttons: [...selected] });
     if (!r) return;
     if (r.correct) { document.querySelector("#map .bulb").classList.add("lit"); finish(r); return; }
-    say("bad", `${r.lit ? `The light is on, but it can be done with fewer than ${n} beavers.` : "The light stays off."} ${tryAgain()}`);
+    miss(`${r.lit ? `The light is on, but it can be done with fewer than ${n} beavers.` : "The light stays off."} ${tryAgain()}`);
     renderCoach();
   });
   $("#clear").addEventListener("click", () => { if (solved) return; selected.clear(); btns.forEach(g => g.classList.remove("sel")); update(); });
@@ -334,7 +337,7 @@ function setupCells() {
     const r = await submit({ cells: [...selected] });
     if (!r) return;
     if (r.correct) { cells.forEach(b => { if (selected.has(b.dataset.k)) b.classList.add("right"); }); finish(r); return; }
-    say("bad", `Not quite. ${tryAgain()}`);
+    miss(`Not quite. ${tryAgain()}`);
     renderCoach();
   });
   $("#clear").addEventListener("click", () => { if (solved) return; selected.clear(); cells.forEach(b => b.classList.remove("sel")); update(); });

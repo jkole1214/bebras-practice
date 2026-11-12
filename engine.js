@@ -290,4 +290,16 @@ function progressView(B, st, tries, showAnswers) {
   };
 }
 
-module.exports = { PRACTICE, load, freshState, migrate, serve, setCurrent, publicPuzzle, check, afterFirstTry, progressView };
+// ---------- look again
+// After a wrong try with misconception tags: one short question for the student about the likely
+// mistake. Prefers a tag whose question has not been shown on this puzzle yet. Notes it in cur.looked.
+function lookAgain(B, cur, tags) {
+  const M = B.coach.misconceptions, have = (tags || []).filter(t => M[t] && M[t].look_again);
+  if (!have.length) return null;
+  cur.looked = cur.looked || [];
+  const tag = have.find(t => !cur.looked.includes(t)) || have[0];
+  if (!cur.looked.includes(tag)) cur.looked.push(tag);
+  return M[tag].look_again;
+}
+
+module.exports = { PRACTICE, load, freshState, migrate, serve, setCurrent, publicPuzzle, check, afterFirstTry, lookAgain, progressView };
