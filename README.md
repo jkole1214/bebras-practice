@@ -4,7 +4,7 @@ A practice page for nine puzzle families built from the Bebras example and pract
 
 ## The tutor
 
-The **Practice** tab (the first tab, and the default for new students) is a tutor. It chooses the puzzle type and level for each puzzle from the student's first tries. The other tabs still work as before: one puzzle type, with its own level ladder.
+**Practice** (the default) is a tutor. It chooses the puzzle type and level for each puzzle from the student's first tries. **Pick a puzzle** lets a student choose one puzzle type, with its own level ladder.
 
 - **Concept mastery.** Each problem tests concepts from the knowledge map. Every first try updates an estimate for those concepts.
   - Recent tries count more.
@@ -23,9 +23,15 @@ The **Practice** tab (the first tab, and the default for new students) is a tuto
 - the puzzles missed on the first try, with the first answer and the right one. Each has an **Open** button, which shows that exact puzzle again without moving levels;
 - a grid of first-try results by puzzle type and level.
 
-A parent can switch between their kids. Without a server, the page shows this browser's history.
+A parent can switch between their kids. Kids see the right answer to a missed puzzle only once they have solved it; parents always see it.
 
-The tutor's logic is in `tutor.js`, and `node tools/test_tutor.js` tests it against the real problem bank.
+### Where it runs
+
+Everything runs on the server; the page only draws puzzles and sends answers.
+
+- `engine.js` loads the problem bank at startup, picks each puzzle, sends it to the page **without its answer**, checks every try, moves levels and runs the tutor. The problem folders are never served, so the answer keys stay on the server.
+- `tutor.js` is the tutor's logic, run by `engine.js` over the student's first tries in the attempts table.
+- Tests: `node tools/test_tutor.js` (the tutor) and `node tools/test_engine.js` (checking every problem's right answer and tagged wrong answers, what the page is sent, levels and detours).
 
 ### Findings from the kids' own answers
 
@@ -61,7 +67,7 @@ Accounts are per family:
 - **Password resets go to the parent.** **Forgot password?** on the sign-in card emails the parent a link that works for 1 hour; it resets the parent's password and signs the parent out everywhere else. Kids who forget their password ask a parent to set a new one; that signs the kid out everywhere.
 - **Older accounts.** Accounts made before family accounts existed became parent accounts, with their history kept. Accounts made before email confirmation existed count as confirmed.
 
-Levels and history follow each kid to any computer, and **every answer attempt** is saved: each try, not just the first, with the answer given, whether it was right, the misconceptions it matched, how many hints were showing and how long the problem had been on screen. Attempts are saved in the browser first and sent to the server, so a dropped connection loses nothing; they are resent later. Kids can download their own attempts as a CSV with **Download my answers**; parents download each kid's from the Family page. **Reset progress** resets levels but keeps saved attempts.
+Levels and history follow each kid to any computer, and **every answer attempt** is checked and saved by the server: each try, not just the first, with the answer given, whether it was right, the misconceptions it matched, how many hints were showing, how long the puzzle had been on screen, and how it was served (`served_as`: the ladder, a tutor detour, or a puzzle reopened from Progress, which does not count toward levels or the tutor). The page needs the server to get a puzzle or check an answer; with no connection it says so and offers to try again. Kids can download their own attempts as a CSV with **Download my answers**; parents download each kid's from the Family page. **Reset levels** under Coach notes starts levels and the tutor over but keeps saved attempts.
 
 Everything is in one SQLite file, `data/bebras.db` by default (set `DB_PATH` to move it). To look at every student's attempts:
 
@@ -85,17 +91,17 @@ Without `RESEND_API_KEY`, nothing is sent and each email (with its link) is prin
 
 Anyone who finds the address can make a family account; they still have to confirm a real email address first, and they only ever see their own family.
 
-**Without a server:** double-click `index.html`. It opens in any modern browser straight from disk, with no sign-in and no internet connection needed. (Fonts load from Google Fonts when online; offline it falls back to system fonts.) Progress (level, history, misconception counts) is then saved in that browser only. Clear it with **Reset progress** under Coach notes.
-
 ## Folder layout
 
 ```
 index.html            page shell
-server.js             web server: family accounts, saved progress, attempt log (SQLite)
-account.js            sign-in form and syncing progress/attempts to server.js
-app.js                practice logic: loading, grading, hints, leveling, coach notes, Practice tab
-tutor.js              the tutor: concept mastery, what to practice next, stepping back
+server.js             web server: family accounts, the practice API, attempt log (SQLite)
+engine.js             practice on the server: problem bank, answer checking, levels, the tutor (never served)
+tutor.js              the tutor: concept mastery, what to practice next, stepping back (run by engine.js)
+account.js            sign-in form
+app.js                the practice page: draws the puzzle, sends answers, hints, coach notes
 progress.js           progress page (parents can switch between their kids) and the Family page
+sound.js              answer sounds
 styles.css            styling (light and dark)
 coach.js              misconception and concept text, prerequisites and domains (generated)
 rule-tracer/          Rule Tracer problems, one file each, plus manifest.js
@@ -110,7 +116,7 @@ pantry-map/           Pantry Map problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
-Problem files are named `L<level>-<seed>.js`. Each is one JSON object wrapped in a `BEBRAS.add(...)` call. They are `.js` rather than `.json` because browsers block reading `.json` files from a page opened from disk, but allow loading scripts. Each folder's `manifest.js` lists the files the page loads; a file not in the manifest is ignored.
+Problem files are named `L<level>-<seed>.js`. Each is one JSON object wrapped in a `BEBRAS.add(...)` call (a leftover from when the page ran from disk; `engine.js` reads them the same way). Each folder's `manifest.js` lists the files the server loads; a file not in the manifest is ignored. The server reads the problem files once at startup, so restart it after a rebuild. The order of puzzle types comes from the `data-fam` buttons in `index.html`.
 
 ## Make more problems
 
@@ -239,6 +245,4 @@ The folder is set up as a Render Node web service with a persistent disk (`rende
 2. In Render, choose **New > Blueprint**, connect the repository, and apply. When asked, set `RESEND_API_KEY` and `EMAIL_FROM`.
 3. Every push redeploys. To change the problem set, run `tools/build_problems.py` locally, commit the new problem files, and push.
 
-The server only serves the page and the problem folders. `tools/`, `data/` and the server code are never served. Back up the database from the service's **Shell** tab, for example `sqlite3 /var/data/bebras.db ".backup /var/data/backup.db"`, or with Render's disk snapshots.
-
-`tools/build_site.sh` still builds a plain static copy in `dist/` (no accounts) for hosting without a server.
+The server only serves the page's own files. The problem folders (they hold the answers), `engine.js`, `tutor.js`, `tools/`, `data/` and the server code are never served. Back up the database from the service's **Shell** tab, for example `sqlite3 /var/data/bebras.db ".backup /var/data/backup.db"`, or with Render's disk snapshots.

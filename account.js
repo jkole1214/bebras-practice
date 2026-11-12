@@ -1,21 +1,12 @@
 // Family accounts. A parent signs up and adds their kids (on the Family page in
 // progress.js), choosing each kid's username and password. Kids sign in with their
 // username, parents with their email.
-// When the page is served by server.js, progress and every answer attempt are
-// saved on the server. When the page
-// is opened straight from disk (file://) there is no server, and the page works
-// as before with progress kept in this browser only.
+// Everything is kept on the server (server.js): the page needs to be served by it.
 
 window.Account = (() => {
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  let user = null, online = false, saveTimer = null, pendingState = null, flushing = false;
-
-  const ls = {
-    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-  };
-  const outboxKey = () => `bebras-outbox-${user.id}`;
+  let user = null;
 
   async function call(method, url, body) {
     const r = await fetch(url, {
@@ -28,17 +19,16 @@ window.Account = (() => {
     return data;
   }
 
-  // Resolves with { user, state } once someone is signed in, or { user: null } in disk mode.
+  // Resolves with { user } once someone is signed in, or { error } when the server cannot be reached.
   async function init() {
-    if (location.protocol === "file:") return { user: null };
+    if (location.protocol === "file:") return { error: "Kerbopple runs on its server now. Start it with npm start and open http://localhost:3000." };
     // links from emails look like /#verify=TOKEN or /#reset=TOKEN. Opening one in a tab that
     // already has the page only changes the hash, so reload to handle it.
     window.addEventListener("hashchange", () => { if (/^#(verify|reset)=/.test(location.hash)) location.reload(); });
     const link = location.hash.match(/^#(verify|reset)=([A-Za-z0-9_-]+)$/);
     if (link) history.replaceState(null, "", location.pathname);
     let me;
-    try { me = await call("GET", "/api/me"); } catch (e) { return { user: null }; }
-    online = true;
+    try { me = await call("GET", "/api/me"); } catch (e) { return { error: "Could not reach the server. Check your connection and reload the page." }; }
     if (link && link[1] === "verify") {
       try { const r = await call("POST", "/api/confirm", { token: link[2] }); user = r.user; afterSignIn(); return r; }
       catch (e) { if (me.user) { user = me.user; afterSignIn(); return me; } return signInForm("login", e.message); }
@@ -121,17 +111,7 @@ window.Account = (() => {
     });
   }
 
-  function afterSignIn() {
-    renderBar();
-    flush();
-    window.addEventListener("online", flush);
-    setInterval(flush, 60e3);
-    // try to send anything unsent before the tab closes
-    window.addEventListener("pagehide", () => {
-      if (pendingState) fetch("/api/state", { method: "PUT", keepalive: true, credentials: "same-origin",
-        headers: { "Content-Type": "application/json" }, body: JSON.stringify({ state: pendingState }) }).catch(() => {});
-    });
-  }
+  function afterSignIn() { renderBar(); }
 
   function renderBar() {
     const bar = $("#account");
@@ -143,53 +123,10 @@ window.Account = (() => {
     const fb = $("#familyBtn");
     if (fb) fb.addEventListener("click", () => Progress.family());
     $("#logout").addEventListener("click", async () => {
-      await flush();
-      if (pendingState) await saveNow();
       try { await call("POST", "/api/logout"); } catch (e) {}
       location.reload();
     });
   }
 
-  // Progress (levels, streaks, history): sent a moment after the last change.
-  function saveState(state) {
-    if (!user) return false;
-    pendingState = state;
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveNow, 800);
-    return true;
-  }
-  async function saveNow() {
-    clearTimeout(saveTimer);
-    const s = pendingState;
-    if (!s) return;
-    try { await call("PUT", "/api/state", { state: s }); if (pendingState === s) pendingState = null; }
-    catch (e) { saveTimer = setTimeout(saveNow, 10e3); }
-  }
-
-  // Attempts go into a browser-side outbox first and are removed only once the server has them.
-  function logAttempt(a) {
-    if (!user) return;
-    const rec = { id: (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2)), t: Date.now(), ...a };
-    ls.set(outboxKey(), ls.get(outboxKey(), []).concat(rec));
-    flush();
-  }
-  async function flush() {
-    if (!user || flushing) return;
-    const box = ls.get(outboxKey(), []);
-    if (!box.length) return;
-    flushing = true;
-    let ok = false;
-    try {
-      await call("POST", "/api/attempts", { attempts: box.slice(0, 500) });
-      const sent = new Set(box.slice(0, 500).map(a => a.id));
-      ls.set(outboxKey(), ls.get(outboxKey(), []).filter(a => !sent.has(a.id)));
-      ok = true;
-    } catch (e) {
-      if (e.status === 401) location.reload(); // session ended: sign in again; the outbox is kept
-    } finally { flushing = false; }
-    // more waiting (a big backlog, or one logged mid-send): send now; after a failure the 60s timer retries
-    if (ok && ls.get(outboxKey(), []).length) flush();
-  }
-
-  return { init, saveState, logAttempt, get signedIn() { return !!user; }, get user() { return user; }, get online() { return online; } };
+  return { init, call, get signedIn() { return !!user; }, get user() { return user; } };
 })();

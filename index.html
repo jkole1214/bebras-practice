@@ -7,24 +7,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="styles.css">
 <script>
-  // Registry the problem files call into. Loaded before everything else.
-  window.BEBRAS = {
-    files: {}, problems: {}, coachData: null,
-    manifest(fam, list) { this.files[fam] = list; },
-    add(fam, p) { (this.problems[fam] = this.problems[fam] || []).push(p); },
-    coach(d) { this.coachData = d; }
-  };
+  // coach.js (titles, concept names, misconception notes) calls BEBRAS.coach(...). The puzzles come from the server.
+  window.BEBRAS = { coachData: null, coach(d) { this.coachData = d; } };
 </script>
 <script src="coach.js"></script>
-<script src="rule-tracer/manifest.js"></script>
-<script src="lake-crossing/manifest.js"></script>
-<script src="signal-lamp/manifest.js"></script>
-<script src="robot-routes/manifest.js"></script>
-<script src="nuts-and-bolts/manifest.js"></script>
-<script src="box-rows/manifest.js"></script>
-<script src="lights-on/manifest.js"></script>
-<script src="bead-rules/manifest.js"></script>
-<script src="pantry-map/manifest.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -64,7 +50,6 @@
   </details>
 </div>
 <script src="sound.js"></script>
-<script src="tutor.js"></script>
 <script src="account.js"></script>
 <script src="progress.js"></script>
 <script src="app.js"></script>

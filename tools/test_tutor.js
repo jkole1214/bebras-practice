@@ -9,7 +9,7 @@ const Tutor = require(path.join(ROOT, "tutor.js"));
 const bank = {}; let coach;
 global.BEBRAS = { coach(d) { coach = d; }, manifest() {}, add(fam, p) { ((bank[fam] = bank[fam] || {})[p.level] = bank[fam][p.level] || []).push(p); } };
 require(path.join(ROOT, "coach.js"));
-const fams = [...fs.readFileSync(path.join(ROOT, "index.html"), "utf8").matchAll(/src="([a-z-]+)\/manifest\.js"/g)].map(m => m[1]);
+const fams = [...fs.readFileSync(path.join(ROOT, "index.html"), "utf8").matchAll(/data-fam="([a-z-]+)"/g)].map(m => m[1]);
 for (const f of fams) for (const file of fs.readdirSync(path.join(ROOT, f))) if (/^L\d+-\d+\.js$/.test(file)) require(path.join(ROOT, f, file));
 const X = Tutor.index(bank, coach);
 

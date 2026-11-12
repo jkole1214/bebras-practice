@@ -6,9 +6,11 @@ Calibrating difficulty against Bebras as a whole doesn't matter. What matters is
 
 ## Layout
 
-- `index.html`, `app.js`, `styles.css`, `coach.js`: the practice page. Problem files are `.js` (`BEBRAS.add("folder", {...})`), and each family folder has a `manifest.js`. This lets the page still run from `file://`.
-- `account.js`, `server.js`: accounts and storage (see below).
-- `tutor.js`: the adaptive tutor. These are pure functions shared by the Practice tab (`app.js`) and the progress page (`progress.js`), tested by `node tools/test_tutor.js`.
+- `index.html`, `app.js`, `styles.css`, `coach.js`, `sound.js`: the practice page. It only draws puzzles and sends answers. A Practice / Pick a puzzle switch sits at the top; the `data-fam` buttons in `index.html` set the order of puzzle types.
+- `engine.js` (server only, never served): loads the problem bank, picks puzzles, strips answers before sending, checks every try, moves levels, runs the tutor and computes the Progress page. Tested by `node tools/test_engine.js`.
+- `tutor.js`: the adaptive tutor's pure functions, run by `engine.js` on the server. Tested by `node tools/test_tutor.js`.
+- Problem files are `.js` (`BEBRAS.add("folder", {...})`) with a `manifest.js` per folder, read by `engine.js` at startup (restart the server after a rebuild). They are never served: answer keys stay on the server.
+- `account.js`, `server.js`: accounts, the practice API and storage (see below).
 - Nine family folders: `rule-tracer`, `lake-crossing`, `signal-lamp`, `robot-routes`, `nuts-and-bolts`, `box-rows`, `lights-on`, `bead-rules`, `pantry-map`. A module's `family` value can differ from its folder name (for example `conveyor` → `nuts-and-bolts`).
 - `tools/`: generators (`<module>.py`), independent checkers (`check_<module>.py`), `build_problems.py`, the knowledge map `bebras_knowledge_map.json` (69 tasks, 61 concepts, 77 misconceptions, 9 families, 16 generator candidates), analysis patches with `merge_patch.py`, and `notes.md`, which has a note on each official task. `tools/` is never served.
 
@@ -16,12 +18,13 @@ Calibrating difficulty against Bebras as a whole doesn't matter. What matters is
 
 - `server.js` uses plain Node 24 with built-in `node:sqlite` and has no npm dependencies. Start it with `npm start`. Its env vars are `PORT`, `DB_PATH`, `RESEND_API_KEY`, `EMAIL_FROM` and `APP_URL`. Without a Resend key, emails are printed to the console.
 - Family accounts. Only parents sign up (email and password, confirmed through Resend). Parents add kids on the Family page and choose each kid's username and password. Kids sign in with their username (unique across the site, stored lowercase in `users.username`); parents sign in with their email. The login field tells them apart by the `@`. Existing kids get a username made from their name when the server migrates. Reset emails reset only the parent's password; parents change kids' passwords. `users.parent_id` is set for kids, and kids have no email. Never use env vars to grant roles.
-- The `attempts` table holds one row per try, with: family, level, seed, question_type, try_number, correct, answer, misconceptions (tags), hints_shown, ms_on_problem and created_at. The `progress` table holds each user's page state as JSON.
-- It does not store concepts. The tutor maps family and level to concepts through `Tutor.index` over the loaded bank.
-- Attempts are queued in a localStorage outbox and deduped on the server by client id.
-- Disk mode (`file://`) still works, with progress saved in localStorage under `bebras-practice-local`.
-- Static serving uses an allowlist: the top-level page files and the family folders listed in `index.html`.
-- Deployment: the Render Blueprint `render.yaml` defines the web service `kerbopple` (starter plan, disk at `/var/data`). Custom domains are added in the dashboard, never in the yaml. The old static service `bebras-practice` is still built by `tools/build_site.sh` until it is retired.
+- Practice API: `POST /api/next` (`{}`, `{ resume }`, `{ mode }`, `{ level }`), `POST /api/answer` (`{ answer, hints }`), `POST /api/open` (reopen a puzzle from Progress), `POST /api/settings`, `POST /api/reset-levels`, `GET /api/progress?user=`. The server writes every attempt itself; the page cannot write attempts or state directly.
+- The `attempts` table holds one row per try, with: family, level, seed, question_type, try_number, correct, answer, misconceptions (tags), hints_shown, ms_on_problem, created_at and served_as (`ladder`, `remedy` or `lookback`; look-backs are left out of levels, the tutor, Progress and `observe.py`).
+- The `progress` table holds each student's practice state as JSON (`v: 2`): mode, levels, streaks, seen seeds, tutor plans and the puzzle on screen. Older page-owned states are migrated on read, keeping levels and tutor plans.
+- It does not store concepts. The tutor maps family and level to concepts through `Tutor.index` over the bank.
+- There is no disk (`file://`) mode and no static build: the page needs the server.
+- Static serving uses an allowlist of the top-level page files only.
+- Deployment: the Render Blueprint `render.yaml` defines the web service `kerbopple` (starter plan, disk at `/var/data`). Custom domains are added in the dashboard, never in the yaml.
 
 ## Content rules (every family)
 
@@ -48,9 +51,7 @@ Calibrating difficulty against Bebras as a whole doesn't matter. What matters is
 
 ## Roadmap (priority order)
 
-1. **Adaptive tutor (built).** The Practice tab, the Progress page (parents switch between their kids) and `tools/observe.py`, which writes `data_observations` into the map. The details are in the README. Still open:
-   - tune the thresholds in `tutor.js` once there is real data;
-   - the practice model reads `state.log` (the last 1000 first tries) rather than the server's attempts table.
+1. **Adaptive tutor (built, runs on the server).** Practice mode, the Progress page (parents switch between their kids) and `tools/observe.py`, which writes `data_observations` into the map. The details are in the README. Still open: tune the thresholds in `tutor.js` once there is real data.
 2. **More families** from `generator_candidates`: Virus, Maze, Treasure Box, Colorful Tower, Favorite Gem, the 2015 candidates and game trees. Concepts that have no family yet, and the SOC domain, are not covered.
 3. **More analysis** (optional): other years' USA practice challenges, and Kits/Castors.
 4. **Small items:** an "explain it back" step after a miss, worksheet export, and per-user accuracy on level select.

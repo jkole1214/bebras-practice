@@ -1,6 +1,7 @@
 // Progress page: what the tutor knows about one student. Concepts shown or shaky,
 // the misconceptions that keep coming up (with what to try), the puzzles they
 // missed (open any of them again), and first-try results by puzzle type and level.
+// The server works all of it out (GET /api/progress); this file draws it.
 // A parent can switch between their kids.
 //
 // Family page (parents only): add a kid, rename them, change their username or password,
@@ -17,21 +18,6 @@ window.Progress = (() => {
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error || `Request failed (${r.status})`);
     return d;
-  }
-
-  // Groups tries into one record per puzzle shown: a try 1 starts one, later tries join it.
-  function instances(attempts) {
-    const out = [];
-    attempts.forEach(a => {
-      if (a.try === 1) out.push({ fam: a.fam, level: a.level, seed: a.seed, t: a.t, tries: [a] });
-      else {
-        for (let i = out.length - 1; i >= Math.max(0, out.length - 5); i--) {
-          const x = out[i];
-          if (x.fam === a.fam && x.level === a.level && x.seed === a.seed) { x.tries.push(a); break; }
-        }
-      }
-    });
-    return out;
   }
 
   async function send(method, url, body) {
@@ -58,37 +44,24 @@ window.Progress = (() => {
   }
 
   async function open(studentId) {
-    const A = window.APP;
-    if (!A) return;
+    if (!window.APP) return;
     take("Loading progress…");
-    let student, attempts, tutor, users = null;
+    let users = null;
     try {
-      if (Account.signedIn) {
-        if (isParent()) {
-          const kids = (await get("/api/kids")).kids;
-          users = kids.map(k => ({ id: k.id, name: k.name })).concat({ id: Account.user.id, name: `Me (${Account.user.name})` });
-          if (!studentId && kids.length) studentId = kids[0].id;   // parents mostly want their kids
-        }
-        const h = await get("/api/history" + (studentId ? `?user=${encodeURIComponent(studentId)}` : ""));
-        student = h.student; attempts = h.attempts;
-        tutor = student.id === Account.user.id ? A.state.tutor : h.tutor;   // this tab's copy is the newest
-      } else {
-        student = { name: "this browser" };
-        attempts = A.state.log.map(e => ({ fam: e.fam, level: e.level, seed: e.seed, try: 1, correct: e.correct, tags: e.tags || [], hints: e.hints || 0, t: e.t }));
-        tutor = A.state.tutor;
+      if (isParent()) {
+        const kids = (await get("/api/kids")).kids;
+        users = kids.map(k => ({ id: k.id, name: k.name })).concat({ id: Account.user.id, name: `Me (${Account.user.name})` });
+        if (!studentId && kids.length) studentId = kids[0].id;   // parents mostly want their kids
       }
+      view = await get("/api/progress" + (studentId ? `?user=${encodeURIComponent(studentId)}` : ""));
+      view.users = users;
     } catch (e) { return failed(e); }
-    view = { student, list: instances(attempts), tutor, users };
     filterTag = null;
     draw();
   }
 
   function draw() {
-    const A = window.APP, C = A.DATA.coach, X = A.TX, { student, list, tutor, users } = view;
-    const events = list.map(i => ({ fam: i.fam, level: i.level, correct: i.tries[0].correct, tags: i.tries[0].tags || [], hints: i.tries[0].hints || 0, t: i.t }));
-    const M = Tutor.model(events, X);
-    const right = events.filter(e => e.correct).length, week = events.filter(e => e.t > Date.now() - 7 * 864e5).length;
-    const ms = list.reduce((s, i) => s + Math.min(15 * 60e3, Math.max(0, ...i.tries.map(t => t.ms || 0))), 0);
+    const C = window.APP.coach, v = view, student = v.student, users = v.users;
 
     let h = `<div class="ptop"><h2>Progress for ${esc(student.name)}</h2>`;
     if (users && users.length > 1) {
@@ -97,35 +70,34 @@ window.Progress = (() => {
     }
     h += `<button class="btn ghost" id="pBack">Back to puzzles</button></div>`;
 
-    if (!list.length) {
-      h += `<p>No puzzles answered yet. The tutor fills this in as puzzles are answered in the Practice tab or any puzzle tab.</p>`;
+    if (!v.puzzles) {
+      h += `<p>No puzzles answered yet. The tutor fills this in as puzzles are answered in Practice or Pick a puzzle.</p>`;
       return paint(h);
     }
 
     h += `<div class="tiles">
-      ${tile(list.length, "puzzles tried")}
-      ${tile(Math.round(100 * right / list.length) + "%", `right on the first try (${right} of ${list.length})`)}
-      ${tile(week, "in the last 7 days")}
-      ${ms ? tile(duration(ms), "practicing") : ""}
+      ${tile(v.puzzles, "puzzles tried")}
+      ${tile(Math.round(100 * v.right / v.puzzles) + "%", `right on the first try (${v.right} of ${v.puzzles})`)}
+      ${tile(v.week, "in the last 7 days")}
+      ${v.ms ? tile(duration(v.ms), "practicing") : ""}
     </div>`;
 
     // what the tutor is doing now, and what it would work on
-    const focus = Object.values(M.concepts).filter(c => c.status === "shaky" || c.status === "learning").sort((a, b) => a.score - b.score).slice(0, 3);
     h += `<section class="psec"><h3>Tutor focus</h3>`;
-    if (tutor && tutor.remedy) {
-      const r = tutor.remedy, m = C.misconceptions[r.tag] || {};
+    if (v.remedy) {
+      const r = v.remedy, m = C.misconceptions[r.tag] || {};
       h += `<p>Right now: a short step back to <b>${esc(C.titles[r.fam])} level ${r.level}</b>${r.prereq ? `, to practice ${esc((C.concepts[r.prereq] || r.prereq).toLowerCase())}` : ""},
         because this came up twice: ${esc(m.description || r.tag)}</p>`;
     }
-    h += focus.length
-      ? `<p>Next to work on: ${focus.map(c => `<b>${esc(C.concepts[c.id] || c.id)}</b>`).join(", ")}.</p>`
-      : `<p>Nothing shaky right now. The Practice tab moves on to new levels and mixes in review.</p>`;
+    h += v.focus.length
+      ? `<p>Next to work on: ${v.focus.map(c => `<b>${esc(C.concepts[c] || c)}</b>`).join(", ")}.</p>`
+      : `<p>Nothing shaky right now. Practice moves on to new levels and mixes in review.</p>`;
     h += `</section>`;
 
     // concepts by domain
     h += `<section class="psec"><h3>Concepts</h3><p class="nums">Based on first tries. Recent puzzles count more, as do right answers on hard levels and misses on easy ones. A first try after a hint counts as part right.</p>`;
     const byDom = {};
-    [...X.covered].forEach(c => (byDom[(C.conceptDomain || {})[c] || "Other"] = byDom[(C.conceptDomain || {})[c] || "Other"] || []).push(M.concepts[c]));
+    v.concepts.forEach(c => (byDom[(C.conceptDomain || {})[c.id] || "Other"] = byDom[(C.conceptDomain || {})[c.id] || "Other"] || []).push(c));
     Object.keys(byDom).sort().forEach(d => {
       h += `<h4>${esc((C.domains || {})[d] || d)}</h4><ul class="concepts">` + byDom[d].sort((a, b) => b.n - a.n || a.id.localeCompare(b.id)).map(c =>
         `<li><span class="cname">${esc(C.concepts[c.id] || c.id)}</span>
@@ -136,10 +108,9 @@ window.Progress = (() => {
     h += `</section>`;
 
     // misconceptions
-    const tags = Object.values(M.tags).sort((a, b) => b.weight - a.weight).slice(0, 6);
-    if (tags.length) {
+    if (v.tags.length) {
       h += `<section class="psec"><h3>Mistake patterns</h3><p class="nums">Wrong answers that match a known mix-up, with the most recent and frequent ones first.</p><ul class="mis">`;
-      tags.forEach(t => {
+      v.tags.forEach(t => {
         const m = C.misconceptions[t.id] || {};
         h += `<li><div class="row"><span class="tag">${esc(t.id)}</span><span class="nums">${t.count} time${t.count > 1 ? "s" : ""}, last ${day(t.last)}</span>
             <button class="linkbtn" data-tag="${esc(t.id)}">${filterTag === t.id ? "Show all misses" : "Show these misses"}</button></div>
@@ -148,36 +119,31 @@ window.Progress = (() => {
       h += `</ul></section>`;
     }
 
-    // missed puzzles
-    const missed = list.filter(i => !i.tries[0].correct && (!filterTag || (i.tries[0].tags || []).includes(filterTag))).reverse();
+    // missed puzzles (newest first)
+    const missed = v.missed.filter(i => !filterTag || i.tags.includes(filterTag));
     h += `<section class="psec" id="pMissed"><h3>Missed on the first try${filterTag ? `: <span class="tag">${esc(filterTag)}</span>` : ""}</h3>`;
     if (!missed.length) h += `<p>None${filterTag ? " with this pattern" : ""}.</p>`;
     else {
       h += `<ul class="missed">` + missed.slice(0, 15).map(i => {
-        const p = ((A.DATA.bank[i.fam] || {})[i.level] || []).find(x => x.seed === i.seed);
-        const last = i.tries[i.tries.length - 1];
-        const outcome = last.correct ? (i.tries.length === 1 ? "" : `Got it on try ${i.tries.length}.`) : "Did not get it.";
+        const outcome = i.solved ? (i.tries === 1 ? "" : `Got it on try ${i.tries}.`) : "Not solved yet.";
         return `<li><div class="row"><b>${esc(C.titles[i.fam] || i.fam)}, level ${i.level}</b><span class="nums">${day(i.t)}</span>
-            ${p ? `<button class="btn ghost small" data-open="${esc(i.fam)}|${i.level}|${i.seed}">Open</button>` : `<span class="nums">(not in the current puzzle set)</span>`}</div>
-          ${p ? `<p>First answer: <span class="ans">${esc(answerText(p, i.tries[0].answer))}</span>. Right answer: <span class="ans">${esc(rightText(p))}</span>. ${esc(outcome)}</p>` : ""}
-          ${(i.tries[0].tags || []).length ? `<div>${i.tries[0].tags.map(t => `<span class="tag">${esc(t)}</span>`).join(" ")}</div>` : ""}</li>`;
+            ${i.available ? `<button class="btn ghost small" data-open="${esc(i.fam)}|${i.level}|${i.seed}">Open</button>` : `<span class="nums">(not in the current puzzle set)</span>`}</div>
+          ${i.available ? `<p>First answer: <span class="ans">${esc(i.first)}</span>.${i.right ? ` Right answer: <span class="ans">${esc(i.right)}</span>.` : ""} ${esc(outcome)}</p>` : ""}
+          ${i.tags.length ? `<div>${i.tags.map(t => `<span class="tag">${esc(t)}</span>`).join(" ")}</div>` : ""}</li>`;
       }).join("") + `</ul>`;
       if (missed.length > 15) h += `<p class="nums">Showing the latest 15 of ${missed.length}.</p>`;
     }
     h += `</section>`;
 
-    // grid: family × level
-    const maxL = Math.max(...Object.values(X.order).map(o => o[o.length - 1]));
-    const cell = {};
-    list.forEach(i => { const k = i.fam + "|" + i.level, c = cell[k] = cell[k] || { n: 0, r: 0, ms: 0, hints: 0 };
-      c.n++; if (i.tries[0].correct) c.r++; c.ms += Math.min(15 * 60e3, i.tries[i.tries.length - 1].ms || 0); if (i.tries[0].hints) c.hints++; });
+    // grid: puzzle type × level
+    const fams = Object.keys(v.levels), maxL = Math.max(...fams.map(f => v.levels[f][v.levels[f].length - 1]));
     h += `<section class="psec"><h3>By puzzle type and level</h3><p class="nums">Each box: right on the first try out of tried. Green is 75% or more, red under 50%.</p>
       <div class="gridwrap"><table class="lvgrid"><thead><tr><th></th>${Array.from({ length: maxL }, (_, k) => `<th>${k + 1}</th>`).join("")}</tr></thead><tbody>`;
-    Object.keys(X.order).forEach(f => {
+    fams.forEach(f => {
       h += `<tr><th scope="row">${esc(C.titles[f] || f)}</th>`;
       for (let l = 1; l <= maxL; l++) {
-        if (!X.order[f].includes(l)) { h += `<td class="none"></td>`; continue; }
-        const c = cell[f + "|" + l];
+        if (!v.levels[f].includes(l)) { h += `<td class="none"></td>`; continue; }
+        const c = v.grid[f + "|" + l];
         if (!c) { h += `<td class="empty">·</td>`; continue; }
         const rate = c.r / c.n, cls = rate >= 0.75 ? "hi" : rate < 0.5 ? "lo" : "";
         h += `<td class="${cls}" title="${c.r} of ${c.n} right first try; ${c.hints} with hints; about ${Math.round(c.ms / c.n / 1000)} s each">${c.r}/${c.n}</td>`;
@@ -226,33 +192,6 @@ window.Progress = (() => {
     const m = Math.round(ms / 60e3);
     return m < 1 ? "under 1 min" : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
   }
-  const place = (x) => x === "N" ? "north shore" : x === "S" ? "south shore" : x;
-  function optionText(o) {
-    if (Array.isArray(o)) return o.every(v => typeof v === "number") ? o.join(", ") : o.map(place).join(" → ");
-    return String(o);
-  }
-  function answerText(p, a) {
-    if (a === null || a === undefined) return "not recorded";
-    if (typeof a === "number") return String(a);
-    if (a && a.option !== undefined) return p.family === "logic_gates" ? (a.option.length ? "buttons " + a.option.join(", ") : "nobody") : optionText(a.option);
-    if (Array.isArray(a)) {
-      if (p.question_type === "build") return "walkways " + a.map(k => k.split("|").map(place).join("–")).join(", ");
-      if (p.entry === "press") return a.length ? "buttons " + a.join(", ") : "no buttons";
-      if (p.entry === "cells") return a.map(cellName).join("; ") || "nothing";
-    }
-    return JSON.stringify(a);
-  }
-  function rightText(p) {
-    if (p.question_type === "build") return routeOf(p.answer_path);
-    if (p.entry === "press") return p.question_type === "fewest" ? `any ${p.answer_value} buttons that light the bulb` : "any buttons that light the bulb";
-    if (p.entry === "cells") return (p.answer_value || []).map(x => cellName(x.join(","))).join("; ");
-    if (p.entry === "number") return String(p.answer_value);
-    const o = p.options[p.answer_index];
-    return p.family === "logic_gates" ? (o.length ? "buttons " + o.join(", ") : "nobody") : optionText(o);
-  }
-  const routeOf = (path) => (path || []).map(place).join(" → ");
-  const cellName = (k) => { const [r, c] = k.split(",").map(Number); return `row ${r + 1}, column ${c + 1}`; };
-
   // ---------- Family page (parents)
   let armed = null;   // id of the kid whose Remove button was clicked once
   async function family(note = "") {

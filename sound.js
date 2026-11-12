@@ -1,4 +1,4 @@
-// Answer sounds, made with Web Audio so there are no sound files to load (works from file:// too).
+// Answer sounds, made with Web Audio so there are no sound files to load.
 //   Sound.right()  a bright, quick three-note chime going up
 //   Sound.miss()   two soft, low notes stepping down: "not quite, try again", never a buzzer
 // Sound can be turned off with the speaker button; the choice is kept per browser.

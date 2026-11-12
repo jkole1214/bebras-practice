@@ -40,7 +40,7 @@ LIVE = {"press": ["XOR_AS_OR", "BOTH_AS_EITHER", "EXTRA_BUTTONS"],
 
 
 def load_bank():
-    fams = re.findall(r'src="([a-z-]+)/manifest\.js"', open(os.path.join(ROOT, "index.html")).read())
+    fams = re.findall(r'data-fam="([a-z-]+)"', open(os.path.join(ROOT, "index.html")).read())
     bank = {}
     for f in fams:
         for name in os.listdir(os.path.join(ROOT, f)):
@@ -71,11 +71,14 @@ def offered_tags(p):
 def load_attempts(path):
     if path.endswith(".json"):
         d = json.load(open(path))
-        return d["attempts"]
+        # puzzles reopened from the Progress page are left out, as the tutor leaves them out
+        return [a for a in d["attempts"] if a.get("served") != "lookback"]
     con = sqlite3.connect(path)
     con.row_factory = sqlite3.Row
     out = []
-    for r in con.execute("SELECT * FROM attempts ORDER BY user_id, created_at, id"):
+    cols = {c[1] for c in con.execute("PRAGMA table_info(attempts)")}
+    where = " WHERE served_as IS NOT 'lookback'" if "served_as" in cols else ""
+    for r in con.execute(f"SELECT * FROM attempts{where} ORDER BY user_id, created_at, id"):
         out.append({"user": r["user_id"], "fam": r["family"], "level": r["level"], "seed": r["seed"],
                     "try": r["try_number"], "correct": bool(r["correct"]), "tags": json.loads(r["misconceptions"] or "[]"),
                     "hints": r["hints_shown"], "ms": r["ms_on_problem"], "t": r["created_at"]})

@@ -1,84 +1,67 @@
-// Kerbopple: loads problem files from each family folder (FAMS),
-// then runs the practice loop. Works from file:// (no server needed) because
-// problem files are loaded as <script> tags that call BEBRAS.add(...).
+// Kerbopple: the practice page. The server (server.js with engine.js) picks each
+// puzzle and sends it without its answer; this page draws it, sends each try to
+// /api/answer and shows what comes back. Levels, the tutor and every answer live
+// on the server.
 
 const FACES = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
-const FAMS = ["rule-tracer", "lake-crossing", "signal-lamp", "robot-routes", "nuts-and-bolts", "box-rows", "lights-on", "bead-rules", "pantry-map"];
-const PRACTICE = "practice";   // the mixed tab: the tutor (tutor.js) picks the family and level
+const PRACTICE = "practice";   // the mixed mode: the tutor picks the puzzle type and level
 const FLASH = { S: "\u25cf", L: "\u25ac" };
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-const store = {
-  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-};
+// COACH: titles, ladders, concept and misconception text (coach.js). page: levels, counts and mode from the server.
+// cur: the puzzle on screen (no answer in it). servedAs: "ladder", "remedy" (a tutor detour) or "lookback".
+let COACH, page = null, cur = null, servedAs = "ladder", why = "", tries = 0, hintsShown = 0, solved = false, busy = false, selected = new Set(), lastTags = [];
 
-// curFam: folder of the problem on screen. servedAs: "ladder" (the family's own level; moves the ladder),
-// "remedy" (a tutor detour) or "lookback" (opened from the progress page); only "ladder" moves levels.
-let DATA, TX, state, cur = null, curFam = null, servedAs = "ladder", why = "", shownAt = 0, tries = 0, hintsShown = 0, solved = false, selected = new Set(), lastTags = [];
-
-function loadScript(src) {
-  return new Promise((resolve) => {
-    const s = document.createElement("script");
-    s.src = src; s.onload = () => resolve(true); s.onerror = () => resolve(false);
-    document.head.appendChild(s);
-  });
-}
-
-async function loadAll() {
-  const missing = [];
-  for (const fam of FAMS) {
-    const files = BEBRAS.files[fam];
-    if (!files) { missing.push(`${fam}/manifest.js`); continue; }
-    const results = await Promise.all(files.map(f => loadScript(`${fam}/${f}`)));
-    results.forEach((ok, i) => { if (!ok) missing.push(`${fam}/${files[i]}`); });
+async function api(url, body) {
+  try { return await Account.call("POST", url, body || {}); }
+  catch (e) {
+    if (e.status === 401) { location.reload(); return null; }   // signed out elsewhere: sign in again
+    throw e;
   }
-  const bank = {};
-  for (const fam of FAMS) {
-    bank[fam] = {};
-    (BEBRAS.problems[fam] || []).forEach(p => { (bank[fam][p.level] = bank[fam][p.level] || []).push(p); });
-  }
-  return { bank, missing };
+}
+const OFFLINE = "Could not reach the server. Check your connection and try again.";
+function problemMsg(e) { return e && e.status ? e.message : OFFLINE; }
+
+// Loads a puzzle from the server: {} for the next one, { resume: true }, { mode }, { level }.
+async function next(body = {}) {
+  Progress.close(false);
+  if (busy) return;
+  busy = true;
+  try { show(await api("/api/next", body)); }
+  catch (e) { $("#card").innerHTML = `<p class="loaderr">${esc(problemMsg(e))}</p><div class="row"><button class="btn" id="retry">Try again</button></div>`; $("#retry").addEventListener("click", () => next(body)); }
+  finally { busy = false; }
 }
 
-function defaultState() {
-  return {
-    fam: PRACTICE, level: Object.fromEntries(FAMS.map(f => [f, 1])),
-    streak: Object.fromEntries(FAMS.map(f => [f, 0])), misses: Object.fromEntries(FAMS.map(f => [f, 0])),
-    seen: {}, done: {}, log: [], tally: { right: 0, total: 0 }, misconceptionCounts: {},
-    tutor: { remedy: null, ended: {}, recent: [] }
-  };
+// Shows one exact puzzle again (from the Progress page). Its tries do not move levels.
+async function openProblem(fam, level, seed) {
+  Progress.close(false);
+  try { show(await api("/api/open", { fam, level, seed })); return true; }
+  catch (e) { $("#card").innerHTML = `<p class="loaderr">${esc(problemMsg(e))}</p>`; return false; }
 }
-// signed in: progress goes to the server; otherwise it stays in this browser
-function save() { if (!Account.saveState(state)) store.set("bebras-practice-local", state); }
-function levels(fam) { return Object.keys(DATA.bank[fam]).map(Number).sort((a, b) => a - b); }
 
-// preferTag: during a tutor detour, only problems that can catch that misconception
-function pick(fam, level, preferTag) {
-  const list = DATA.bank[fam][level] || [];
-  const key = fam + level, seen = state.seen[key] || [];
-  const fits = list.map((p, i) => i).filter(i => !preferTag || Tutor.problemTags(list[i]).has(preferTag));
-  const all = fits.length ? fits : list.map((p, i) => i);
-  let pool = all.filter(i => !seen.includes(i));
-  if (!pool.length) { state.seen[key] = seen.filter(i => !all.includes(i)); pool = all; }
-  const i = pool[Math.floor(Math.random() * pool.length)];
-  state.seen[key] = (state.seen[key] || []).concat(i);
-  return list[i];
+function show(d) {
+  if (!d) return;
+  cur = d.puzzle; servedAs = d.servedAs; why = d.why || ""; tries = d.tries || 0; hintsShown = d.hints || 0;
+  solved = false; selected = new Set(); lastTags = []; page = d.page;
+  renderTabs(); render();
+  for (let i = 0; i < hintsShown; i++) drawHints();
 }
 
 function renderTabs() {
-  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-pressed", t.dataset.fam === state.fam));
-  document.querySelectorAll(".mode").forEach(m => m.setAttribute("aria-pressed", (m.dataset.mode === "practice") === (state.fam === PRACTICE)));
-  $("#famTabs").hidden = state.fam === PRACTICE;
-  $(".ladder").hidden = state.fam === PRACTICE;
-  if (state.fam === PRACTICE) return;
+  const mode = page.mode;
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-pressed", t.dataset.fam === mode));
+  document.querySelectorAll(".mode").forEach(m => m.setAttribute("aria-pressed", (m.dataset.mode === PRACTICE) === (mode === PRACTICE)));
+  $("#famTabs").hidden = mode === PRACTICE;
+  $(".ladder").hidden = mode === PRACTICE;
+  $("#auto").checked = page.auto;
+  if (mode === PRACTICE) return;
   const rungs = $("#rungs"); rungs.innerHTML = "";
-  levels(state.fam).forEach(i => {
+  (page.levels[mode] || []).forEach(i => {
     const b = document.createElement("button");
-    b.className = "rung" + (i === state.level[state.fam] ? " on" : "") + ((state.done[state.fam + i] || 0) >= 2 ? " done" : "");
-    b.textContent = i; b.title = (DATA.coach.ladders[state.fam] || [])[i - 1] || "";
-    b.addEventListener("click", () => { state.level[state.fam] = i; state.streak[state.fam] = 0; state.misses[state.fam] = 0; save(); next(); });
+    b.className = "rung" + (i === page.level[mode] ? " on" : "") + ((page.done[mode] || []).includes(i) ? " done" : "");
+    b.textContent = i; b.title = (COACH.ladders[mode] || [])[i - 1] || "";
+    b.addEventListener("click", () => next({ level: i }));
     rungs.appendChild(b);
   });
 }
@@ -157,52 +140,9 @@ function codebookHTML(p) {
   if (p.question) h += `<p class="prompt"><b>${esc(p.question)}</b></p>`;
   return h;
 }
-function routeText(path) { return path.map(x => x === "N" ? "north shore" : x === "S" ? "south shore" : x).join(" → "); }
-
-// First tries in the shape tutor.js reads (oldest first).
-function events() {
-  return state.log.map(e => ({ fam: e.fam, level: e.level, correct: e.correct, tags: e.tags || [], t: e.t, hints: e.hints || 0 }));
-}
-
-function next() {
-  Progress.close(false);
-  renderTabs();
-  if (state.fam === PRACTICE) {
-    const r = state.tutor.remedy;
-    if (r && DATA.bank[r.fam] && DATA.bank[r.fam][r.level]) {
-      curFam = r.fam; servedAs = "remedy"; cur = pick(r.fam, r.level, r.tag); why = Tutor.why(r, DATA.coach);
-    } else {
-      state.tutor.remedy = null;
-      const c = Tutor.choose(Tutor.model(events(), TX), TX, { levelOf: f => state.level[f], recentFams: state.tutor.recent });
-      curFam = c.fam; servedAs = "ladder"; cur = pick(c.fam, c.level); why = Tutor.why(c, DATA.coach);
-    }
-    state.tutor.recent = state.tutor.recent.concat(curFam).slice(-10);
-  } else {
-    curFam = state.fam; servedAs = "ladder"; why = "";
-    cur = pick(curFam, state.level[curFam]);
-  }
-  begin();
-}
-
-// Show one exact problem (from the progress page). It does not move levels.
-function openProblem(fam, level, seed) {
-  const p = ((DATA.bank[fam] || {})[level] || []).find(x => x.seed === seed);
-  if (!p) return false;
-  Progress.close(false);
-  renderTabs();
-  curFam = fam; servedAs = "lookback"; cur = p; why = "A puzzle from the progress page.";
-  begin();
-  return true;
-}
-
-function begin() {
-  tries = 0; hintsShown = 0; solved = false; selected = new Set(); lastTags = []; shownAt = Date.now();
-  save(); render();
-}
 
 function render() {
   const p = cur, card = $("#card");
-  if (!p) { card.innerHTML = `<p class="loaderr">No problems found for this level. Run tools/build_problems.py to create them.</p>`; return; }
   const kind = { trace: "Trace the rule", find: "Find the roll", compare: "Compare routes", cost: "Cheapest crossing", build: "Build the crossing",
     decode: "Decode the signal", count: "Count", inverse: "Find the signal", length: "Shortest route", count_routes: "Count cheapest crossings",
     valid: "Which belt works", depth: "Fullest bucket", stack: "Two sizes", repair: "Fix the belt", lookup: "Look it up",
@@ -211,12 +151,12 @@ function render() {
   const kindShown = p.family === "pointer_lists" && p.question_type === "inverse" ? "Work backward"
     : p.family === "logic_gates" && p.question_type === "count" ? "Count the ways"
     : p.family === "bead_grammar" && p.question_type === "count" ? "Count the necklaces" : kind;
-  const famTitle = state.fam === PRACTICE || servedAs !== "ladder" ? `<span>${esc(DATA.coach.titles[curFam])}</span>` : "";
+  const famTitle = page.mode === PRACTICE || servedAs !== "ladder" ? `<span>${esc(COACH.titles[p.fam])}</span>` : "";
   let body = `<div class="meta">${famTitle}<span>Level ${p.level}</span><span>${kindShown}</span></div>`
     + (why ? `<p class="why">${esc(why)}</p>` : "") + `<p class="prompt">${esc(p.prompt)}</p>`;
   if (p.rule_text) body += `<pre class="rule">${ruleHTML(p.rule_text)}</pre>`;
   if (p.codebook) body += codebookHTML(p);
-  if (p.family === "conveyor" && p.scene.belt) body += beltHTML(p.scene.belt, true);
+  if (p.family === "conveyor" && p.scene && p.scene.belt) body += beltHTML(p.scene.belt, true);
   if (p.family === "pointer_lists") body += rowsHTML(p.scene.lists);
   if (p.family === "bead_grammar") body += grammarHTML(p.scene);
   if (p.family === "parity_grid") body += shelvesHTML(p);
@@ -233,11 +173,12 @@ function render() {
   } else {
     body += `<div class="options${["signal_code", "conveyor", "bead_grammar"].includes(p.family) ? " wide" : ""}">${p.options.map((o, i) => `<button class="opt" data-i="${i}">${optionHTML(o)}</button>`).join("")}</div>`;
   }
-  body += `<div id="fb"></div><div class="row"><button class="btn ghost" id="hint">Show a hint</button><button class="btn" id="next" hidden>Next puzzle</button><span class="tally">${state.tally.right} of ${state.tally.total} right on the first try</span></div>`;
+  body += `<div id="fb"></div><div class="row"><button class="btn ghost" id="hint">Show a hint</button><button class="btn" id="next" hidden>Next puzzle</button><span class="tally"></span></div>`;
   card.innerHTML = body;
+  drawTally();
   card.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => answerMC(+b.dataset.i, b)));
   $("#hint").addEventListener("click", showHint);
-  $("#next").addEventListener("click", next);
+  $("#next").addEventListener("click", () => next());
   if (p.question_type === "build") setupBuild();
   if (p.entry === "press") setupPress();
   if (p.entry === "cells") setupCells();
@@ -245,98 +186,77 @@ function render() {
   renderCoach();
 }
 
-function wrongTags(i) {
-  const o = cur.options[i];
-  const d = cur.distractors.find(d => JSON.stringify(d.option) === JSON.stringify(o) || (cur.question_type === "compare" && routeText(d.option) === o));
-  return d ? d.misconceptions : [];
+function drawTally() {
+  const t = $(".tally");
+  if (t) t.textContent = `${page.tally.right} of ${page.tally.total} right on the first try`;
+}
+const tryAgain = () => `Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.`;
+const say = (cls, html) => { $("#fb").innerHTML = `<div class="feedback ${cls}">${html}</div>`; };
+
+// Sends one try. Resolves with the server's verdict, or null when there is nothing to show
+// (not a real try, or the server could not be reached; the message is already on screen).
+async function submit(answer) {
+  if (solved || busy) return null;
+  busy = true;
+  try {
+    const r = await api("/api/answer", { answer, hints: hintsShown });
+    if (!r) return null;
+    if (r.invalid) { say("bad", esc(r.invalid)); return null; }
+    tries = r.tries; page = r.page;
+    if (r.correct) { Sound.right(); solved = true; } else Sound.miss();
+    if (r.tags.length) lastTags = r.tags;
+    drawTally();
+    return r;
+  } catch (e) {
+    say("bad", esc(e.status === 409 ? e.message : OFFLINE));
+    return null;
+  } finally { busy = false; }
 }
 
-// Called once per try. Every try is logged to the account (if signed in); only first tries move the level.
-function record(correct, tags, answer) {
-  const fam = curFam;
-  if (correct) Sound.right(); else Sound.miss();
-  Account.logAttempt({ family: fam, level: cur.level, seed: cur.seed, questionType: cur.question_type, try: tries,
-    correct, answer, tags, hints: hintsShown, ms: Date.now() - shownAt });
-  if (tries === 1) {
-    state.tally.total++; if (correct) state.tally.right++;
-    state.log.push({ fam, level: cur.level, seed: cur.seed, correct, tags, hints: hintsShown, t: Date.now() });
-    if (state.log.length > 1000) state.log = state.log.slice(-1000);
-    if (correct) state.done[fam + cur.level] = (state.done[fam + cur.level] || 0) + 1;
-    if (servedAs === "ladder") {
-      if (correct) { state.streak[fam]++; state.misses[fam] = 0; } else { state.misses[fam]++; state.streak[fam] = 0; }
-    }
-    const lv = levels(fam), max = lv[lv.length - 1], min = lv[0];
-    if (servedAs === "ladder" && (state.fam === PRACTICE || $("#auto").checked)) {
-      if (state.streak[fam] >= 2 && state.level[fam] < max) { state.level[fam]++; state.streak[fam] = 0; }
-      if (state.misses[fam] >= 2 && state.level[fam] > min) { state.level[fam]--; state.misses[fam] = 0; }
-    }
-    if (state.fam === PRACTICE) tutorAfterFirstTry(correct);
-  }
-  const tally = document.querySelector(".tally");
-  if (tally) tally.textContent = `${state.tally.right} of ${state.tally.total} right on the first try`;
-  tags.forEach(t => state.misconceptionCounts[t] = (state.misconceptionCounts[t] || 0) + 1);
-  if (tags.length) lastTags = tags;
-  save();
-}
-
-// A detour ends after two first-try wins or four problems; a repeated misconception starts one.
-function tutorAfterFirstTry(correct) {
-  const t = state.tutor;
-  if (servedAs === "remedy" && t.remedy) {
-    t.remedy.served = (t.remedy.served || 0) + 1;
-    if (correct) t.remedy.right = (t.remedy.right || 0) + 1;
-    if (t.remedy.right >= 2 || t.remedy.served >= 4) { t.ended[t.remedy.tag] = Date.now(); t.remedy = null; }
-  } else if (!correct && servedAs === "ladder") {
-    const plan = Tutor.remedyFor(Tutor.model(events(), TX), TX, { levelOf: f => state.level[f], ended: t.ended });
-    if (plan) t.remedy = { ...plan, served: 0, right: 0, started: Date.now() };
-  }
-}
-
-function answerMC(i, btn) {
-  if (solved) return;
-  tries++;
-  const ok = i === cur.answer_index, tags = ok ? [] : wrongTags(i);
-  record(ok, tags, { choice: i, option: cur.options[i] });
-  if (ok) {
-    btn.classList.add("right"); solved = true;
+async function answerMC(i, btn) {
+  const r = await submit({ choice: i });
+  if (!r) return;
+  if (r.correct) {
+    btn.classList.add("right");
     document.querySelectorAll(".opt").forEach(b => b.disabled = true);
-    finish();
+    finish(r);
   } else {
     btn.classList.add("wrong"); btn.disabled = true;
-    $("#fb").innerHTML = `<div class="feedback bad">Not quite. Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.</div>`;
+    say("bad", `Not quite. ${tryAgain()}`);
     renderCoach();
   }
 }
 
-function answerNumber() {
-  if (solved) return;
+async function answerNumber() {
   const raw = $("#numans").value.trim();
-  if (raw === "" || isNaN(+raw)) { $("#fb").innerHTML = `<div class="feedback bad">Type a whole number, then press Check.</div>`; return; }
-  tries++;
-  const v = Math.round(+raw), ok = v === cur.answer_value;
-  const tags = ok ? [] : (cur.value_tags[String(v)] || []);
-  record(ok, tags, v);
-  if (ok) { solved = true; $("#numans").disabled = true; finish(); return; }
-  $("#fb").innerHTML = `<div class="feedback bad">${v} is not right. Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.</div>`;
+  if (raw === "" || isNaN(+raw)) { say("bad", "Type a whole number, then press Check."); return; }
+  const v = Math.round(+raw), r = await submit({ value: v });
+  if (!r) return;
+  if (r.correct) { $("#numans").disabled = true; finish(r); return; }
+  say("bad", `${v} is not right. ${tryAgain()}`);
   renderCoach();
 }
 
-function finish() {
+function finish(r) {
   $("#fb").innerHTML = `<div class="feedback good">${tries === 1 ? "Right on the first try." : "Got it."}</div>
-    <div class="explain">${cur.explanation.map(l => `<p${l.startsWith("  ") ? ' class="mono"' : ""}>${esc(l).replace(/\{\{([A-Za-z]+)\}\}/g, (_, t) => tokensHTML(t))}</p>`).join("")}</div>`;
+    <div class="explain">${(r.explanation || []).map(l => `<p${l.startsWith("  ") ? ' class="mono"' : ""}>${esc(l).replace(/\{\{([A-Za-z]+)\}\}/g, (_, t) => tokensHTML(t))}</p>`).join("")}</div>`;
   $("#next").hidden = false; $("#hint").hidden = true;
   renderTabs(); renderCoach();
 }
 
-function showHint() {
-  if (hintsShown >= cur.hints.length) return;
-  hintsShown++;
+function drawHints() {
   let box = $("#hintbox");
   if (!box) { box = document.createElement("div"); box.className = "hintbox"; box.id = "hintbox"; $("#fb").before(box); }
   box.innerHTML = cur.hints.slice(0, hintsShown).map(h => `<div>${esc(h)}</div>`).join("");
   if (hintsShown >= cur.hints.length) $("#hint").disabled = true;
 }
+function showHint() {
+  if (hintsShown >= cur.hints.length) return;
+  hintsShown++;
+  drawHints();
+}
 
+// ---- Lake Crossing: tap walkways, then check
 function setupBuild() {
   const groups = document.querySelectorAll("#map g.walkway");
   const updateSum = () => {
@@ -356,48 +276,18 @@ function setupBuild() {
     g.addEventListener("click", toggle);
     g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
   });
-  $("#clear").addEventListener("click", () => { selected.clear(); groups.forEach(g => g.classList.remove("sel")); updateSum(); });
-  $("#submit").addEventListener("click", submitBuild);
-}
-
-function edgeSet(path) { const s = new Set(); for (let i = 0; i < path.length - 1; i++) s.add([path[i], path[i + 1]].sort().join("|")); return s; }
-function sameSet(a, b) { return a.size === b.size && [...a].every(x => b.has(x)); }
-
-function submitBuild() {
-  if (solved) return;
-  const sub = new Set([...selected].map(k => k.split("|").sort().join("|")));
-  const deg = {}; sub.forEach(k => k.split("|").forEach(n => deg[n] = (deg[n] || 0) + 1));
-  const isChain = deg.N === 1 && deg.S === 1 && Object.entries(deg).every(([n, d]) => (n === "N" || n === "S") ? d === 1 : d === 2);
-  // degree test alone allows a separate loop of islands; also require connectivity from N
-  let connected = false;
-  if (isChain) {
-    const adj = {}; sub.forEach(k => { const [a, b] = k.split("|"); (adj[a] = adj[a] || []).push(b); (adj[b] = adj[b] || []).push(a); });
-    const seen = new Set(["N"]), stack = ["N"];
-    while (stack.length) { const u = stack.pop(); (adj[u] || []).forEach(v => { if (!seen.has(v)) { seen.add(v); stack.push(v); } }); }
-    connected = seen.size === Object.keys(deg).length;
-  }
-  if (!sub.size || !isChain || !connected) {
-    $("#fb").innerHTML = `<div class="feedback bad">That is not one complete crossing yet. Pick walkways that make a single unbroken line from the north shore to the south shore.</div>`;
-    return;
-  }
-  tries++;
-  const ok = sameSet(sub, edgeSet(cur.answer_path));
-  const tags = ok ? [] : Object.entries(cur.misconception_paths).filter(([k, p]) => sameSet(sub, edgeSet(p))).map(([k]) => k);
-  record(ok, tags, [...sub]);
-  if (ok) { solved = true; finish(); return; }
-  const sum = [...document.querySelectorAll("#map g.walkway.sel")].reduce((s, x) => s + +x.dataset.w, 0);
-  $("#fb").innerHTML = `<div class="feedback bad">That crossing works, but it uses ${sum} planks. A cheaper one exists. Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.</div>`;
-  renderCoach();
+  $("#clear").addEventListener("click", () => { if (solved) return; selected.clear(); groups.forEach(g => g.classList.remove("sel")); updateSum(); });
+  $("#submit").addEventListener("click", async () => {
+    const r = await submit({ edges: [...selected] });
+    if (!r) return;
+    if (r.correct) { finish(r); return; }
+    const sum = [...document.querySelectorAll("#map g.walkway.sel")].reduce((s, x) => s + +x.dataset.w, 0);
+    say("bad", `That crossing works, but it uses ${sum} planks. A cheaper one exists. ${tryAgain()}`);
+    renderCoach();
+  });
 }
 
 // ---- Lights On: tap buttons in the circuit, then check
-function gateEval(node, on, swap) {
-  if (node.in !== undefined) return on.has(node.in);
-  const a = gateEval(node.kids[0], on, swap), b = gateEval(node.kids[1], on, swap);
-  let op = node.op;
-  if (swap && op === swap[0]) op = swap[1];
-  return op === "AND" ? a && b : op === "XOR" ? a !== b : a || b;
-}
 function setupPress() {
   const btns = document.querySelectorAll("#map g.btn");
   const update = () => { $("#selsum").textContent = selected.size ? `${selected.size} beaver${selected.size > 1 ? "s" : ""}` : ""; };
@@ -411,22 +301,11 @@ function setupPress() {
     g.addEventListener("click", flip);
     g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
   });
-  $("#submit").addEventListener("click", () => {
-    if (solved) return;
-    tries++;
-    const tree = cur.scene.tree, lit = gateEval(tree, selected);
-    const ok = lit && (cur.question_type !== "fewest" || selected.size === cur.answer_value);
-    let tags = [];
-    if (!ok) {
-      if (lit) tags = ["EXTRA_BUTTONS"];
-      else {
-        if (gateEval(tree, selected, ["XOR", "OR"])) tags.push("XOR_AS_OR");
-        if (gateEval(tree, selected, ["AND", "OR"])) tags.push("BOTH_AS_EITHER");
-      }
-    }
-    record(ok, tags, [...selected].sort((a, b) => a - b));
-    if (ok) { solved = true; document.querySelector("#map .bulb").classList.add("lit"); finish(); return; }
-    $("#fb").innerHTML = `<div class="feedback bad">${lit ? `The light is on, but it can be done with fewer than ${selected.size} beavers.` : "The light stays off."} Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.</div>`;
+  $("#submit").addEventListener("click", async () => {
+    const n = selected.size, r = await submit({ buttons: [...selected] });
+    if (!r) return;
+    if (r.correct) { document.querySelector("#map .bulb").classList.add("lit"); finish(r); return; }
+    say("bad", `${r.lit ? `The light is on, but it can be done with fewer than ${n} beavers.` : "The light stays off."} ${tryAgain()}`);
     renderCoach();
   });
   $("#clear").addEventListener("click", () => { if (solved) return; selected.clear(); btns.forEach(g => g.classList.remove("sel")); update(); });
@@ -435,7 +314,7 @@ function setupPress() {
 // ---- Pantry Map: tap shelves, then check
 function setupCells() {
   const fill = cur.question_type === "fill", cells = document.querySelectorAll("#shelves .shelf");
-  const editable = new Set((cur.scene.editable || []).map(x => x.join(",")));
+  const editable = new Set(((cur.scene || {}).editable || []).map(x => x.join(",")));
   const update = () => { $("#selsum").textContent = fill ? "" : `${selected.size} of ${cur.pick} chosen`; };
   cells.forEach(b => b.addEventListener("click", () => {
     if (solved) return;
@@ -449,88 +328,59 @@ function setupCells() {
     update();
   }));
   update();
-  $("#submit").addEventListener("click", () => {
-    if (solved) return;
-    if (!fill && selected.size !== cur.pick) { $("#fb").innerHTML = `<div class="feedback bad">Choose ${cur.pick} shel${cur.pick > 1 ? "ves" : "f"} first.</div>`; return; }
-    tries++;
-    const want = new Set(cur.answer_value.map(x => x.join(",")));
-    const ok = selected.size === want.size && [...selected].every(k => want.has(k));
-    let tags = [];
-    if (!ok && !fill) tags = [...new Set([...selected].flatMap(k => cur.cell_tags[k] || []))];
-    if (!ok && fill) {
-      const sc = cur.scene, g = Array.from({ length: sc.rows }, () => Array(sc.cols).fill(0));
-      sc.marks.forEach(([r, c]) => g[r][c] = 1);
-      selected.forEach(k => { const [r, c] = k.split(",").map(Number); g[r][c] = 1; });
-      const rowsEven = g.every(row => row.reduce((a, b) => a + b) % 2 === 0);
-      const colsEven = g[0].every((_, c) => g.reduce((a, row) => a + row[c], 0) % 2 === 0);
-      const corner = (sc.rows - 1) + "," + (sc.cols - 1);
-      const offByCorner = [...want].filter(k => k !== corner).every(k => selected.has(k)) && [...selected].filter(k => k !== corner).every(k => want.has(k));
-      if (offByCorner) tags = ["PARITY_CORNER"];
-      else if (rowsEven && !colsEven) tags = ["PARITY_ROWS_ONLY"];
-      else if (colsEven && !rowsEven) tags = ["PARITY_COLS_ONLY"];
-    }
-    record(ok, tags, [...selected].sort());
-    if (ok) { solved = true; cells.forEach(b => { if (want.has(b.dataset.k)) b.classList.add("right"); }); finish(); return; }
-    $("#fb").innerHTML = `<div class="feedback bad">Not quite. Try again${hintsShown < cur.hints.length ? ", or take a hint" : ""}.</div>`;
+  $("#submit").addEventListener("click", async () => {
+    if (!fill && selected.size !== cur.pick) { say("bad", `Choose ${cur.pick} shel${cur.pick > 1 ? "ves" : "f"} first.`); return; }
+    const r = await submit({ cells: [...selected] });
+    if (!r) return;
+    if (r.correct) { cells.forEach(b => { if (selected.has(b.dataset.k)) b.classList.add("right"); }); finish(r); return; }
+    say("bad", `Not quite. ${tryAgain()}`);
     renderCoach();
   });
   $("#clear").addEventListener("click", () => { if (solved) return; selected.clear(); cells.forEach(b => b.classList.remove("sel")); update(); });
 }
 
 function renderCoach() {
-  const C = DATA.coach;
-  const counts = Object.entries(state.misconceptionCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  let h = cur ? `<p style="margin:8px 0 0">Tests: ${cur.concepts.map(c => esc(C.concepts[c] || c)).join(", ")}. Problem file: <span class="tag">${curFam}/L${cur.level}-${cur.seed}.js</span></p>` : "";
+  const C = COACH;
+  let h = cur ? `<p style="margin:8px 0 0">Tests: ${cur.concepts.map(c => esc(C.concepts[c] || c)).join(", ")}. Puzzle: <span class="tag">${cur.fam}/L${cur.level}-${cur.seed}</span></p>` : "";
   if (lastTags.length) {
     h += `<p style="margin:8px 0 0"><b>Last wrong answer matched:</b></p><ul>` + lastTags.map(t => {
       const m = C.misconceptions[t];
       return m ? `<li><span class="tag">${t}</span> ${esc(m.description)} <i>Try:</i> ${esc(m.remediation)}</li>` : "";
     }).join("") + `</ul>`;
   }
-  if (counts.length) h += `<p style="margin:10px 0 0"><b>Most frequent so far:</b> ${counts.map(([k, v]) => `<span class="tag">${k}</span> ×${v}`).join(", ")}</p>`;
-  h += `<div class="row" style="margin-top:10px"><button class="btn ghost" id="reset">Reset progress</button><span id="resetMsg"></span></div>`;
+  if (page && page.top.length) h += `<p style="margin:10px 0 0"><b>Most frequent so far:</b> ${page.top.map(([k, v]) => `<span class="tag">${k}</span> ×${v}`).join(", ")}</p>`;
+  h += `<div class="row" style="margin-top:10px"><button class="btn ghost" id="reset">Reset levels</button><span id="resetMsg"></span></div>`;
   $("#coachBody").innerHTML = h;
-  $("#reset").addEventListener("click", () => {
+  $("#reset").addEventListener("click", async () => {
     const m = $("#resetMsg");
-    if (m.dataset.armed) {
-      if (Account.signedIn) { state = defaultState(); lastTags = []; save(); next(); return; } // saved answers are kept
-      try { localStorage.removeItem("bebras-practice-local"); } catch (e) {} location.reload(); return;
-    }
-    m.dataset.armed = "1"; m.textContent = Account.signedIn ? "Click again to reset levels. Your saved answers are kept." : "Click again to clear levels and history.";
+    if (!m.dataset.armed) { m.dataset.armed = "1"; m.textContent = "Click again to start levels over. Your answers are kept."; return; }
+    try { await api("/api/reset-levels"); next(); } catch (e) { m.textContent = problemMsg(e); }
   });
 }
 
 (async function start() {
-  if (!BEBRAS.coachData || FAMS.some(f => !BEBRAS.files[f])) {
-    $("#card").innerHTML = `<p class="loaderr">Could not find coach.js or a manifest.js in ${FAMS.join("/, ")}/. Keep index.html in the same folder as those, or run tools/build_problems.py to recreate them.</p>`;
-    return;
-  }
-  const loading = loadAll();
-  const acct = await Account.init(); // shows the sign-in form when served by server.js
-  if (acct.user) $("#card").innerHTML = "<p>Loading problems…</p>";
-  const { bank, missing } = await loading;
-  DATA = { bank, coach: BEBRAS.coachData };
-  window.APP = { DATA, get TX() { return TX; }, get state() { return state; }, openProblem, next, events };
-  const saved = (acct.user ? acct.state : store.get("bebras-practice-local", {})) || {}, base = defaultState();
-  state = Object.assign(base, saved);
-  ["level", "streak", "misses", "tutor"].forEach(k => { state[k] = Object.assign(defaultState()[k], saved[k] || {}); });
-  if (state.fam !== PRACTICE && !FAMS.includes(state.fam)) state.fam = PRACTICE;
-  TX = Tutor.index(bank, DATA.coach);
-  FAMS.forEach(f => { const lv = levels(f); if (!lv.includes(state.level[f])) state.level[f] = lv[0]; });
+  COACH = BEBRAS.coachData;
+  if (!COACH) { $("#card").innerHTML = `<p class="loaderr">Could not load coach.js. Reload the page.</p>`; return; }
+  const acct = await Account.init();   // shows the sign-in form until someone signs in
+  if (!acct.user) { $("#card").innerHTML = `<p class="loaderr">${esc(acct.error || OFFLINE)}</p>`; return; }
+  window.APP = { get coach() { return COACH; }, openProblem, next };
+  $("#card").innerHTML = "<p>Loading a puzzle…</p>";
   // Practice (the tutor mixes puzzle types) is the default; "Pick a puzzle" opens the last type picked.
-  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => { state.fam = state.lastFam = t.dataset.fam; save(); next(); }));
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => next({ mode: t.dataset.fam })));
   document.querySelectorAll(".mode").forEach(m => m.addEventListener("click", () => {
-    const fam = m.dataset.mode === "practice" ? PRACTICE : FAMS.includes(state.lastFam) ? state.lastFam : FAMS[0];
-    if (fam === state.fam) return;
-    if (fam !== PRACTICE) state.lastFam = fam;
-    state.fam = fam; save(); next();
+    if (!page) return;
+    const fams = [...document.querySelectorAll(".tab")].map(t => t.dataset.fam);
+    const mode = m.dataset.mode === PRACTICE ? PRACTICE : page.lastFam || fams[0];
+    if (mode !== page.mode) next({ mode });
   }));
-  next();
+  $("#auto").addEventListener("change", async (e) => {
+    try { page = (await api("/api/settings", { auto: e.target.checked })).page; } catch (err) { e.target.checked = !e.target.checked; }
+  });
   const soundBtn = $("#soundBtn"), showSound = () => soundBtn.setAttribute("aria-pressed", Sound.on);
   showSound();
   soundBtn.addEventListener("click", () => { Sound.set(!Sound.on); showSound(); if (Sound.on) Sound.right(); });
   $("#progressBtn").hidden = false;
   $("#progressBtn").addEventListener("click", () => Progress.open());
+  await next({ resume: true });
   Progress.welcome();
-  if (missing.length) $("#card").insertAdjacentHTML("afterbegin", `<p class="loaderr">${missing.length} problem file(s) listed in a manifest could not be loaded, starting with ${esc(missing[0])}.</p>`);
 })();

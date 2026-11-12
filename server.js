@@ -1,5 +1,9 @@
-// Kerbopple server: serves the page and a small JSON API for family
-// accounts, saved progress, and a log of every answer attempt.
+// Kerbopple server: serves the page and a JSON API for family accounts and practice.
+//
+// Practice runs here, not in the page (engine.js and tutor.js): the server picks each
+// puzzle, sends it without its answer, checks every try, logs it in the attempts table,
+// and moves levels and the tutor. The problem files are never served, so answer keys
+// stay on the server.
 //
 // Accounts: only parents sign up (email + password, confirmed by email). A parent
 // adds an account for each kid, choosing the kid's username and password. Kids
@@ -17,6 +21,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { DatabaseSync } = require("node:sqlite");
+const E = require("./engine.js");
 
 const ROOT = __dirname;
 const PORT = +process.env.PORT || 3000;
@@ -28,6 +33,7 @@ const APP_URL = (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || `http
 const TOKEN_HOURS = { verify: 48, reset: 1 };
 const SESSION_DAYS = 60;
 const COOKIE = "bebras_sid";
+const B = E.load(__dirname);   // the problem bank, coach data and tutor index
 
 // ---------- database
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -115,6 +121,9 @@ if (!db.prepare("PRAGMA table_info(users)").all().some(c => c.name === "username
   }
 }
 db.exec("CREATE UNIQUE INDEX IF NOT EXISTS users_username ON users (username)");
+// how each puzzle was served: ladder, remedy (a tutor detour) or lookback (reopened from the Progress page).
+// Look-backs are kept but left out of levels, the tutor and the Progress page.
+if (!db.prepare("PRAGMA table_info(attempts)").all().some(c => c.name === "served_as")) db.exec("ALTER TABLE attempts ADD COLUMN served_as TEXT");
 const q = {
   userByEmail: db.prepare("SELECT * FROM users WHERE email = ? AND parent_id IS NULL"),
   kidsOf: db.prepare("SELECT * FROM users WHERE parent_id = ? ORDER BY name COLLATE NOCASE, id"),
@@ -144,15 +153,21 @@ const q = {
   getState: db.prepare("SELECT state FROM progress WHERE user_id = ?"),
   putState: db.prepare(`INSERT INTO progress (user_id, state, updated_at) VALUES (?, ?, ?)
     ON CONFLICT (user_id) DO UPDATE SET state = excluded.state, updated_at = excluded.updated_at`),
-  addAttempt: db.prepare(`INSERT OR IGNORE INTO attempts
-    (user_id, client_id, family, level, seed, question_type, try_number, correct, answer, misconceptions, hints_shown, ms_on_problem, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
+  addAttempt: db.prepare(`INSERT INTO attempts
+    (user_id, client_id, family, level, seed, question_type, try_number, correct, answer, misconceptions, hints_shown, ms_on_problem, created_at, served_as)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
   attempts: db.prepare("SELECT * FROM attempts WHERE user_id = ? ORDER BY created_at, id"),
+  practiceTries: db.prepare("SELECT * FROM attempts WHERE user_id = ? AND served_as IS NOT 'lookback' ORDER BY created_at, id"),
+  firstTries: db.prepare(`SELECT family, level, correct, misconceptions, hints_shown, created_at FROM attempts
+    WHERE user_id = ? AND try_number = 1 AND served_as IS NOT 'lookback' ORDER BY created_at, id`),
+  tally: db.prepare(`SELECT COUNT(*) AS total, COALESCE(SUM(correct), 0) AS right FROM attempts
+    WHERE user_id = ? AND try_number = 1 AND served_as IS NOT 'lookback'`),
+  doneLevels: db.prepare(`SELECT family, level FROM attempts WHERE user_id = ? AND try_number = 1 AND correct = 1 AND served_as IS NOT 'lookback'
+    GROUP BY family, level HAVING COUNT(*) >= 2`),
+  topTags: db.prepare(`SELECT j.value AS tag, COUNT(*) AS n FROM attempts a, json_each(a.misconceptions) j
+    WHERE a.user_id = ? GROUP BY j.value ORDER BY n DESC, tag LIMIT 5`),
   familyAttempts: db.prepare(`SELECT * FROM attempts WHERE user_id IN (SELECT id FROM users WHERE id = ? OR parent_id = ?)
-    ORDER BY user_id, created_at, id`),
-  summary: db.prepare(`SELECT family, COUNT(*) AS attempts,
-      SUM(try_number = 1) AS first_tries, SUM(try_number = 1 AND correct) AS first_try_right
-    FROM attempts WHERE user_id = ? GROUP BY family ORDER BY family`)
+    ORDER BY user_id, created_at, id`)
 };
 
 // ---------- passwords and sessions
@@ -278,9 +293,7 @@ const int = (v) => (Number.isInteger(v) ? v : null);
 // ---------- API
 const api = {
   "GET /api/me"(req, res, user) {
-    if (!user) return send(res, 200, { user: null });
-    const row = q.getState.get(user.id);
-    send(res, 200, { user: pub(user), state: row ? JSON.parse(row.state) : null });
+    send(res, 200, { user: user ? pub(user) : null });
   },
   async "POST /api/register"(req, res) {
     if (throttled(req)) return send(res, 429, { error: "Too many tries. Wait a few minutes." });
@@ -309,8 +322,7 @@ const api = {
     if (!u) return send(res, 400, { error: "That confirmation link has expired or was already used. Try signing in, or ask for a new link." });
     q.markVerified.run(Date.now(), u.id);
     startSession(res, req, u.id);
-    const row = q.getState.get(u.id);
-    send(res, 200, { user: pub(u), state: row ? JSON.parse(row.state) : null });
+    send(res, 200, { user: pub(u) });
   },
   async "POST /api/forgot"(req, res) {
     if (throttled(req)) return send(res, 429, { error: "Too many tries. Wait a few minutes." });
@@ -330,8 +342,7 @@ const api = {
     q.dropUserSessions.run(u.id);          // sign out everywhere else
     q.markVerified.run(Date.now(), u.id);  // the link proves they read this inbox
     startSession(res, req, u.id);
-    const row = q.getState.get(u.id);
-    send(res, 200, { user: pub(u), state: row ? JSON.parse(row.state) : null });
+    send(res, 200, { user: pub(u) });
   },
   async "POST /api/login"(req, res) {
     if (throttled(req)) return send(res, 429, { error: "Too many tries. Wait a few minutes." });
@@ -347,8 +358,7 @@ const api = {
       ? { error: "Your parent needs to confirm their email first. Ask them to look for our email." }
       : { error: "Your email needs confirming first. Look for our email, or send it again.", unconfirmed: true });
     startSession(res, req, u.id);
-    const row = q.getState.get(u.id);
-    send(res, 200, { user: pub(u), state: row ? JSON.parse(row.state) : null });
+    send(res, 200, { user: pub(u) });
   },
   "POST /api/logout"(req, res) {
     const t = tokenOf(req);
@@ -356,49 +366,80 @@ const api = {
     setCookie(res, req, "", 0);
     send(res, 200, { ok: true });
   },
-  async "PUT /api/state"(req, res, user) {
+  // ---- practice. The page shows the puzzle it is given and sends each try here.
+  // Body: {} for the next puzzle; { resume: true } on page load (the unsolved puzzle on screen, if any);
+  // { mode: "practice" | puzzle type } to switch; { level } to jump to a level of the current puzzle type.
+  async "POST /api/next"(req, res, user) {
     if (!user) return send(res, 401, { error: "Log in first." });
-    const b = await readJSON(req);
-    if (!b.state || typeof b.state !== "object") return send(res, 400, { error: "Missing state." });
-    q.putState.run(user.id, JSON.stringify(b.state), Date.now());
+    const b = await readJSON(req), st = loadState(user.id), c = st.current;
+    if (b.resume && c && !c.solved && B.problem(c.fam, c.level, c.seed)) return send(res, 200, puzzlePayload(user.id, st));
+    if (b.mode !== undefined) {
+      if (b.mode !== E.PRACTICE && !B.fams.includes(b.mode)) return send(res, 400, { error: "No such puzzle type." });
+      st.mode = b.mode;
+      if (b.mode !== E.PRACTICE) st.lastFam = b.mode;
+    }
+    if (b.level !== undefined) {
+      if (st.mode === E.PRACTICE || !B.levels[st.mode].includes(b.level)) return send(res, 400, { error: "No such level." });
+      st.level[st.mode] = b.level; st.streak[st.mode] = 0; st.misses[st.mode] = 0;
+    }
+    E.serve(B, st, firstTryEvents(user.id));
+    saveState(user.id, st);
+    send(res, 200, puzzlePayload(user.id, st));
+  },
+  // Reopens one puzzle from the Progress page. Its tries are logged but do not move levels or the tutor.
+  async "POST /api/open"(req, res, user) {
+    if (!user) return send(res, 401, { error: "Log in first." });
+    const b = await readJSON(req), p = B.problem(str(b.fam, 40), int(b.level), int(b.seed));
+    if (!p) return send(res, 404, { error: "That puzzle is not in the current puzzle set." });
+    const st = loadState(user.id);
+    E.setCurrent(st, str(b.fam, 40), p, "lookback", "A puzzle from the progress page.");
+    saveState(user.id, st);
+    send(res, 200, puzzlePayload(user.id, st));
+  },
+  // One try at the puzzle on screen: { answer, hints } (hints: how many the student has opened).
+  async "POST /api/answer"(req, res, user) {
+    if (!user) return send(res, 401, { error: "Log in first." });
+    const b = await readJSON(req), st = loadState(user.id), c = st.current;
+    const p = c && B.problem(c.fam, c.level, c.seed);
+    if (!p) return send(res, 409, { error: "That puzzle is gone. Load the next one." });
+    if (c.solved) return send(res, 409, { error: "Already solved." });
+    c.hints = Math.max(c.hints, Math.min(int(b.hints) || 0, (p.hints || []).length));
+    const r = E.check(p, b.answer);
+    if (r.invalid) { saveState(user.id, st); return send(res, 200, { invalid: r.invalid }); }
+    c.tries++;
+    const now = Date.now();
+    q.addAttempt.run(user.id, crypto.randomUUID(), c.fam, p.level, p.seed, p.question_type, c.tries, r.correct ? 1 : 0,
+      JSON.stringify(r.stored), JSON.stringify(r.tags), c.hints, now - c.shownAt, now, c.servedAs);
+    if (c.tries === 1) E.afterFirstTry(B, st, r.correct, firstTryEvents(user.id));
+    if (r.correct) c.solved = true;
+    saveState(user.id, st);
+    send(res, 200, { correct: r.correct, tags: r.tags, lit: r.lit, tries: c.tries,
+      explanation: r.correct ? p.explanation : undefined, page: pageInfo(user.id, st) });
+  },
+  async "POST /api/settings"(req, res, user) {
+    if (!user) return send(res, 401, { error: "Log in first." });
+    const b = await readJSON(req), st = loadState(user.id);
+    if (b.auto !== undefined) st.auto = !!b.auto;
+    saveState(user.id, st);
+    send(res, 200, { page: pageInfo(user.id, st) });
+  },
+  // Starts levels and the tutor over. Answers are kept.
+  "POST /api/reset-levels"(req, res, user) {
+    if (!user) return send(res, 401, { error: "Log in first." });
+    const st = E.freshState(B), old = loadState(user.id);
+    st.mode = old.mode; st.lastFam = old.lastFam;
+    saveState(user.id, st);
     send(res, 200, { ok: true });
   },
-  // Takes a list so the page can resend attempts it saved while offline. client_id makes resends harmless.
-  async "POST /api/attempts"(req, res, user) {
-    if (!user) return send(res, 401, { error: "Log in first." });
-    const b = await readJSON(req);
-    const list = Array.isArray(b.attempts) ? b.attempts.slice(0, 500) : [];
-    let saved = 0;
-    db.exec("BEGIN");
-    try {
-      for (const a of list) {
-        const cid = str(a.id, 64), fam = str(a.family, 40);
-        if (!cid || !fam || int(a.level) === null || int(a.seed) === null || int(a.try) === null) continue;
-        const r = q.addAttempt.run(user.id, cid, fam, a.level, a.seed, str(a.questionType, 40) || null, a.try, a.correct ? 1 : 0,
-          a.answer === undefined ? null : JSON.stringify(a.answer).slice(0, 4000),
-          JSON.stringify(Array.isArray(a.tags) ? a.tags.slice(0, 20).map(t => String(t).slice(0, 60)) : []),
-          int(a.hints) || 0, int(a.ms), Number.isFinite(a.t) && a.t > 0 && a.t <= Date.now() + 60e3 ? Math.round(a.t) : Date.now());
-        saved += Number(r.changes);
-      }
-      db.exec("COMMIT");
-    } catch (e) { db.exec("ROLLBACK"); throw e; }
-    send(res, 200, { ok: true, received: list.length, saved });
-  },
-  "GET /api/summary"(req, res, user) {
-    if (!user) return send(res, 401, { error: "Log in first." });
-    send(res, 200, { families: q.summary.all(user.id) });
-  },
-  // Every try, compact, for the progress page. Kids see their own; parents can pass ?user=ID for their kids.
-  "GET /api/history"(req, res, user) {
+  // What the tutor knows about one student. Kids see their own; parents can pass ?user=ID for their kids.
+  "GET /api/progress"(req, res, user) {
     if (!user) return send(res, 401, { error: "Log in first." });
     const want = Number(new URL(req.url, "http://x").searchParams.get("user")) || user.id;
     if (!canSee(user, want)) return send(res, 403, { error: "You can only see your own family." });
     const u = q.userById.get(want);
     if (!u) return send(res, 404, { error: "No such student." });
-    const row = q.getState.get(u.id);
-    let tutor = null;
-    try { tutor = row ? JSON.parse(row.state).tutor || null : null; } catch (e) {}
-    send(res, 200, { student: { id: u.id, name: u.name }, tutor, attempts: q.attempts.all(u.id).map(compact) });
+    const view = E.progressView(B, loadState(u.id), q.practiceTries.all(u.id).map(compact), isParent(user));
+    send(res, 200, { student: { id: u.id, name: u.name }, ...view });
   },
   // ---- a parent's kids
   "GET /api/kids"(req, res, user) {
@@ -474,17 +515,44 @@ const api = {
   }
 };
 
+// ---------- practice state (levels, streaks, tutor plans, the puzzle on screen), one JSON row per student
+function loadState(id) {
+  let saved = null;
+  try { const row = q.getState.get(id); saved = row ? JSON.parse(row.state) : null; } catch (e) {}
+  return E.migrate(B, saved);
+}
+function saveState(id, st) { q.putState.run(id, JSON.stringify(st), Date.now()); }
+// first tries, oldest first, in the shape tutor.js reads
+function firstTryEvents(id) {
+  return q.firstTries.all(id).map(r => {
+    let tags = []; try { tags = JSON.parse(r.misconceptions || "[]"); } catch (e) {}
+    return { fam: r.family, level: r.level, correct: !!r.correct, tags, hints: r.hints_shown, t: r.created_at };
+  });
+}
+// levels, the level ladder marks and counts the page shows around the puzzle
+function pageInfo(id, st) {
+  const done = {};
+  q.doneLevels.all(id).forEach(r => (done[r.family] = done[r.family] || []).push(r.level));
+  const t = q.tally.get(id);
+  return { mode: st.mode, lastFam: st.lastFam, auto: st.auto, level: st.level, levels: B.levels, done,
+    tally: { right: t.right, total: t.total }, top: q.topTags.all(id).map(r => [r.tag, r.n]) };
+}
+function puzzlePayload(id, st) {
+  const c = st.current, p = B.problem(c.fam, c.level, c.seed);
+  return { puzzle: E.publicPuzzle(c.fam, p), servedAs: c.servedAs, why: c.why, tries: c.tries, hints: c.hints, page: pageInfo(id, st) };
+}
+
 function compact(r) {
   let answer = null, tags = [];
   try { answer = r.answer === null ? null : JSON.parse(r.answer); } catch (e) {}
   try { tags = JSON.parse(r.misconceptions || "[]"); } catch (e) {}
   return { fam: r.family, level: r.level, seed: r.seed, qt: r.question_type, try: r.try_number, correct: !!r.correct,
-    answer, tags, hints: r.hints_shown, ms: r.ms_on_problem, t: r.created_at };
+    answer, tags, hints: r.hints_shown, ms: r.ms_on_problem, t: r.created_at, served: r.served_as || null };
 }
 
-// ---------- static files: only the page and the problem folders (never tools/, data/ or this file)
-const FAMILY_DIRS = new Set([...fs.readFileSync(path.join(ROOT, "index.html"), "utf8").matchAll(/src="([a-z-]+)\/manifest\.js"/g)].map(m => m[1]));
-const TOP_FILES = new Set(["index.html", "app.js", "account.js", "tutor.js", "progress.js", "sound.js", "styles.css", "coach.js"]);
+// ---------- static files: only the page's own files. Never the problem folders (they hold the answers),
+// engine.js, tutor.js, tools/, data/ or this file.
+const TOP_FILES = new Set(["index.html", "app.js", "account.js", "progress.js", "sound.js", "styles.css", "coach.js"]);
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8" };
 
 function serveStatic(req, res) {
@@ -492,9 +560,7 @@ function serveStatic(req, res) {
   try { p = decodeURIComponent(new URL(req.url, "http://x").pathname); } catch (e) { return send(res, 400, "Bad path"); }
   if (p === "/") p = "/index.html";
   const parts = p.slice(1).split("/");
-  const allowed = (parts.length === 1 && TOP_FILES.has(parts[0]))
-    || (parts.length === 2 && FAMILY_DIRS.has(parts[0]) && /^[A-Za-z0-9_-]+\.js$/.test(parts[1]));
-  if (!allowed) return send(res, 404, "Not found");
+  if (parts.length !== 1 || !TOP_FILES.has(parts[0])) return send(res, 404, "Not found");
   const file = path.join(ROOT, ...parts);
   fs.readFile(file, (err, data) => {
     if (err) return send(res, 404, "Not found");
