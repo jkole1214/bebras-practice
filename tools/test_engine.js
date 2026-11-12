@@ -18,14 +18,15 @@ function rightAnswer(p) {
   if (p.entry === "cells") return { cells: p.answer_value.map(x => x.join(",")) };
   if (p.entry === "number") return { value: p.answer_value };
   if (p.entry === "code") return { code: p.answer_value };
+  if (p.entry === "bricks") return { bricks: { ...p.answer_value } };
   return { choice: p.answer_index };
 }
 function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push([...Array(n).keys()].filter(i => m >> i & 1).map(i => i + 1)); return out; }
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 11);
-  assert.ok(all.length >= 720, String(all.length));
+  assert.equal(B.fams.length, 12);
+  assert.ok(all.length >= 780, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {
@@ -55,6 +56,10 @@ test("every tagged distractor and typed wrong value is graded wrong with its tag
       const r = E.check(p, { code: c });
       assert.equal(r.correct, false, id); assert.deepEqual(r.tags, tags, id); n++;
     }
+    if (p.entry === "bricks" && p.question_type === "hidden") for (const [c, tags] of Object.entries(p.value_tags || {})) {
+      const r = E.check(p, { bricks: Object.fromEntries(p.scene.edit.map((k, i) => [k, c[i]])) });
+      assert.equal(r.correct, false, id); assert.deepEqual(r.tags, tags, id); n++;
+    }
     if (p.question_type === "build") for (const [tag, pth] of Object.entries(p.misconception_paths || {})) {
       const e = []; for (let i = 0; i < pth.length - 1; i++) e.push(pth[i] + "|" + pth[i + 1]);
       const r = E.check(p, { edges: e });
@@ -69,6 +74,20 @@ test("every tagged distractor and typed wrong value is graded wrong with its tag
     }
   }
   assert.ok(n > 1000, String(n));
+});
+
+test("pyramids: a wrong brick is tagged from the student's own bricks under it", () => {
+  for (const [, p] of all.filter(([, p]) => p.entry === "bricks" && p.question_type === "fill")) {
+    const sc = p.scene, low = sc.edit.find(k => k.startsWith("1,")), [, c] = low.split(",").map(Number);
+    const x = sc.given[`0,${c}`], y = sc.given[`0,${c + 1}`];
+    for (const v of "RYB") {
+      if (v === p.answer_value[low]) continue;
+      const r = E.check(p, { bricks: { ...p.answer_value, [low]: v } });
+      assert.equal(r.correct, false);
+      assert.ok(r.tags.includes(x === y ? "MATCH_MEANS_CHANGE" : "COPIES_A_SUPPORT"), `${p.seed} ${low}`);
+    }
+    assert.ok(E.check(p, { bricks: {} }).invalid);
+  }
 });
 
 test("circuits: wrong presses are tagged, and a lit bulb with too many buttons is EXTRA_BUTTONS", () => {
@@ -110,7 +129,8 @@ test("the page is never sent an answer, distractor tags or the explanation", () 
 });
 
 test("every misconception tag a wrong answer can carry has a look-again question", () => {
-  const tags = new Set(["EXTRA_BUTTONS", "XOR_AS_OR", "BOTH_AS_EITHER", "PARITY_CORNER", "PARITY_ROWS_ONLY", "PARITY_COLS_ONLY"]);
+  const tags = new Set(["EXTRA_BUTTONS", "XOR_AS_OR", "BOTH_AS_EITHER", "PARITY_CORNER", "PARITY_ROWS_ONLY", "PARITY_COLS_ONLY",
+    "COPIES_A_SUPPORT", "MATCH_MEANS_CHANGE"]);
   for (const [, p] of all) {
     (p.distractors || []).forEach(d => d.misconceptions.forEach(t => tags.add(t)));
     Object.values(p.value_tags || {}).flat().forEach(t => tags.add(t));

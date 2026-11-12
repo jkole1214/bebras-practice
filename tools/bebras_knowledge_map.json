@@ -84,9 +84,14 @@
         "method": "Claude built a new generator family, code_clues (folder code-lock, shown as Code Lock), from the Treasure Box generator candidate. It keeps the task's idea (find the code that agrees with every guess's right-spot and wrong-spot feedback) under an original theme, symbols and wording. Levels 1-3 offer four codes; levels 4-5 ask the student to build the code, and the clues always leave exactly one. Every problem passes check_code_clues.py, which rescores the answer against each clue with its own code, enumerates every possible code to confirm only one fits, and re-derives every wrong answer's tags; corrupting the answer, a clue's feedback, the clue list or a tag is caught in all 300 mutation trials."
       },
       {
+        "id": "brick-pyramid-family",
+        "built": "2026-11-12",
+        "method": "Claude built a new generator family, brick_rule (folder brick-pyramid, shown as Brick Pyramid), from the Colorful Tower generator candidate. It keeps the task's idea (a three-colour pyramid where a brick and the two under it are all the same or all different) under an original theme and wording, and adds two kinds of question the source task does not ask: counting one colour in the finished pyramid, and working backward to hidden bottom bricks. At level 5 the shown bricks always allow a step-by-step deduction (a brick and one brick under it force the other), and the explanation walks through it. Every problem passes check_brick_rule.py, which rebuilds the pyramid from the picture and solves it with arithmetic mod 3; every corrupted answer key is caught in the mutation trials. For colouring questions the server tags each wrong brick from the student's own bricks below it."
+      },
+      {
         "id": "look-again",
         "built": "2026-11-12",
-        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (72 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
+        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (75 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
       }
     ]
   },
@@ -5546,6 +5551,36 @@
         "code_clues"
       ],
       "look_again": "One guess has nothing right. Did you cross out every symbol in it?"
+    },
+    {
+      "id": "COPIES_A_SUPPORT",
+      "concept": "CONSTRAINT_SAT",
+      "description": "When the two bricks below are different colours, copies one of them instead of using the third colour.",
+      "remediation": "Point to two different bricks and ask: if the top must differ from both, which colour is left?",
+      "families": [
+        "brick_rule"
+      ],
+      "look_again": "Find a brick that rests on two different colours. Can it match either of them, or must it be the third colour?"
+    },
+    {
+      "id": "FORGETS_BOTTOM_ROW",
+      "concept": "SEQ_EXEC",
+      "description": "Counts only the bricks the student worked out and leaves out the bottom row that was given.",
+      "remediation": "Ask the student to point at every brick of that colour, starting with the bottom row.",
+      "families": [
+        "brick_rule"
+      ],
+      "look_again": "Point to every brick of that colour, starting with the bottom row. Did you count them all?"
+    },
+    {
+      "id": "MATCH_MEANS_CHANGE",
+      "concept": "CONSTRAINT_SAT",
+      "description": "When the two bricks below match, puts a different colour on top, as if every brick had to change.",
+      "remediation": "Reread the rule: 'all the same' is allowed. Ask what goes on top of two red bricks.",
+      "families": [
+        "brick_rule"
+      ],
+      "look_again": "Find a brick that rests on two bricks of the same colour. Does the rule let all three be the same?"
     }
   ],
   "generator_families": [
@@ -6598,6 +6633,69 @@
         "SKIPS_A_CLUE",
         "SKIPS_EMPTY_CLUE"
       ]
+    },
+    {
+      "id": "brick_rule",
+      "module": "brick_rule.py",
+      "checker": "check_brick_rule.py",
+      "folder": "brick-pyramid",
+      "source_tasks": [
+        "colorful_tower"
+      ],
+      "concepts": [
+        "CONSTRAINT_SAT",
+        "SEQ_EXEC",
+        "ELIMINATION"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "fill",
+          "width": 4,
+          "note": "Colour a small pyramid row by row (4 bricks at the bottom)."
+        },
+        {
+          "level": 2,
+          "question": "count",
+          "width": 5,
+          "note": "Finish the pyramid in your head and count one colour."
+        },
+        {
+          "level": 3,
+          "question": "fill",
+          "width": 6,
+          "note": "Colour a bigger pyramid (6 bricks at the bottom)."
+        },
+        {
+          "level": 4,
+          "question": "hidden",
+          "width": 5,
+          "hide": 1,
+          "top": true,
+          "extra_rows": [
+            2,
+            9
+          ],
+          "note": "Work backward: one bottom brick is hidden, and only the top brick is shown."
+        },
+        {
+          "level": 5,
+          "question": "hidden",
+          "width": 6,
+          "hide": 2,
+          "top": false,
+          "extra_rows": [
+            1,
+            2
+          ],
+          "note": "Work backward: two bottom bricks are hidden and a few low bricks are shown; a brick and one brick under it fix the other."
+        }
+      ],
+      "misconceptions": [
+        "COPIES_A_SUPPORT",
+        "FORGETS_BOTTOM_ROW",
+        "MATCH_MEANS_CHANGE"
+      ]
     }
   ],
   "generator_candidates": [
@@ -6665,7 +6763,8 @@
     },
     {
       "source_task": "colorful_tower",
-      "why": "Rule is addition mod 3; random bottom rows; ask for the top tile or a missing tile in the middle (inverse)."
+      "why": "Rule is addition mod 3; random bottom rows; ask for the top tile or a missing tile in the middle (inverse).",
+      "status": "built"
     },
     {
       "source_task": "treasure_box",

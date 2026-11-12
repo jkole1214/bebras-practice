@@ -176,7 +176,8 @@ function render() {
   const kindShown = p.family === "pointer_lists" && p.question_type === "inverse" ? "Work backward"
     : p.family === "logic_gates" && p.question_type === "count" ? "Count the ways"
     : p.family === "bead_grammar" && p.question_type === "count" ? "Count the necklaces"
-    : p.family === "code_clues" ? { choose: "Pick the code", crack: "Crack the code" }[p.question_type] : kind;
+    : p.family === "code_clues" ? { choose: "Pick the code", crack: "Crack the code" }[p.question_type]
+    : p.family === "brick_rule" ? { fill: "Build the pyramid", count: "Count the bricks", hidden: "Work backward" }[p.question_type] : kind;
   const famTitle = page.mode === PRACTICE || servedAs !== "ladder" ? `<span>${esc(COACH.titles[p.fam])}</span>` : "";
   let body = `<div class="meta">${famTitle}<span>Level ${p.level}</span><span>${kindShown}</span></div>`
     + (why ? `<p class="why">${esc(why)}</p>` : "") + `<p class="prompt">${esc(p.prompt)}</p>`;
@@ -188,12 +189,12 @@ function render() {
   if (p.family === "parity_grid") body += shelvesHTML(p);
   if (p.family === "code_clues") body += lockHTML(p);
   if (["conveyor", "pointer_lists", "bead_grammar", "parity_grid", "code_clues"].includes(p.family) && p.question) body += `<p class="prompt"><b>${esc(p.question)}</b></p>`;
-  if (p.svg) body += `<div class="map${p.question_type === "build" || p.entry === "press" ? " build" : ""}" id="map">${p.svg}</div>`;
+  if (p.svg) body += `<div class="map${p.question_type === "build" || p.entry === "press" || p.entry === "bricks" ? " build" : ""}" id="map">${p.svg}</div>`;
   if (p.svg && p.question) body += `<p class="prompt"><b>${esc(p.question)}</b></p>`;
   if (p.question_type === "build") {
     body += `<p class="nums" style="margin:0">Tap walkways to select them. Tap again to remove one.</p>
       <div class="row"><button class="btn" id="submit">Check my crossing</button><button class="btn ghost" id="clear">Clear</button><span class="nums" id="selsum"></span></div>`;
-  } else if (p.entry === "press" || p.entry === "cells") {
+  } else if (p.entry === "press" || p.entry === "cells" || p.entry === "bricks") {
     body += `<div class="row"><button class="btn" id="submit">Check</button><button class="btn ghost" id="clear">Clear</button><span class="nums" id="selsum"></span></div>`;
   } else if (p.entry === "code") {
     body += `<div class="wheels" id="wheels">${Array.from({ length: p.scene.slots }, (_, i) => `<button class="wheel" data-w="${i}" aria-label="wheel ${i + 1}, empty"></button>`).join("")}</div>
@@ -214,6 +215,7 @@ function render() {
   if (p.entry === "press") setupPress();
   if (p.entry === "cells") setupCells();
   if (p.entry === "code") setupCode();
+  if (p.entry === "bricks") setupBricks();
   if (p.entry === "number") $("#numform").addEventListener("submit", e => { e.preventDefault(); answerNumber(); });
   renderCoach();
 }
@@ -344,6 +346,34 @@ function setupPress() {
     renderCoach();
   });
   $("#clear").addEventListener("click", () => { if (solved) return; selected.clear(); btns.forEach(g => g.classList.remove("sel")); update(); });
+}
+
+// ---- Brick Pyramid: tap a brick to step it through red, yellow, blue
+const BRICKS = { R: ["#d9534f", "#ffffff", "red"], Y: ["#f2c14e", "#1f2933", "yellow"], B: ["#3b6fd8", "#ffffff", "blue"] };
+function setupBricks() {
+  const bricks = document.querySelectorAll("#map g.brick.edit"), col = {};
+  const paint = (g) => {
+    const v = col[g.dataset.k], [fill, ink, name] = BRICKS[v] || ["#f4f1ea", "#5a6880", "empty"];
+    g.querySelector("rect").setAttribute("fill", fill);
+    const t = g.querySelector("text"); t.setAttribute("fill", ink); t.textContent = v || "?";
+    g.setAttribute("aria-label", g.getAttribute("aria-label").replace(/, [a-z]+$/, ", " + name));
+  };
+  const update = () => { const n = Object.keys(col).length; $("#selsum").textContent = `${n} of ${bricks.length} coloured`; };
+  bricks.forEach(g => {
+    const step = () => { if (solved) return; col[g.dataset.k] = "RYB"[("RYB".indexOf(col[g.dataset.k] || "B") + 1) % 3]; paint(g); update(); };
+    g.addEventListener("click", step);
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); step(); } });
+  });
+  update();
+  $("#submit").addEventListener("click", async () => {
+    if (Object.keys(col).length < bricks.length) { say("bad", cur.question_type === "fill" ? "Colour every empty brick first. Tap a brick to change its colour." : "Tap each hidden brick to choose its colour first."); return; }
+    const r = await submit({ bricks: col });
+    if (!r) return;
+    if (r.correct) { bricks.forEach(g => g.classList.add("right")); finish(r); return; }
+    miss(`${cur.question_type === "fill" ? "Some bricks break the rule." : "That does not match the bricks that are shown."} ${tryAgain()}`);
+    renderCoach();
+  });
+  $("#clear").addEventListener("click", () => { if (solved) return; Object.keys(col).forEach(k => delete col[k]); bricks.forEach(paint); update(); });
 }
 
 // ---- Code Lock: tap symbols onto the wheels, then try the code

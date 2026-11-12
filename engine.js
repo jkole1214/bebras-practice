@@ -109,7 +109,7 @@ function serve(B, st, events) {
 }
 
 // A puzzle as the page gets it: everything needed to draw it, nothing that gives the answer away.
-const SCENE_KEYS = { conveyor: ["belt"], pointer_lists: ["lists"], bead_grammar: ["kind", "start", "rules"], parity_grid: ["rows", "cols", "marks", "editable"], code_clues: ["slots", "pool", "clues"] };
+const SCENE_KEYS = { conveyor: ["belt"], pointer_lists: ["lists"], bead_grammar: ["kind", "start", "rules"], parity_grid: ["rows", "cols", "marks", "editable"], code_clues: ["slots", "pool", "clues"], brick_rule: ["rows", "edit"] };
 function publicPuzzle(fam, p) {
   const out = { fam, family: p.family, level: p.level, seed: p.seed, question_type: p.question_type, entry: p.entry,
     prompt: p.prompt, hints: p.hints || [], concepts: p.concepts || [] };
@@ -132,7 +132,7 @@ function gateEval(node, on, swap) {
   return op === "AND" ? a && b : op === "XOR" ? a !== b : a || b;
 }
 
-// answer shapes: { choice: i } | { value: n } | { edges: ["A|B", ...] } | { buttons: [1, 2] } | { cells: ["r,c", ...] } | { code: "SMT" }
+// answer shapes: { choice: i } | { value: n } | { edges: ["A|B", ...] } | { buttons: [1, 2] } | { cells: ["r,c", ...] } | { code: "SMT" } | { bricks: { "r,c": "R" } }
 // Returns { invalid: message } for an answer that is not a real try (it does not count),
 // otherwise { correct, tags, stored } plus { lit } for circuits. stored is what goes in the attempts table.
 function check(p, a) {
@@ -190,6 +190,25 @@ function check(p, a) {
     }
     return { correct, tags, stored: [...sel].sort() };
   }
+  if (p.entry === "bricks") {
+    const sc = p.scene, got = a.bricks && typeof a.bricks === "object" ? a.bricks : {}, vals = {};
+    for (const k of sc.edit) {
+      if (!["R", "Y", "B"].includes(got[k])) return { invalid: p.question_type === "fill" ? "Colour every empty brick first. Tap a brick to change its colour." : "Tap each hidden brick to choose its colour first." };
+      vals[k] = got[k];
+    }
+    const correct = sc.edit.every(k => vals[k] === p.answer_value[k]), stored = sc.edit.map(k => vals[k]).join("");
+    let tags = [];
+    if (!correct && p.question_type === "fill") {   // judge each wrong brick by the student's own two bricks under it
+      const col = { ...sc.given, ...vals }, t = new Set();
+      for (const k of sc.edit) {
+        const [r, c] = k.split(",").map(Number), x = col[`${r - 1},${c}`], y = col[`${r - 1},${c + 1}`];
+        const want = x === y ? x : "RYB".replace(x, "").replace(y, "");
+        if (vals[k] !== want) t.add(x === y ? "MATCH_MEANS_CHANGE" : "COPIES_A_SUPPORT");
+      }
+      tags = [...t];
+    } else if (!correct) tags = (p.value_tags || {})[stored] || [];
+    return { correct, tags, stored };
+  }
   if (p.entry === "code") {
     const sc = p.scene, code = typeof a.code === "string" ? a.code : "";
     if (code.length !== sc.slots || ![...code].every(ch => sc.pool.includes(ch))) return { invalid: "Put a symbol on every wheel first." };
@@ -241,6 +260,10 @@ function afterFirstTry(B, st, correct, events) {
 // ---------- the Progress page
 const place = (x) => x === "N" ? "north shore" : x === "S" ? "south shore" : x;
 const SYMBOL = { S: "sun", M: "moon", T: "star", H: "heart", L: "leaf", D: "drop", Z: "bolt", B: "bell" };
+const BRICK = { R: "red", Y: "yellow", B: "blue" };
+const brickText = (p, s) => p.question_type === "fill"
+  ? `${[...String(s)].filter((v, i) => v !== p.answer_value[p.scene.edit[i]]).length} of ${p.scene.edit.length} bricks wrong`
+  : [...String(s)].map(v => BRICK[v] || v).join(", ");
 const codeText = (c) => [...String(c)].map(ch => SYMBOL[ch] || ch).join(", ");
 const cellName = (k) => { const [r, c] = String(k).split(",").map(Number); return `row ${r + 1}, column ${c + 1}`; };
 function optionText(o) {
@@ -251,6 +274,7 @@ function answerText(p, a) {
   if (a === null || a === undefined) return "not recorded";
   if (typeof a === "number") return String(a);
   if (p.family === "code_clues") return codeText(typeof a === "string" ? a : a.option);
+  if (p.entry === "bricks") return brickText(p, a);
   if (a && a.option !== undefined) return p.family === "logic_gates" ? (a.option.length ? "buttons " + a.option.join(", ") : "nobody") : optionText(a.option);
   if (Array.isArray(a)) {
     if (p.question_type === "build") return "walkways " + a.map(k => k.split("|").map(place).join("–")).join(", ");
@@ -265,6 +289,7 @@ function rightText(p) {
   if (p.entry === "cells") return (p.answer_value || []).map(x => cellName(x.join(","))).join("; ");
   if (p.entry === "number") return String(p.answer_value);
   if (p.family === "code_clues") return codeText(p.answer_value);
+  if (p.entry === "bricks") return p.question_type === "fill" ? "every brick by the rule" : brickText(p, p.scene.edit.map(k => p.answer_value[k]).join(""));
   const o = p.options[p.answer_index];
   return p.family === "logic_gates" ? (o.length ? "buttons " + o.join(", ") : "nobody") : optionText(o);
 }

@@ -2,7 +2,7 @@
   "patch_id": "look-again",
   "built": "2026-11-12",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (72 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (75 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
     {
       "id": "BOTH_AS_EITHER",
@@ -19,6 +19,10 @@
     {
       "id": "CLUE_POSITION_IGNORED",
       "look_again": "Pick a symbol your code shares with a guess. Is it on the same wheel in both, or a different one?"
+    },
+    {
+      "id": "COPIES_A_SUPPORT",
+      "look_again": "Find a brick that rests on two different colours. Can it match either of them, or must it be the third colour?"
     },
     {
       "id": "COUNTS_ALL_CROSSINGS",
@@ -91,6 +95,10 @@
     {
       "id": "FLOWS_ALL_THE_WAY",
       "look_again": "Paint moves through one pipe each minute. How far can it get in the first minute?"
+    },
+    {
+      "id": "FORGETS_BOTTOM_ROW",
+      "look_again": "Point to every brick of that colour, starting with the bottom row. Did you count them all?"
     },
     {
       "id": "FORGETS_FREE_DIE",
@@ -167,6 +175,10 @@
     {
       "id": "LONGEST_RUN_FOR_DEPTH",
       "look_again": "When a run of nuts starts, are some nuts already in the bucket?"
+    },
+    {
+      "id": "MATCH_MEANS_CHANGE",
+      "look_again": "Find a brick that rests on two bricks of the same colour. Does the rule let all three be the same?"
     },
     {
       "id": "MINUTE_OFF_BY_ONE",

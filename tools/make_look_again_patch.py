@@ -107,6 +107,11 @@ LOOK_AGAIN = {
     "CLUE_POSITION_IGNORED": "Pick a symbol your code shares with a guess. Is it on the same wheel in both, or a different one?",
     "CLUE_FEEDBACK_SWAPPED": "Say one clue in full words: how many symbols are in exactly the right spot, and how many are in a wrong spot?",
     "SKIPS_A_CLUE": "Test your code against every clue, ticking each one off. Does it really agree with all of them?",
+
+    # Brick Pyramid (three colours, all the same or all different)
+    "COPIES_A_SUPPORT": "Find a brick that rests on two different colours. Can it match either of them, or must it be the third colour?",
+    "MATCH_MEANS_CHANGE": "Find a brick that rests on two bricks of the same colour. Does the rule let all three be the same?",
+    "FORGETS_BOTTOM_ROW": "Point to every brick of that colour, starting with the bottom row. Did you count them all?",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -117,7 +122,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (72 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (75 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

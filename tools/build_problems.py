@@ -38,6 +38,7 @@ import bead_grammar as bgg              # noqa: E402
 import parity_grid as pgg               # noqa: E402
 import parallel_spread as psg           # noqa: E402
 import code_clues as ccg                # noqa: E402
+import brick_rule as brg                # noqa: E402
 
 FAMILIES = {
     "rule-tracer": {
@@ -101,6 +102,12 @@ FAMILIES = {
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints"],
     },
+    "brick-pyramid": {
+        "module": brg, "checker": "check_brick_rule", "levels": len(brg.LADDER), "title": "Brick Pyramid",
+        "keep": ["family", "level", "question_type", "seed", "scene", "svg", "prompt", "question", "options",
+                 "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
+                 "explanation", "hints"],
+    },
     "box-rows": {
         "module": plg, "checker": "check_pointer_lists", "levels": len(plg.LADDER), "title": "Box Rows",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
@@ -152,7 +159,7 @@ def write_coach():
     m = json.load(open(os.path.join(HERE, "bebras_knowledge_map.json")))
     extra = {**scg.MISCONCEPTIONS, **grg.MISCONCEPTIONS, **sp.COUNT_MISCONCEPTIONS, **ct.COUNT_EXTRA_MISCONCEPTIONS,
              **cvg.MISCONCEPTIONS, **plg.MISCONCEPTIONS, **lgg.MISCONCEPTIONS, **bgg.MISCONCEPTIONS,
-             **pgg.MISCONCEPTIONS, **psg.MISCONCEPTIONS, **ccg.MISCONCEPTIONS}
+             **pgg.MISCONCEPTIONS, **psg.MISCONCEPTIONS, **ccg.MISCONCEPTIONS, **brg.MISCONCEPTIONS}
     for k, v in extra.items():
         if k not in {x["id"] for x in m["misconceptions"]}:
             m["misconceptions"].append({"id": k, **v})
@@ -174,7 +181,8 @@ def write_coach():
                     "bead-rules": [l["note"] for l in bgg.LADDER],
                     "pantry-map": [l["note"] for l in pgg.LADDER],
                     "paint-pipes": [l["note"] for l in psg.LADDER],
-                    "code-lock": [l["note"] for l in ccg.LADDER]},
+                    "code-lock": [l["note"] for l in ccg.LADDER],
+                    "brick-pyramid": [l["note"] for l in brg.LADDER]},
         # for the tutor (tutor.js): the prerequisite graph and the domains
         "prereqs": {c["id"]: [[p["id"], p["strength"]] for p in c["prerequisites"]] for c in m["concepts"]},
         "conceptDomain": {c["id"]: c["domain"] for c in m["concepts"]},

@@ -1,0 +1,106 @@
+{
+  "patch_id": "brick-pyramid-family",
+  "built": "2026-11-12",
+  "analyst": "Claude",
+  "method": "Claude built a new generator family, brick_rule (folder brick-pyramid, shown as Brick Pyramid), from the Colorful Tower generator candidate. It keeps the task's idea (a three-colour pyramid where a brick and the two under it are all the same or all different) under an original theme and wording, and adds two kinds of question the source task does not ask: counting one colour in the finished pyramid, and working backward to hidden bottom bricks. At level 5 the shown bricks always allow a step-by-step deduction (a brick and one brick under it force the other), and the explanation walks through it. Every problem passes check_brick_rule.py, which rebuilds the pyramid from the picture and solves it with arithmetic mod 3; every corrupted answer key is caught in the mutation trials. For colouring questions the server tags each wrong brick from the student's own bricks below it.",
+  "generator_families": [
+    {
+      "id": "brick_rule",
+      "module": "brick_rule.py",
+      "checker": "check_brick_rule.py",
+      "folder": "brick-pyramid",
+      "source_tasks": [
+        "colorful_tower"
+      ],
+      "concepts": [
+        "CONSTRAINT_SAT",
+        "SEQ_EXEC",
+        "ELIMINATION"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "fill",
+          "width": 4,
+          "note": "Colour a small pyramid row by row (4 bricks at the bottom)."
+        },
+        {
+          "level": 2,
+          "question": "count",
+          "width": 5,
+          "note": "Finish the pyramid in your head and count one colour."
+        },
+        {
+          "level": 3,
+          "question": "fill",
+          "width": 6,
+          "note": "Colour a bigger pyramid (6 bricks at the bottom)."
+        },
+        {
+          "level": 4,
+          "question": "hidden",
+          "width": 5,
+          "hide": 1,
+          "top": true,
+          "extra_rows": [
+            2,
+            9
+          ],
+          "note": "Work backward: one bottom brick is hidden, and only the top brick is shown."
+        },
+        {
+          "level": 5,
+          "question": "hidden",
+          "width": 6,
+          "hide": 2,
+          "top": false,
+          "extra_rows": [
+            1,
+            2
+          ],
+          "note": "Work backward: two bottom bricks are hidden and a few low bricks are shown; a brick and one brick under it fix the other."
+        }
+      ],
+      "misconceptions": [
+        "COPIES_A_SUPPORT",
+        "FORGETS_BOTTOM_ROW",
+        "MATCH_MEANS_CHANGE"
+      ]
+    }
+  ],
+  "generator_candidate_updates": [
+    {
+      "source_task": "colorful_tower",
+      "status": "built"
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "COPIES_A_SUPPORT",
+      "concept": "CONSTRAINT_SAT",
+      "description": "When the two bricks below are different colours, copies one of them instead of using the third colour.",
+      "remediation": "Point to two different bricks and ask: if the top must differ from both, which colour is left?",
+      "families": [
+        "brick_rule"
+      ]
+    },
+    {
+      "id": "FORGETS_BOTTOM_ROW",
+      "concept": "SEQ_EXEC",
+      "description": "Counts only the bricks the student worked out and leaves out the bottom row that was given.",
+      "remediation": "Ask the student to point at every brick of that colour, starting with the bottom row.",
+      "families": [
+        "brick_rule"
+      ]
+    },
+    {
+      "id": "MATCH_MEANS_CHANGE",
+      "concept": "CONSTRAINT_SAT",
+      "description": "When the two bricks below match, puts a different colour on top, as if every brick had to change.",
+      "remediation": "Reread the rule: 'all the same' is allowed. Ask what goes on top of two red bricks.",
+      "families": [
+        "brick_rule"
+      ]
+    }
+  ]
+}
