@@ -1,6 +1,6 @@
 # Kerbopple
 
-A practice page for twelve puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
+A practice page for thirteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
 ## The tutor
 
@@ -117,6 +117,7 @@ pantry-map/           Pantry Map problems, one file each, plus manifest.js
 paint-pipes/          Paint Pipes problems, one file each, plus manifest.js
 code-lock/            Code Lock problems, one file each, plus manifest.js
 brick-pyramid/        Brick Pyramid problems, one file each, plus manifest.js
+pass-it-on/           Pass It On problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
@@ -149,7 +150,7 @@ python3 tools/check_bead_grammar.py problems.json
 python3 tools/check_parity_grid.py problems.json
 ```
 
-`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock) and `check_brick_rule.py` (Brick Pyramid) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
+`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid) and `check_friend_reach.py` (Pass It On) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
 
 ## Levels
 
@@ -244,6 +245,15 @@ python3 tools/check_parity_grid.py problems.json
 
 For colouring, the server judges each wrong brick against the student's own two bricks under it, so one early slip is not counted again for every brick above it.
 
+**Pass It On** (news travels exactly two steps through a group of friends; the idea of Popularity, with our own story)
+1. How many people hear one person's news? Six friends (multiple choice)
+2. Whose news reaches the most people? The one with the most friends is a trap
+3. Count who hears one person's news in a group of eight (type the number)
+4. Whose news reaches the most people? Nine friends
+5. Which one new friend makes a person's news reach everyone?
+
+The people sit on a circle and friendships join near neighbours only, so lines never run through a person. The checker rebuilds the group from the picture and confirms this.
+
 Box Rows never shows an item where a wrong habit (reading outside-in, counting from 0) happens to give the right answer, so a right answer always means the habit is not there.
 
 With "Adjust level automatically" on, two first-try wins move up a level and two first-try misses move down.
@@ -255,7 +265,7 @@ With "Adjust level automatically" on, two first-try wins move up a level and two
 - the 2015 example sets (38 distinct tasks);
 - the 2022-23 practice challenge (31 distinct tasks).
 
-In total: 69 distinct tasks, 61 concepts with prerequisite edges, 90 tagged misconceptions, the twelve built generator families, and 16 ranked candidates for new families (the eight now built are marked). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
+In total: 69 distinct tasks, 61 concepts with prerequisite edges, 97 tagged misconceptions, the thirteen built generator families, and 16 ranked candidates for new families (the eleven now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
 
 Both analyses after the original Benjamin/Cadet map were added as patches. To apply them to another copy of the map:
 

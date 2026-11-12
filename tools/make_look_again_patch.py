@@ -112,6 +112,15 @@ LOOK_AGAIN = {
     "COPIES_A_SUPPORT": "Find a brick that rests on two different colours. Can it match either of them, or must it be the third colour?",
     "MATCH_MEANS_CHANGE": "Find a brick that rests on two bricks of the same colour. Does the rule let all three be the same?",
     "FORGETS_BOTTOM_ROW": "Point to every brick of that colour, starting with the bottom row. Did you count them all?",
+
+    # Pass It On (news travels two steps through friends)
+    "ONE_STEP_ONLY": "The friends hear it first. What does each of them do with the news next?",
+    "ONLY_SECOND_STEP": "Did you count the friends who heard it first, as well as the people they told?",
+    "COUNTS_SENDER": "Read the question again. Does the person with the news count as hearing it?",
+    "PASSES_IT_ON_TOO_FAR": "Mark the friends, then their friends. Does anyone tell the news a third time?",
+    "COUNTS_REPEATS": "Some people hear the news from two friends. Did you tick each person only once?",
+    "MOST_FRIENDS_WINS": "Count two steps out from the person with the most friends. Does that really reach the most people?",
+    "JOINS_A_MISSED_PERSON": "A new friend also tells all of their own friends. Whose friends cover everyone who is missed?",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -122,7 +131,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (75 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (82 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

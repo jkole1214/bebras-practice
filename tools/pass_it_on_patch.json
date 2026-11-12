@@ -1,0 +1,150 @@
+{
+  "patch_id": "pass-it-on-family",
+  "built": "2026-11-12",
+  "analyst": "Claude",
+  "method": "Claude built a new generator family, friend_reach (folder pass-it-on, shown as Pass It On), from the Popularity generator candidate. It keeps the task's idea (a person's reach is everyone within two steps, and the person with the most friends is not always the one who reaches the most) under an original story, where news is passed on exactly twice, with its own names and pictures. It adds two kinds of question the source task does not ask: counting who hears one person's news, and choosing the one new friendship that makes a person's news reach everyone. Every problem passes check_friend_reach.py, which rebuilds the graph from the picture, checks that no line runs through a person it does not join, and solves again with breadth-first search; every corrupted answer key is caught in the mutation trials. Claude also marked two older candidates as built: Hard Fireworks has been covered by signal_code (Signal Lamp) and Building a Chip by grid_routes (Robot Routes) since before candidate status was tracked.",
+  "generator_families": [
+    {
+      "id": "friend_reach",
+      "module": "friend_reach.py",
+      "checker": "check_friend_reach.py",
+      "folder": "pass-it-on",
+      "source_tasks": [
+        "popularity"
+      ],
+      "concepts": [
+        "GRAPH_NEIGHBORHOOD",
+        "GRAPH_MODEL"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "reach",
+          "people": 6,
+          "gap": 2,
+          "entry": "choice",
+          "note": "How many people hear one person's news? Six friends (multiple choice)."
+        },
+        {
+          "level": 2,
+          "question": "who",
+          "people": 8,
+          "gap": 2,
+          "note": "Whose news reaches the most people? The one with the most friends is a trap."
+        },
+        {
+          "level": 3,
+          "question": "reach",
+          "people": 8,
+          "gap": 3,
+          "entry": "number",
+          "note": "Count who hears one person's news in a bigger group (type the number)."
+        },
+        {
+          "level": 4,
+          "question": "who",
+          "people": 9,
+          "gap": 3,
+          "note": "Whose news reaches the most people? Nine friends, more lines to follow."
+        },
+        {
+          "level": 5,
+          "question": "befriend",
+          "people": 8,
+          "gap": 3,
+          "note": "Which one new friend makes a person's news reach everyone?"
+        }
+      ],
+      "misconceptions": [
+        "COUNTS_REPEATS",
+        "COUNTS_SENDER",
+        "JOINS_A_MISSED_PERSON",
+        "MOST_FRIENDS_WINS",
+        "ONE_STEP_ONLY",
+        "ONLY_SECOND_STEP",
+        "PASSES_IT_ON_TOO_FAR"
+      ]
+    }
+  ],
+  "generator_candidate_updates": [
+    {
+      "source_task": "popularity",
+      "status": "built"
+    },
+    {
+      "source_task": "hard_fireworks",
+      "status": "built",
+      "built_as": "signal_code"
+    },
+    {
+      "source_task": "building_a_chip",
+      "status": "built",
+      "built_as": "grid_routes"
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "COUNTS_REPEATS",
+      "concept": "GRAPH_NEIGHBORHOOD",
+      "description": "Adds up every friend's friends without noticing that some people hear the news twice, or are the sender.",
+      "remediation": "Have the student tick each person once, the first time they hear it.",
+      "families": [
+        "friend_reach"
+      ]
+    },
+    {
+      "id": "COUNTS_SENDER",
+      "concept": "GRAPH_NEIGHBORHOOD",
+      "description": "Counts the person who had the news as one of the people who hear it.",
+      "remediation": "Reread the question: does the sender hear their own news from someone?",
+      "families": [
+        "friend_reach"
+      ]
+    },
+    {
+      "id": "JOINS_A_MISSED_PERSON",
+      "concept": "GRAPH_NEIGHBORHOOD",
+      "description": "Makes friends with a person the news misses, which reaches that one person but not the others it misses.",
+      "remediation": "Ask: a new friend tells their own friends too. Whose friends cover everyone who is missed?",
+      "families": [
+        "friend_reach"
+      ]
+    },
+    {
+      "id": "MOST_FRIENDS_WINS",
+      "concept": "GRAPH_NEIGHBORHOOD",
+      "description": "Assumes the person with the most friends spreads news the furthest.",
+      "remediation": "Count two steps out from the most-friended person and from another person, and compare.",
+      "families": [
+        "friend_reach"
+      ]
+    },
+    {
+      "id": "ONE_STEP_ONLY",
+      "concept": "GRAPH_NEIGHBORHOOD",
+      "description": "Counts only the sender's own friends and forgets that each friend passes the news on.",
+      "remediation": "Ask what each friend does with the news after hearing it.",
+      "families": [
+        "friend_reach"
+      ]
+    },
+    {
+      "id": "ONLY_SECOND_STEP",
+      "concept": "GRAPH_NEIGHBORHOOD",
+      "description": "Counts only the people reached in the second step and leaves out the friends who heard it first.",
+      "remediation": "Have the student list step one and step two separately, then add both lists.",
+      "families": [
+        "friend_reach"
+      ]
+    },
+    {
+      "id": "PASSES_IT_ON_TOO_FAR",
+      "concept": "GRAPH_NEIGHBORHOOD",
+      "description": "Lets the news travel a third step (or further), past the friends of friends.",
+      "remediation": "Reread the rule: nobody passes the news on a third time. Mark where step two ends.",
+      "families": [
+        "friend_reach"
+      ]
+    }
+  ]
+}

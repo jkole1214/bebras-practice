@@ -25,8 +25,8 @@ function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push(
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 12);
-  assert.ok(all.length >= 780, String(all.length));
+  assert.equal(B.fams.length, 13);
+  assert.ok(all.length >= 840, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {

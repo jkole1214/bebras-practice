@@ -2,7 +2,7 @@
   "patch_id": "look-again",
   "built": "2026-11-12",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (75 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (82 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
     {
       "id": "BOTH_AS_EITHER",
@@ -51,6 +51,14 @@
     {
       "id": "COUNTS_NEAR_CHEAPEST",
       "look_again": "Add each route up exactly. Does every one you counted match the cheapest total?"
+    },
+    {
+      "id": "COUNTS_REPEATS",
+      "look_again": "Some people hear the news from two friends. Did you tick each person only once?"
+    },
+    {
+      "id": "COUNTS_SENDER",
+      "look_again": "Read the question again. Does the person with the news count as hearing it?"
     },
     {
       "id": "COUNTS_SHORTER_TOO",
@@ -165,6 +173,10 @@
       "look_again": "You found a box in the outer row. Where does that box number come from in the inner row?"
     },
     {
+      "id": "JOINS_A_MISSED_PERSON",
+      "look_again": "A new friend also tells all of their own friends. Whose friends cover everyone who is missed?"
+    },
+    {
       "id": "LEFTOVER_ONLY",
       "look_again": "Run the count from the start. Does a bolt ever arrive with no nut waiting?"
     },
@@ -193,6 +205,10 @@
       "look_again": "At each spot in the signal, did you try every code word, even the shortest one?"
     },
     {
+      "id": "MOST_FRIENDS_WINS",
+      "look_again": "Count two steps out from the person with the most friends. Does that really reach the most people?"
+    },
+    {
       "id": "MUD_STILL_FLOWS",
       "look_again": "Read the rule about mud again. Can a mud tank push paint anywhere?"
     },
@@ -207,6 +223,14 @@
     {
       "id": "ONE_CHEAPEST_ONLY",
       "look_again": "Is there a different route with exactly the same total?"
+    },
+    {
+      "id": "ONE_STEP_ONLY",
+      "look_again": "The friends hear it first. What does each of them do with the news next?"
+    },
+    {
+      "id": "ONLY_SECOND_STEP",
+      "look_again": "Did you count the friends who heard it first, as well as the people they told?"
     },
     {
       "id": "ORDER_SWAP",
@@ -231,6 +255,10 @@
     {
       "id": "PARITY_ROWS_ONLY",
       "look_again": "Every row is even now. Count each column too, including the check row at the bottom."
+    },
+    {
+      "id": "PASSES_IT_ON_TOO_FAR",
+      "look_again": "Mark the friends, then their friends. Does anyone tell the news a third time?"
     },
     {
       "id": "POSITION_AS_ANSWER",

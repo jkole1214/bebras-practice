@@ -177,7 +177,8 @@ function render() {
     : p.family === "logic_gates" && p.question_type === "count" ? "Count the ways"
     : p.family === "bead_grammar" && p.question_type === "count" ? "Count the necklaces"
     : p.family === "code_clues" ? { choose: "Pick the code", crack: "Crack the code" }[p.question_type]
-    : p.family === "brick_rule" ? { fill: "Build the pyramid", count: "Count the bricks", hidden: "Work backward" }[p.question_type] : kind;
+    : p.family === "brick_rule" ? { fill: "Build the pyramid", count: "Count the bricks", hidden: "Work backward" }[p.question_type]
+    : p.family === "friend_reach" ? { reach: "Who hears it", who: "Whose news spreads most", befriend: "One new friend" }[p.question_type] : kind;
   const famTitle = page.mode === PRACTICE || servedAs !== "ladder" ? `<span>${esc(COACH.titles[p.fam])}</span>` : "";
   let body = `<div class="meta">${famTitle}<span>Level ${p.level}</span><span>${kindShown}</span></div>`
     + (why ? `<p class="why">${esc(why)}</p>` : "") + `<p class="prompt">${esc(p.prompt)}</p>`;
