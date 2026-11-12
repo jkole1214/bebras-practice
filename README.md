@@ -1,6 +1,6 @@
 # Kerbopple
 
-A practice page for ten puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
+A practice page for eleven puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
 ## The tutor
 
@@ -115,6 +115,7 @@ lights-on/            Lights On problems, one file each, plus manifest.js
 bead-rules/           Bead Rules problems, one file each, plus manifest.js
 pantry-map/           Pantry Map problems, one file each, plus manifest.js
 paint-pipes/          Paint Pipes problems, one file each, plus manifest.js
+code-lock/            Code Lock problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
@@ -146,6 +147,8 @@ python3 tools/check_logic_gates.py problems.json
 python3 tools/check_bead_grammar.py problems.json
 python3 tools/check_parity_grid.py problems.json
 ```
+
+`check_parallel_spread.py` (Paint Pipes) and `check_code_clues.py` (Code Lock) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
 
 ## Levels
 
@@ -224,6 +227,13 @@ python3 tools/check_parity_grid.py problems.json
 4. The two starting tanks are joined, so both turn to mud in the first minute
 5. A bigger network; type the number
 
+**Code Lock** (crack a symbol code from guesses that say how many symbols are in the right spot and how many are in a wrong spot; the idea of Treasure Box, with our own theme and symbols)
+1. Three wheels; one guess has nothing right. Pick the code from four
+2. Three wheels; a wrong choice has the right symbols with one in a spot a clue rules out
+3. Four wheels and more clues; one wrong choice breaks just one clue
+4. Three wheels, no choices: tap symbols onto the wheels to build the only code that fits
+5. Four wheels, no choices
+
 Box Rows never shows an item where a wrong habit (reading outside-in, counting from 0) happens to give the right answer, so a right answer always means the habit is not there.
 
 With "Adjust level automatically" on, two first-try wins move up a level and two first-try misses move down.
@@ -235,7 +245,7 @@ With "Adjust level automatically" on, two first-try wins move up a level and two
 - the 2015 example sets (38 distinct tasks);
 - the 2022-23 practice challenge (31 distinct tasks).
 
-In total: 69 distinct tasks, 61 concepts with prerequisite edges, 83 tagged misconceptions, the ten built generator families, and 16 ranked candidates for new families (the six now built are marked). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
+In total: 69 distinct tasks, 61 concepts with prerequisite edges, 87 tagged misconceptions, the eleven built generator families, and 16 ranked candidates for new families (the seven now built are marked). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
 
 Both analyses after the original Benjamin/Cadet map were added as patches. To apply them to another copy of the map:
 

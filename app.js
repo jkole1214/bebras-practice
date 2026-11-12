@@ -123,7 +123,31 @@ function shelvesHTML(p) {
   }
   return h + `</div>`;
 }
+// Code Lock: symbols on wheel faces, the clues, and the wheels the student fills.
+const SYM = {
+  S: ["sun", '<circle cx="12" cy="12" r="5" class="sy-sun"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4M4.6 4.6l2.8 2.8M16.6 16.6l2.8 2.8M4.6 19.4l2.8-2.8M16.6 7.4l2.8-2.8" class="sy-ray"/>'],
+  M: ["moon", '<path d="M15.5 2.5a9.5 9.5 0 1 0 6 16.5A8 8 0 0 1 15.5 2.5z" class="sy-moon"/>'],
+  T: ["star", '<polygon points="12,1.8 14.9,8.4 22,9.1 16.6,13.9 18.2,21 12,17.3 5.8,21 7.4,13.9 2,9.1 9.1,8.4" class="sy-star"/>'],
+  H: ["heart", '<path d="M12 21 3.6 12.6A5.2 5.2 0 0 1 12 6.2a5.2 5.2 0 0 1 8.4 6.4z" class="sy-heart"/>'],
+  L: ["leaf", '<path d="M4 20C4 9.5 10 3.5 20.5 3.5 20.5 14 14.5 20 4 20z" class="sy-leaf"/><path d="M4 20 15 9" class="sy-rib"/>'],
+  D: ["drop", '<path d="M12 2s-7 8-7 12.5a7 7 0 0 0 14 0C19 10 12 2 12 2z" class="sy-drop"/>'],
+  Z: ["bolt", '<polygon points="14.5,1.5 4.5,13.5 11,13.5 8.5,22.5 19.5,9.5 13,9.5" class="sy-bolt"/>'],
+  B: ["bell", '<path d="M12 2.5a6.5 6.5 0 0 0-6.5 6.5v5l-2.2 3.5h17.4L18.5 14V9A6.5 6.5 0 0 0 12 2.5z" class="sy-bell"/><circle cx="12" cy="20" r="2.2" class="sy-bell"/>'],
+};
+const symSVG = (ch) => `<span class="sym" title="${SYM[ch][0]}"><svg viewBox="0 0 24 24" width="26" height="26" role="img" aria-label="${SYM[ch][0]}">${SYM[ch][1]}</svg></span>`;
+const codeHTML = (code) => `<span class="code">${[...code].map(symSVG).join("")}</span>`;
+function cluePills(e, m) {
+  if (!e && !m) return `<span class="pill none">nothing right</span>`;
+  return (e ? `<span class="pill spot">${e} right spot</span>` : "") + (m ? `<span class="pill moved">${m} wrong spot</span>` : "");
+}
+function lockHTML(p) {
+  const sc = p.scene;
+  const clues = sc.clues.map(([g, e, m], i) => `<li><span class="nums">${i + 1}</span>${codeHTML(g)}<span class="pills">${cluePills(e, m)}</span></li>`).join("");
+  return `<div class="lock">${p.entry === "choice" ? `<div class="nums">The wheels can show</div>${codeHTML(sc.pool.join(""))}` : ""}
+    <div class="nums">Guesses tried</div><ol class="clues">${clues}</ol></div>`;
+}
 function optionHTML(o) {
+  if (cur && cur.family === "code_clues") return codeHTML(o);
   if (cur && cur.family === "conveyor") return beltHTML(o, false);
   if (cur && cur.family === "bead_grammar") return tokensHTML(o);
   if (cur && cur.family === "logic_gates") return esc(o.length ? "Buttons " + o.join(", ") : "Nobody");
@@ -151,7 +175,8 @@ function render() {
     after: "Follow the paint", final: "When the paint stops" }[p.question_type];
   const kindShown = p.family === "pointer_lists" && p.question_type === "inverse" ? "Work backward"
     : p.family === "logic_gates" && p.question_type === "count" ? "Count the ways"
-    : p.family === "bead_grammar" && p.question_type === "count" ? "Count the necklaces" : kind;
+    : p.family === "bead_grammar" && p.question_type === "count" ? "Count the necklaces"
+    : p.family === "code_clues" ? { choose: "Pick the code", crack: "Crack the code" }[p.question_type] : kind;
   const famTitle = page.mode === PRACTICE || servedAs !== "ladder" ? `<span>${esc(COACH.titles[p.fam])}</span>` : "";
   let body = `<div class="meta">${famTitle}<span>Level ${p.level}</span><span>${kindShown}</span></div>`
     + (why ? `<p class="why">${esc(why)}</p>` : "") + `<p class="prompt">${esc(p.prompt)}</p>`;
@@ -161,7 +186,8 @@ function render() {
   if (p.family === "pointer_lists") body += rowsHTML(p.scene.lists);
   if (p.family === "bead_grammar") body += grammarHTML(p.scene);
   if (p.family === "parity_grid") body += shelvesHTML(p);
-  if (["conveyor", "pointer_lists", "bead_grammar", "parity_grid"].includes(p.family) && p.question) body += `<p class="prompt"><b>${esc(p.question)}</b></p>`;
+  if (p.family === "code_clues") body += lockHTML(p);
+  if (["conveyor", "pointer_lists", "bead_grammar", "parity_grid", "code_clues"].includes(p.family) && p.question) body += `<p class="prompt"><b>${esc(p.question)}</b></p>`;
   if (p.svg) body += `<div class="map${p.question_type === "build" || p.entry === "press" ? " build" : ""}" id="map">${p.svg}</div>`;
   if (p.svg && p.question) body += `<p class="prompt"><b>${esc(p.question)}</b></p>`;
   if (p.question_type === "build") {
@@ -169,6 +195,10 @@ function render() {
       <div class="row"><button class="btn" id="submit">Check my crossing</button><button class="btn ghost" id="clear">Clear</button><span class="nums" id="selsum"></span></div>`;
   } else if (p.entry === "press" || p.entry === "cells") {
     body += `<div class="row"><button class="btn" id="submit">Check</button><button class="btn ghost" id="clear">Clear</button><span class="nums" id="selsum"></span></div>`;
+  } else if (p.entry === "code") {
+    body += `<div class="wheels" id="wheels">${Array.from({ length: p.scene.slots }, (_, i) => `<button class="wheel" data-w="${i}" aria-label="wheel ${i + 1}, empty"></button>`).join("")}</div>
+      <div class="palette">${p.scene.pool.map(ch => `<button class="symbtn" data-s="${ch}" aria-label="${SYM[ch][0]}">${symSVG(ch)}</button>`).join("")}</div>
+      <div class="row"><button class="btn" id="submit">Try this code</button><button class="btn ghost" id="clear">Clear</button></div>`;
   } else if (p.entry === "number") {
     body += `<form class="row" id="numform"><input id="numans" type="number" inputmode="numeric" min="0" class="numin" aria-label="Your answer"><button class="btn" type="submit">Check</button></form>`;
   } else {
@@ -183,6 +213,7 @@ function render() {
   if (p.question_type === "build") setupBuild();
   if (p.entry === "press") setupPress();
   if (p.entry === "cells") setupCells();
+  if (p.entry === "code") setupCode();
   if (p.entry === "number") $("#numform").addEventListener("submit", e => { e.preventDefault(); answerNumber(); });
   renderCoach();
 }
@@ -313,6 +344,32 @@ function setupPress() {
     renderCoach();
   });
   $("#clear").addEventListener("click", () => { if (solved) return; selected.clear(); btns.forEach(g => g.classList.remove("sel")); update(); });
+}
+
+// ---- Code Lock: tap symbols onto the wheels, then try the code
+function setupCode() {
+  const n = cur.scene.slots, code = Array(n).fill(null);
+  const wheels = document.querySelectorAll("#wheels .wheel"), syms = document.querySelectorAll(".palette .symbtn");
+  const draw = () => {
+    wheels.forEach((w, i) => { w.innerHTML = code[i] ? symSVG(code[i]) : ""; w.setAttribute("aria-label", `wheel ${i + 1}, ${code[i] ? SYM[code[i]][0] : "empty"}`); });
+    syms.forEach(b => b.disabled = solved || code.includes(b.dataset.s));
+  };
+  syms.forEach(b => b.addEventListener("click", () => {
+    const i = code.indexOf(null);
+    if (solved || i < 0 || code.includes(b.dataset.s)) return;
+    code[i] = b.dataset.s; draw();
+  }));
+  wheels.forEach((w, i) => w.addEventListener("click", () => { if (!solved) { code[i] = null; draw(); } }));
+  $("#submit").addEventListener("click", async () => {
+    if (code.includes(null)) { say("bad", "Put a symbol on every wheel first. Tap a wheel to take its symbol off."); return; }
+    const r = await submit({ code: code.join("") });
+    if (!r) return;
+    if (r.correct) { wheels.forEach(w => w.classList.add("right")); draw(); finish(r); return; }
+    miss(`That code does not open the lock. ${tryAgain()}`);
+    renderCoach();
+  });
+  $("#clear").addEventListener("click", () => { if (solved) return; code.fill(null); draw(); });
+  draw();
 }
 
 // ---- Pantry Map: tap shelves, then check

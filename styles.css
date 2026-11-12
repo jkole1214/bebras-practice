@@ -233,3 +233,35 @@ ul.kids .row { gap: 6px 14px; }
 .linkbtn.danger { color: var(--bad); }
 .kidadd { max-width: 420px; }
 .progress a { color: var(--accent); }
+/* Code Lock: each symbol sits on a light wheel face in both themes, so its colours stay the same */
+.lock { display: grid; gap: 6px; background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; justify-items: start; }
+.code { display: inline-flex; gap: 4px; vertical-align: middle; }
+.sym { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: #fbf8f1; border: 1px solid #c9c2b2; }
+.sym svg { display: block; }
+.sy-sun { fill: #f2c14e; stroke: #8a6a00; stroke-width: 1.3; }
+.sy-ray { stroke: #c08a00; stroke-width: 2; stroke-linecap: round; fill: none; }
+.sy-moon { fill: #5566cc; stroke: #2b357a; stroke-width: 1.3; }
+.sy-star { fill: #8e44ad; stroke: #55246a; stroke-width: 1.3; stroke-linejoin: round; }
+.sy-heart { fill: #d9534f; stroke: #8f2a27; stroke-width: 1.3; stroke-linejoin: round; }
+.sy-leaf { fill: #2e9e5b; stroke: #1c6038; stroke-width: 1.3; }
+.sy-rib { stroke: #d8f0e0; stroke-width: 1.3; fill: none; }
+.sy-drop { fill: #2f9fd6; stroke: #1a5f82; stroke-width: 1.3; }
+.sy-bolt { fill: #e8862a; stroke: #8a4a10; stroke-width: 1.3; stroke-linejoin: round; }
+.sy-bell { fill: #a0662b; stroke: #5e3a14; stroke-width: 1.3; }
+.clues { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.clues li { display: grid; grid-template-columns: 1.2em auto minmax(0, 1fr); align-items: center; gap: 6px 8px; }
+.clues li > .nums { text-align: right; }
+.pills { display: flex; flex-wrap: wrap; gap: 4px 6px; min-width: 0; }
+.pill { font: 600 0.8rem var(--f-body); color: var(--ink); border: 2px solid var(--line); border-radius: 999px; padding: 2px 8px; background: var(--surface); white-space: nowrap; }
+.pill.spot { border-color: var(--good); }
+.pill.moved { border-color: var(--sun); border-style: dashed; }
+.pill.none { color: var(--muted); }
+.wheels { display: flex; gap: 10px; }
+.wheel { width: 52px; height: 52px; border-radius: 12px; border: 2px dashed var(--muted); background: var(--surface); display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+.wheel:has(.sym) { border-style: solid; border-color: var(--ink); }
+.wheel.right { border-color: var(--good); background: var(--good-bg); }
+.wheel:focus-visible, .symbtn:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.palette { display: flex; flex-wrap: wrap; gap: 6px; }
+.symbtn { padding: 3px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; }
+.symbtn:hover:not([disabled]) { border-color: var(--accent); }
+.symbtn[disabled] { opacity: 0.35; cursor: default; }

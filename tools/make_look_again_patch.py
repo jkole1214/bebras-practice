@@ -101,6 +101,12 @@ LOOK_AGAIN = {
     "PROTECTED_SOURCES": "The starting tanks follow the same rules as every other tank. What flows into each of them, and when?",
     "MUD_STILL_FLOWS": "Read the rule about mud again. Can a mud tank push paint anywhere?",
     "COUNTS_MUD": "Name each tank you counted and say its colour at the end. Is any of them mud?",
+
+    # Code Lock (symbol wheels and clues)
+    "SKIPS_EMPTY_CLUE": "One guess has nothing right. Did you cross out every symbol in it?",
+    "CLUE_POSITION_IGNORED": "Pick a symbol your code shares with a guess. Is it on the same wheel in both, or a different one?",
+    "CLUE_FEEDBACK_SWAPPED": "Say one clue in full words: how many symbols are in exactly the right spot, and how many are in a wrong spot?",
+    "SKIPS_A_CLUE": "Test your code against every clue, ticking each one off. Does it really agree with all of them?",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -111,7 +117,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (68 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (72 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

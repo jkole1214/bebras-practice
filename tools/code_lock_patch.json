@@ -1,0 +1,144 @@
+{
+  "patch_id": "code-lock-family",
+  "built": "2026-11-12",
+  "analyst": "Claude",
+  "method": "Claude built a new generator family, code_clues (folder code-lock, shown as Code Lock), from the Treasure Box generator candidate. It keeps the task's idea (find the code that agrees with every guess's right-spot and wrong-spot feedback) under an original theme, symbols and wording. Levels 1-3 offer four codes; levels 4-5 ask the student to build the code, and the clues always leave exactly one. Every problem passes check_code_clues.py, which rescores the answer against each clue with its own code, enumerates every possible code to confirm only one fits, and re-derives every wrong answer's tags; corrupting the answer, a clue's feedback, the clue list or a tag is caught in all 300 mutation trials.",
+  "generator_families": [
+    {
+      "id": "code_clues",
+      "module": "code_clues.py",
+      "checker": "check_code_clues.py",
+      "folder": "code-lock",
+      "source_tasks": [
+        "treasure_box"
+      ],
+      "concepts": [
+        "CONSTRAINT_SAT",
+        "ELIMINATION"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "choose",
+          "slots": 3,
+          "pool": 6,
+          "empty": true,
+          "clues": [
+            3,
+            4
+          ],
+          "require": [
+            "SKIPS_EMPTY_CLUE"
+          ],
+          "note": "Three wheels. One clue says nothing is right; pick the code from four."
+        },
+        {
+          "level": 2,
+          "question": "choose",
+          "slots": 3,
+          "pool": 6,
+          "empty": false,
+          "clues": [
+            4,
+            5
+          ],
+          "require": [
+            "CLUE_POSITION_IGNORED"
+          ],
+          "note": "Three wheels. A wrong choice shares the right symbols but puts one in a spot a clue rules out."
+        },
+        {
+          "level": 3,
+          "question": "choose",
+          "slots": 4,
+          "pool": 8,
+          "empty": false,
+          "clues": [
+            4,
+            6
+          ],
+          "require": [
+            "SKIPS_A_CLUE"
+          ],
+          "note": "Four wheels and more clues; one wrong choice breaks just one clue."
+        },
+        {
+          "level": 4,
+          "question": "crack",
+          "slots": 3,
+          "pool": 6,
+          "empty": true,
+          "clues": [
+            4,
+            5
+          ],
+          "require": [],
+          "note": "Three wheels, no choices: build the only code that fits every clue."
+        },
+        {
+          "level": 5,
+          "question": "crack",
+          "slots": 4,
+          "pool": 8,
+          "empty": false,
+          "clues": [
+            5,
+            6
+          ],
+          "require": [],
+          "note": "Four wheels, no choices: build the only code that fits every clue."
+        }
+      ],
+      "misconceptions": [
+        "CLUE_FEEDBACK_SWAPPED",
+        "CLUE_POSITION_IGNORED",
+        "SKIPS_A_CLUE",
+        "SKIPS_EMPTY_CLUE"
+      ]
+    }
+  ],
+  "generator_candidate_updates": [
+    {
+      "source_task": "treasure_box",
+      "status": "built"
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "CLUE_FEEDBACK_SWAPPED",
+      "concept": "CONSTRAINT_SAT",
+      "description": "Mixes up the two counts: reads 'right spot' as 'wrong spot' and the other way round.",
+      "remediation": "Have the student say each clue in full words ('one symbol is in exactly the right spot') before testing a code.",
+      "families": [
+        "code_clues"
+      ]
+    },
+    {
+      "id": "CLUE_POSITION_IGNORED",
+      "concept": "CONSTRAINT_SAT",
+      "description": "Checks how many symbols a guess shares with the code, but not whether each one is in the right spot.",
+      "remediation": "For each clue, have the student point to each shared symbol and say whether it sits in the same spot in both.",
+      "families": [
+        "code_clues"
+      ]
+    },
+    {
+      "id": "SKIPS_A_CLUE",
+      "concept": "ELIMINATION",
+      "description": "Stops checking a code before trying it against every clue, so a code that breaks one clue looks right.",
+      "remediation": "Have the student tick off each clue as they test a code, and only accept a code with every clue ticked.",
+      "families": [
+        "code_clues"
+      ]
+    },
+    {
+      "id": "SKIPS_EMPTY_CLUE",
+      "concept": "ELIMINATION",
+      "description": "Ignores a clue that says nothing is right, so a symbol that clue rules out stays in the code.",
+      "remediation": "Start with the 'nothing is right' clue: have the student cross out every symbol in it before using any other clue.",
+      "families": [
+        "code_clues"
+      ]
+    }
+  ]
+}
