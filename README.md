@@ -1,6 +1,6 @@
 # Kerbopple
 
-A practice page for seventeen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
+A practice page for eighteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
 ## The tutor
 
@@ -122,6 +122,7 @@ frog-hops/            Frog Hops problems, one file each, plus manifest.js
 map-pieces/           Map Pieces problems, one file each, plus manifest.js
 acorn-game/           Acorn Game problems, one file each, plus manifest.js
 bowl-belt/            Bowl Belt problems, one file each, plus manifest.js
+mole-tunnels/         Mole Tunnels problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
@@ -154,7 +155,7 @@ python3 tools/check_bead_grammar.py problems.json
 python3 tools/check_parity_grid.py problems.json
 ```
 
-`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces), `check_best_play.py` (Acorn Game) and `check_bubble_passes.py` (Bowl Belt) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
+`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces), `check_best_play.py` (Acorn Game) `check_bubble_passes.py` (Bowl Belt) and `check_layered_maze.py` (Mole Tunnels) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
 
 ## Levels
 
@@ -294,6 +295,15 @@ The opponent is a character in the story, so the puzzle stays single-player: the
 
 An arrow shows which way the worker walks, and both directions appear at every level. A walk to the right carries the biggest bowl it meets all the way to the end, but no bowl moves more than one place to the left, so the number of workers is set by the slow bowls. At level 4 the bowl farthest from its place always rides the fast way, so counting its distance gives a wrong answer. The checker walks each row with different code (it carries the biggest bowl so far, and mirrors the row for walks to the left) and counts workers with a formula instead of simulating them: the most bigger bowls any bowl has to its left. Wrong answers are tagged by habit: stopping the carried bowl after one place, thinking one worker sorts the row, walking the wrong way, moving only the carried bowl, counting the pairs checked instead of the swaps, counting swaps instead of workers, counting the farthest bowl's distance, and adding a last worker who only checks the row.
 
+**Mole Tunnels** (shortest time on two levels, the idea of Maze, with our own story)
+1. G is on the lower level: type the fewest minutes, counting the climb as well as the steps
+2. S and G are both on top and a shortcut runs underneath: type the fewest minutes (going down and back up is two climbs)
+3. Climbs take longer: type the fewest minutes; about half the time staying on top wins
+4. Pick the lettered square where the fastest trip climbs down
+5. The climb time is hidden: type the longest climb that still makes the trip underneath faster
+
+The two levels are drawn side by side with letters and numbers along the edges, and the mole can climb only where both levels have a tunnel. To make shortcuts that are worth two climbs, the generator puts a wall of earth across the upper level with one gap near an edge, puts S and G on either side away from the gap, and opens a short lower tunnel under the wall. The checker solves each burrow with a 0-1 breadth-first search in which a climb is a chain of one-minute links (the generator uses Dijkstra), follows every walk and climb line of the explanation through the burrow, and at level 5 tries climb times one by one. Wrong answers are tagged by habit: leaving out the climbs, climbing only at S or G, walking both levels as one map, walking through earth, counting a there-and-back climb once, staying on top without checking below, taking the shortcut when two climbs cost more than it saves, climbing at the nearest spot, giving the climb-up square, climbing down into a dead end, and treating a tie as faster.
+
 Box Rows never shows an item where a wrong habit (reading outside-in, counting from 0) happens to give the right answer, so a right answer always means the habit is not there.
 
 With "Adjust level automatically" on, two first-try wins move up a level and two first-try misses move down.
@@ -305,7 +315,7 @@ With "Adjust level automatically" on, two first-try wins move up a level and two
 - the 2015 example sets (38 distinct tasks);
 - the 2022-23 practice challenge (31 distinct tasks).
 
-In total: 69 distinct tasks, 61 concepts with prerequisite edges, 131 tagged misconceptions, the seventeen built generator families, and 17 ranked candidates for new families (the fifteen now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
+In total: 69 distinct tasks, 61 concepts with prerequisite edges, 141 tagged misconceptions, the eighteen built generator families, and 17 ranked candidates for new families (the sixteen now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
 
 Both analyses after the original Benjamin/Cadet map were added as patches. To apply them to another copy of the map:
 

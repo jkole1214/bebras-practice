@@ -164,6 +164,19 @@ LOOK_AGAIN = {
     "SWAPS_FOR_PASSES": "The question asks for workers, not swaps. One worker can make many swaps on one walk.",
     "FARTHEST_BOWL": "That bowl is far from home, but which way does it travel? Can it ride many places on one walk?",
     "COUNTS_CHECK_PASS": "Stop as soon as the row is in order. Did your last worker change anything?",
+
+    # Mole Tunnels (two levels of tunnels; climbing between them takes extra minutes)
+    "SWITCH_FREE": "You counted the steps. Did you add the minutes for each climb too?",
+    "SWITCH_AT_ENDS": "Could the mole climb somewhere in the middle of the trip, not only at S or G?",
+    "MERGES_FLOORS": "Can the mole step from the upper level straight into the lower one, or does it have to climb?",
+    "THROUGH_ROCK": "Can the mole walk through the dark squares? Trace the trip through tunnel only.",
+    "ONE_SWITCH_COST": "The mole went down and came back up. How many climbs is that?",
+    "ONE_FLOOR": "Is there a shortcut underneath? Work out the trip through the lower level too.",
+    "GOES_DOWN_ANYWAY": "Add both climbs to the shortcut underneath. Is it still faster than staying on top?",
+    "FIRST_CLIMB": "That spot is the nearest, but where does the lower tunnel take the mole from there?",
+    "UP_FOR_DOWN": "Follow the trip from S. Is that the first climb, or the climb back up?",
+    "DEAD_END_BELOW": "Follow the lower tunnel from that spot. Can the mole climb back up anywhere else?",
+    "TIE_COUNTS_AS_FASTER": "Try that climb time. Do both ways take the same time? A tie is not faster.",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -174,7 +187,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (117 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (128 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

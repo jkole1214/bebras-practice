@@ -26,8 +26,8 @@ function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push(
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 17);
-  assert.ok(all.length >= 1080, String(all.length));
+  assert.equal(B.fams.length, 18);
+  assert.ok(all.length >= 1140, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {
@@ -172,6 +172,57 @@ test("bowl belt: walking the rows here gives the marked answer", () => {
       assert.ok(same(hits[0], p.options[p.answer_index]));
     }
     const pub = E.publicPuzzle("bowl-belt", p);
+    assert.ok(pub.answer_value === undefined && pub.answer_index === undefined);
+  }
+});
+
+test("mole tunnels: a search over square and level gives the marked answer", () => {
+  const moles = all.filter(([f]) => f === "mole-tunnels").map(([, p]) => p);
+  assert.equal(moles.length, 60);
+  // Bellman-Ford style relaxation over (level, row, col, climbs); small enough to run to a fixed point.
+  const fastest = (sc, kDown, kUp, onlyStay, from = [0, ...sc.start]) => {
+    const n = sc.n, L = [sc.upper, sc.lower], key = (l, r, c, m) => `${l},${r},${c},${m}`, d = new Map();
+    d.set(key(from[0], from[1], from[2], 0), 0);
+    for (let changed = true; changed;) {
+      changed = false;
+      for (const [k, t] of [...d]) {
+        const [l, r, c, m] = k.split(",").map(Number), next = [];
+        for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const rr = r + dr, cc = c + dc;
+          if (rr >= 0 && rr < n && cc >= 0 && cc < n && L[l][rr][cc]) next.push([key(l, rr, cc, m), t + 1]);
+        }
+        if (!onlyStay && L[0][r][c] && L[1][r][c] && m < 6) next.push([key(1 - l, r, c, m + 1), t + (l === 0 ? kDown : kUp)]);
+        for (const [v, tv] of next) if (!d.has(v) || tv < d.get(v)) { d.set(v, tv); changed = true; }
+      }
+    }
+    const byM = {};
+    for (const [k, t] of d) { const [l, r, c, m] = k.split(",").map(Number); if (l === sc.goal_level && r === sc.goal[0] && c === sc.goal[1]) byM[m] = t; }
+    return byM;
+  };
+  const best = (o) => Math.min(...Object.values(o));
+  const under = (o) => Math.min(...Object.entries(o).filter(([m]) => m >= 2).map(([, t]) => t));
+  for (const p of moles) {
+    const sc = p.scene;
+    if (p.question_type === "limit") {
+      const stay = fastest(sc, 1, 1, true)[0];
+      let k = 1;
+      while (under(fastest(sc, k + 1, k + 1)) < stay) k++;
+      assert.ok(under(fastest(sc, k, k)) < stay);
+      assert.equal(p.answer_value, k);
+    } else if (p.question_type === "where") {
+      const t = best(fastest(sc, sc.climb, sc.climb));
+      // each letter's trip: walk on top to it, climb down, then the fastest way on to G
+      const via = Object.fromEntries(Object.entries(sc.spots).map(([l, [r, c]]) => {
+        const walk = fastest({ ...sc, goal: [r, c], goal_level: 0 }, 0, 0, true)[0];
+        return [l, walk === undefined ? Infinity : walk + sc.climb + best(fastest(sc, sc.climb, sc.climb, false, [1, r, c]))];
+      }));
+      const winners = Object.keys(via).filter(l => via[l] === t);
+      assert.deepEqual(winners, [p.answer_value]);
+      assert.equal(p.options[p.answer_index], p.answer_value);
+    } else {
+      assert.equal(p.answer_value, best(fastest(sc, sc.climb, sc.climb)));
+    }
+    const pub = E.publicPuzzle("mole-tunnels", p);
     assert.ok(pub.answer_value === undefined && pub.answer_index === undefined);
   }
 });

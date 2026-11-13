@@ -109,14 +109,19 @@
         "method": "Claude built a new generator family, best_play (folder acorn-game, shown as Acorn Game), for game trees and optimal play, a concept that two analysed tasks use (Seashells and Pebbles, Pirate Hunters) but no family covered. It keeps their idea (a side wins only with a move that works against every reply) under original games: a forked trail where the student chooses at yellow forks and a raccoon chooses at grey ones, and a take-away pile game against the same raccoon. The opponent is a story character that always plays its best, so the puzzle stays single-player. Levels 1-2 are trails (pick the first path; type how many acorns you can be sure of, three forks deep); levels 3-5 are piles (type the winning first move; pick the full list of lose-piles; a big pile where the moves allowed have gaps or the last acorn loses). Every problem passes check_best_play.py, which rebuilds the game from the picture and solves trails bottom-up and piles top-down (the generator does the reverse), and every corrupted answer key, tag, scene, picture and explanation ending in the mutation trials is caught. While building the checker Claude found that the generator had left the off-by-one habit untagged when the pile is already a multiple of the biggest move; a student with that habit takes the biggest move there, and the generator now tags it."
       },
       {
-        "id": "look-again",
-        "built": "2026-11-12",
-        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (117 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
-      },
-      {
         "id": "bowl-belt-family",
         "built": "2026-11-13",
         "method": "Claude built a new generator family, bubble_passes (folder bowl-belt, shown as Bowl Belt), for passes of neighbour swaps (bubble sort), the one concept of Bowl Factory that no family covered. It keeps the task's idea (one worker makes one pass of neighbour swaps; count the passes that sort a row) under an original story and pictures: bowls of sizes 1 to N on a belt, a worker who walks left to right or right to left as an arrow shows. Level 1 asks for the row after one worker, level 2 for the number of swaps one worker makes, level 3 for the row after two or three workers, level 4 for how many workers sort seven bowls (chosen so the bowl farthest from its place rides the fast way and does not set the count), and level 5 shows the row after one worker and asks which of four rows it started as. Every problem passes check_bubble_passes.py, which rebuilds the row from the picture, walks it with a carry formulation (and the mirrored row for walks to the left) instead of pair-by-pair swaps, and counts workers with a formula (the most bigger bowls any bowl has to its left) instead of simulation; every corrupted answer key, tag, scene, picture, arrow and explanation ending in the mutation trials is caught. The map already had SWAPS_FOR_PASSES from the Bowl Factory analysis with no family; this family is the first to use it. One finding from building it: on every row of seven (all 5,040, both directions) where the farthest bowl rides the fast way and is farther from its place than the true count, its distance equals the number of workers needed in the other direction, so those two habits give the same wrong number and share a tag on that value."
+      },
+      {
+        "id": "mole-tunnels-family",
+        "built": "2026-11-13",
+        "method": "Claude built a new generator family, layered_maze (folder mole-tunnels, shown as Mole Tunnels), from the Maze generator candidate. It keeps the task's idea (the shortest time on two floors, where changing floor costs extra, so a trip through the other floor is only sometimes worth it; the state is a square plus a floor) under an original story and pictures: a mole's burrow with an upper and a lower level of tunnels drawn side by side, squares of solid earth instead of walls, and climbing allowed only where both levels have a tunnel. Level 1 puts the goal on the lower level (one climb); level 2 has a shortcut underneath that pays even with two climbs; level 3 makes climbs dearer so that about half the time staying on top wins; level 4 asks at which of four lettered squares the fastest trip climbs down; level 5 hides the climb time and asks for the longest climb that still makes the trip underneath faster. Random burrows almost never have a shortcut worth two climbs, so the generator puts a wall of earth across the upper level with one gap near an edge, places S and G on either side away from the gap, and opens a short lower tunnel under the wall; the rest of both levels is random. Every problem passes check_layered_maze.py, which rebuilds the burrow from the picture and solves it with a 0-1 breadth-first search in which a climb is a chain of one-minute links (the generator uses Dijkstra), re-derives every habit by re-running that search on a changed burrow or with changed climb costs, follows each walk and climb line of the explanation through the burrow, and for level 5 tries climb times one by one instead of using the formula. Every corrupted answer key, tag, scene, climb time, explanation ending and explanation step in the mutation trials is caught; flipping a square in both the picture and the scene is caught whenever it changes the answer. A finding from building it: the time saved by the shortcut (top steps minus steps underneath) is always even, because the grid is bipartite, so the level 5 answer is always half the saving minus one, and the climb at exactly half the saving is always a tie. The map already had ONE_SWITCH_COST from the Maze analysis with no family; this family is the first to use it, and its wording is made general."
+      },
+      {
+        "id": "look-again",
+        "built": "2026-11-12",
+        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (128 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
       }
     ]
   },
@@ -5190,9 +5195,12 @@
     {
       "id": "ONE_SWITCH_COST",
       "concept": "SHORTEST_PATH",
-      "description": "Counts the cost of switching floors once for a route that switches there and back.",
-      "remediation": "Ask which floor B is on and how the route gets back there.",
-      "families": []
+      "description": "Counts the cost of changing level only once for a trip that goes to the other level and comes back.",
+      "remediation": "Write the trip as pieces. A trip that goes down and comes back up climbs twice.",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "The mole went down and came back up. How many climbs is that?"
     },
     {
       "id": "FORWARD_TOURNAMENT",
@@ -6019,6 +6027,106 @@
         "bubble_passes"
       ],
       "look_again": "Stop as soon as the row is in order. Did your last worker change anything?"
+    },
+    {
+      "id": "SWITCH_FREE",
+      "concept": "SHORTEST_PATH",
+      "description": "Adds up the steps of the route but leaves out the minutes spent climbing between the levels.",
+      "remediation": "Write the trip as pieces: walk, climb, walk. Every piece takes time, the climbs too.",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "You counted the steps. Did you add the minutes for each climb too?"
+    },
+    {
+      "id": "SWITCH_AT_ENDS",
+      "concept": "STATE",
+      "description": "Only thinks of changing level at the start or at the goal, not at a spot partway along the trip.",
+      "remediation": "List every square that is tunnel on both levels. Each one is a place the trip could change level.",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "Could the mole climb somewhere in the middle of the trip, not only at S or G?"
+    },
+    {
+      "id": "MERGES_FLOORS",
+      "concept": "STATE",
+      "description": "Treats the two levels as one map, stepping from a tunnel on one level into a tunnel on the other without climbing.",
+      "remediation": "Keep a finger on the level the mole is on. It can only change level by climbing at a square that is tunnel on both.",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "Can the mole step from the upper level straight into the lower one, or does it have to climb?"
+    },
+    {
+      "id": "THROUGH_ROCK",
+      "concept": "SHORTEST_PATH",
+      "description": "Counts the straight across-and-down distance, as if the mole could walk through solid earth.",
+      "remediation": "Trace the trip square by square through tunnel only, and count the steps you really take.",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "Can the mole walk through the dark squares? Trace the trip through tunnel only."
+    },
+    {
+      "id": "ONE_FLOOR",
+      "concept": "STATE",
+      "description": "Stays on the starting level the whole way and never checks whether a trip through the other level is faster.",
+      "remediation": "Work out both: the time staying on top, and the time with a trip through the lower level. Then compare.",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "Is there a shortcut underneath? Work out the trip through the lower level too."
+    },
+    {
+      "id": "GOES_DOWN_ANYWAY",
+      "concept": "SHORTEST_PATH",
+      "description": "Takes a shortcut through the other level even when the two climbs cost more time than the shortcut saves.",
+      "remediation": "Add both climbs to the shortcut, then compare it with staying on one level.",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "Add both climbs to the shortcut underneath. Is it still faster than staying on top?"
+    },
+    {
+      "id": "FIRST_CLIMB",
+      "concept": "SHORTEST_PATH",
+      "description": "Changes level at the first climb spot it reaches instead of the spot that makes the whole trip fastest.",
+      "remediation": "For each climb spot, add up the whole trip through it. The nearest spot is not always the best.",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "That spot is the nearest, but where does the lower tunnel take the mole from there?"
+    },
+    {
+      "id": "UP_FOR_DOWN",
+      "concept": "STATE",
+      "description": "Mixes up the square where the trip climbs down with the square where it climbs back up.",
+      "remediation": "Follow the trip from the start. Which climb comes first?",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "Follow the trip from S. Is that the first climb, or the climb back up?"
+    },
+    {
+      "id": "DEAD_END_BELOW",
+      "concept": "REACHABILITY",
+      "description": "Climbs down where the tunnel below looks handy without checking that it leads anywhere.",
+      "remediation": "Before climbing down, follow the lower tunnel from there. Can the mole climb back up anywhere else?",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "Follow the lower tunnel from that spot. Can the mole climb back up anywhere else?"
+    },
+    {
+      "id": "TIE_COUNTS_AS_FASTER",
+      "concept": "SHORTEST_PATH",
+      "description": "Gives the value at which the two ways take exactly the same time, as if a tie were faster.",
+      "remediation": "Try that value: do both ways take the same time? Then one is not faster than the other.",
+      "families": [
+        "layered_maze"
+      ],
+      "look_again": "Try that climb time. Do both ways take the same time? A tie is not faster."
     }
   ],
   "generator_families": [
@@ -7580,6 +7688,71 @@
           "note": "Work backward: the row after one worker is shown; pick the row it started as."
         }
       ]
+    },
+    {
+      "id": "layered_maze",
+      "module": "layered_maze.py",
+      "checker": "check_layered_maze.py",
+      "folder": "mole-tunnels",
+      "source_tasks": [
+        "maze"
+      ],
+      "concepts": [
+        "SHORTEST_PATH",
+        "STATE"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "down",
+          "n": 5,
+          "climb": [
+            3
+          ],
+          "entry": "number",
+          "note": "G is on the lower level: find the fastest way down, and count the climb as well as the steps."
+        },
+        {
+          "level": 2,
+          "question": "detour",
+          "n": 6,
+          "climb": [
+            3,
+            4
+          ],
+          "entry": "number",
+          "note": "S and G are both on top, and a shortcut runs underneath: going down and coming back up are two climbs."
+        },
+        {
+          "level": 3,
+          "question": "compare",
+          "n": 6,
+          "climb": [
+            4,
+            5
+          ],
+          "entry": "number",
+          "note": "Climbs take longer: work out both ways and see whether the shortcut underneath still pays."
+        },
+        {
+          "level": 4,
+          "question": "where",
+          "n": 6,
+          "climb": [
+            3,
+            4
+          ],
+          "entry": "choice",
+          "note": "Pick the square where the fastest trip climbs down. The nearest climb spot is not always it."
+        },
+        {
+          "level": 5,
+          "question": "limit",
+          "n": 6,
+          "entry": "number",
+          "note": "The climb time is unknown: find the longest climb that still makes the trip underneath faster."
+        }
+      ]
     }
   ],
   "generator_candidates": [
@@ -7654,7 +7827,9 @@
     },
     {
       "source_task": "maze",
-      "why": "Extends lake-crossing / robot-routes to a layered graph; Dijkstra checker; switch cost tunes difficulty."
+      "why": "Extends lake-crossing / robot-routes to a layered graph; Dijkstra checker; switch cost tunes difficulty.",
+      "status": "built",
+      "built_as": "layered_maze"
     },
     {
       "source_task": "colorful_tower",

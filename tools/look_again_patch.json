@@ -2,7 +2,7 @@
   "patch_id": "look-again",
   "built": "2026-11-12",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (117 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (128 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
     {
       "id": "BIGGEST_BASKET",
@@ -89,6 +89,10 @@
       "look_again": "Are 'east, fog' and 'fog, east' the same message? Count each order on its own."
     },
     {
+      "id": "DEAD_END_BELOW",
+      "look_again": "Follow the lower tunnel from that spot. Can the mole climb back up anywhere else?"
+    },
+    {
       "id": "DIFFERENCE_FOR_REPAIR",
       "look_again": "Equal totals are not enough. Do any bolts arrive before there is a nut for them?"
     },
@@ -129,6 +133,10 @@
       "look_again": "Could a zigzag route be just as short?"
     },
     {
+      "id": "FIRST_CLIMB",
+      "look_again": "That spot is the nearest, but where does the lower tunnel take the mole from there?"
+    },
+    {
       "id": "FIRST_COLOR_STAYS",
       "look_again": "Find an orange tank and a blue tank joined by a pipe. What does each push into the other next minute?"
     },
@@ -163,6 +171,10 @@
     {
       "id": "FORWARD_NOT_INVERSE",
       "look_again": "Work backward: which box in the outer row holds the target?"
+    },
+    {
+      "id": "GOES_DOWN_ANYWAY",
+      "look_again": "Add both climbs to the shortcut underneath. Is it still faster than staying on top?"
     },
     {
       "id": "GRABS_MOST",
@@ -261,6 +273,10 @@
       "look_again": "Find a brick that rests on two bricks of the same colour. Does the rule let all three be the same?"
     },
     {
+      "id": "MERGES_FLOORS",
+      "look_again": "Can the mole step from the upper level straight into the lower one, or does it have to climb?"
+    },
+    {
       "id": "MINUTE_OFF_BY_ONE",
       "look_again": "Write 'minute 1', 'minute 2' and so on, with what changes under each. How many minutes does the question ask about?"
     },
@@ -309,6 +325,10 @@
       "look_again": "Is there a different route with exactly the same total?"
     },
     {
+      "id": "ONE_FLOOR",
+      "look_again": "Is there a shortcut underneath? Work out the trip through the lower level too."
+    },
+    {
       "id": "ONE_PASS_SORTS",
       "look_again": "Walk the row once, pair by pair, and look at the end. Is every bowl in order yet?"
     },
@@ -323,6 +343,10 @@
     {
       "id": "ONE_STEP_ONLY",
       "look_again": "The friends hear it first. What does each of them do with the news next?"
+    },
+    {
+      "id": "ONE_SWITCH_COST",
+      "look_again": "The mole went down and came back up. How many climbs is that?"
     },
     {
       "id": "ONLY_CARRIED_MOVES",
@@ -445,8 +469,24 @@
       "look_again": "Which hop goes forward, and which goes back? Check each hop against the rule again."
     },
     {
+      "id": "SWITCH_AT_ENDS",
+      "look_again": "Could the mole climb somewhere in the middle of the trip, not only at S or G?"
+    },
+    {
+      "id": "SWITCH_FREE",
+      "look_again": "You counted the steps. Did you add the minutes for each climb too?"
+    },
+    {
+      "id": "THROUGH_ROCK",
+      "look_again": "Can the mole walk through the dark squares? Trace the trip through tunnel only."
+    },
+    {
       "id": "TIES_FLIPPED",
       "look_again": "Two of the dice are equal. Is 'greater than' true when the numbers are the same?"
+    },
+    {
+      "id": "TIE_COUNTS_AS_FASTER",
+      "look_again": "Try that climb time. Do both ways take the same time? A tie is not faster."
     },
     {
       "id": "TOTALS_ONLY_MATCHING",
@@ -455,6 +495,10 @@
     {
       "id": "TOTAL_NUTS_FOR_DEPTH",
       "look_again": "Bolts take nuts out as the belt moves. Follow the bucket after each part."
+    },
+    {
+      "id": "UP_FOR_DOWN",
+      "look_again": "Follow the trip from S. Is that the first climb, or the climb back up?"
     },
     {
       "id": "WASTED_MEETING",

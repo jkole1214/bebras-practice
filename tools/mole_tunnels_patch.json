@@ -1,0 +1,182 @@
+{
+  "patch_id": "mole-tunnels-family",
+  "built": "2026-11-13",
+  "analyst": "Claude",
+  "method": "Claude built a new generator family, layered_maze (folder mole-tunnels, shown as Mole Tunnels), from the Maze generator candidate. It keeps the task's idea (the shortest time on two floors, where changing floor costs extra, so a trip through the other floor is only sometimes worth it; the state is a square plus a floor) under an original story and pictures: a mole's burrow with an upper and a lower level of tunnels drawn side by side, squares of solid earth instead of walls, and climbing allowed only where both levels have a tunnel. Level 1 puts the goal on the lower level (one climb); level 2 has a shortcut underneath that pays even with two climbs; level 3 makes climbs dearer so that about half the time staying on top wins; level 4 asks at which of four lettered squares the fastest trip climbs down; level 5 hides the climb time and asks for the longest climb that still makes the trip underneath faster. Random burrows almost never have a shortcut worth two climbs, so the generator puts a wall of earth across the upper level with one gap near an edge, places S and G on either side away from the gap, and opens a short lower tunnel under the wall; the rest of both levels is random. Every problem passes check_layered_maze.py, which rebuilds the burrow from the picture and solves it with a 0-1 breadth-first search in which a climb is a chain of one-minute links (the generator uses Dijkstra), re-derives every habit by re-running that search on a changed burrow or with changed climb costs, follows each walk and climb line of the explanation through the burrow, and for level 5 tries climb times one by one instead of using the formula. Every corrupted answer key, tag, scene, climb time, explanation ending and explanation step in the mutation trials is caught; flipping a square in both the picture and the scene is caught whenever it changes the answer. A finding from building it: the time saved by the shortcut (top steps minus steps underneath) is always even, because the grid is bipartite, so the level 5 answer is always half the saving minus one, and the climb at exactly half the saving is always a tie. The map already had ONE_SWITCH_COST from the Maze analysis with no family; this family is the first to use it, and its wording is made general.",
+  "generator_families": [
+    {
+      "id": "layered_maze",
+      "module": "layered_maze.py",
+      "checker": "check_layered_maze.py",
+      "folder": "mole-tunnels",
+      "source_tasks": [
+        "maze"
+      ],
+      "concepts": [
+        "SHORTEST_PATH",
+        "STATE"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "down",
+          "n": 5,
+          "climb": [
+            3
+          ],
+          "entry": "number",
+          "note": "G is on the lower level: find the fastest way down, and count the climb as well as the steps."
+        },
+        {
+          "level": 2,
+          "question": "detour",
+          "n": 6,
+          "climb": [
+            3,
+            4
+          ],
+          "entry": "number",
+          "note": "S and G are both on top, and a shortcut runs underneath: going down and coming back up are two climbs."
+        },
+        {
+          "level": 3,
+          "question": "compare",
+          "n": 6,
+          "climb": [
+            4,
+            5
+          ],
+          "entry": "number",
+          "note": "Climbs take longer: work out both ways and see whether the shortcut underneath still pays."
+        },
+        {
+          "level": 4,
+          "question": "where",
+          "n": 6,
+          "climb": [
+            3,
+            4
+          ],
+          "entry": "choice",
+          "note": "Pick the square where the fastest trip climbs down. The nearest climb spot is not always it."
+        },
+        {
+          "level": 5,
+          "question": "limit",
+          "n": 6,
+          "entry": "number",
+          "note": "The climb time is unknown: find the longest climb that still makes the trip underneath faster."
+        }
+      ]
+    }
+  ],
+  "generator_candidate_updates": [
+    {
+      "source_task": "maze",
+      "status": "built",
+      "built_as": "layered_maze"
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "SWITCH_FREE",
+      "concept": "SHORTEST_PATH",
+      "description": "Adds up the steps of the route but leaves out the minutes spent climbing between the levels.",
+      "remediation": "Write the trip as pieces: walk, climb, walk. Every piece takes time, the climbs too.",
+      "families": [
+        "layered_maze"
+      ]
+    },
+    {
+      "id": "SWITCH_AT_ENDS",
+      "concept": "STATE",
+      "description": "Only thinks of changing level at the start or at the goal, not at a spot partway along the trip.",
+      "remediation": "List every square that is tunnel on both levels. Each one is a place the trip could change level.",
+      "families": [
+        "layered_maze"
+      ]
+    },
+    {
+      "id": "MERGES_FLOORS",
+      "concept": "STATE",
+      "description": "Treats the two levels as one map, stepping from a tunnel on one level into a tunnel on the other without climbing.",
+      "remediation": "Keep a finger on the level the mole is on. It can only change level by climbing at a square that is tunnel on both.",
+      "families": [
+        "layered_maze"
+      ]
+    },
+    {
+      "id": "THROUGH_ROCK",
+      "concept": "SHORTEST_PATH",
+      "description": "Counts the straight across-and-down distance, as if the mole could walk through solid earth.",
+      "remediation": "Trace the trip square by square through tunnel only, and count the steps you really take.",
+      "families": [
+        "layered_maze"
+      ]
+    },
+    {
+      "id": "ONE_FLOOR",
+      "concept": "STATE",
+      "description": "Stays on the starting level the whole way and never checks whether a trip through the other level is faster.",
+      "remediation": "Work out both: the time staying on top, and the time with a trip through the lower level. Then compare.",
+      "families": [
+        "layered_maze"
+      ]
+    },
+    {
+      "id": "GOES_DOWN_ANYWAY",
+      "concept": "SHORTEST_PATH",
+      "description": "Takes a shortcut through the other level even when the two climbs cost more time than the shortcut saves.",
+      "remediation": "Add both climbs to the shortcut, then compare it with staying on one level.",
+      "families": [
+        "layered_maze"
+      ]
+    },
+    {
+      "id": "FIRST_CLIMB",
+      "concept": "SHORTEST_PATH",
+      "description": "Changes level at the first climb spot it reaches instead of the spot that makes the whole trip fastest.",
+      "remediation": "For each climb spot, add up the whole trip through it. The nearest spot is not always the best.",
+      "families": [
+        "layered_maze"
+      ]
+    },
+    {
+      "id": "UP_FOR_DOWN",
+      "concept": "STATE",
+      "description": "Mixes up the square where the trip climbs down with the square where it climbs back up.",
+      "remediation": "Follow the trip from the start. Which climb comes first?",
+      "families": [
+        "layered_maze"
+      ]
+    },
+    {
+      "id": "DEAD_END_BELOW",
+      "concept": "REACHABILITY",
+      "description": "Climbs down where the tunnel below looks handy without checking that it leads anywhere.",
+      "remediation": "Before climbing down, follow the lower tunnel from there. Can the mole climb back up anywhere else?",
+      "families": [
+        "layered_maze"
+      ]
+    },
+    {
+      "id": "TIE_COUNTS_AS_FASTER",
+      "concept": "SHORTEST_PATH",
+      "description": "Gives the value at which the two ways take exactly the same time, as if a tie were faster.",
+      "remediation": "Try that value: do both ways take the same time? Then one is not faster than the other.",
+      "families": [
+        "layered_maze"
+      ]
+    }
+  ],
+  "misconception_updates": [
+    {
+      "id": "ONE_SWITCH_COST",
+      "families": [
+        "layered_maze"
+      ],
+      "description": "Counts the cost of changing level only once for a trip that goes to the other level and comes back.",
+      "remediation": "Write the trip as pieces. A trip that goes down and comes back up climbs twice."
+    }
+  ]
+}
