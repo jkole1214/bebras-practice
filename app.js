@@ -151,6 +151,7 @@ function optionHTML(o) {
   if (cur && cur.family === "conveyor") return beltHTML(o, false);
   if (cur && cur.family === "bead_grammar") return tokensHTML(o);
   if (cur && cur.family === "stone_hops") return Array.isArray(o) ? `<span class="trip">${o.join(" → ")}</span>` : "Stone " + o;
+  if (cur && cur.family === "gossip_rounds") return Array.isArray(o) ? o.map(m => `<span class="pair">${esc(m.join(" & "))}</span>`).join("") : esc(o + (cur.question_type === "fewest" ? " rounds" : " pieces"));
   if (cur && cur.family === "logic_gates") return esc(o.length ? "Buttons " + o.join(", ") : "Nobody");
   if (Array.isArray(o)) return `<span class="dice" aria-hidden="true">${o.map(v => FACES[v]).join("")}</span><span class="nums">${o.join(", ")}</span>`;
   if (cur && cur.family === "signal_code" && cur.question_type === "inverse") return flashHTML(o);
@@ -180,7 +181,8 @@ function render() {
     : p.family === "code_clues" ? { choose: "Pick the code", crack: "Crack the code" }[p.question_type]
     : p.family === "brick_rule" ? { fill: "Build the pyramid", count: "Count the bricks", hidden: "Work backward" }[p.question_type]
     : p.family === "friend_reach" ? { reach: "Who hears it", who: "Whose news spreads most", befriend: "One new friend" }[p.question_type]
-    : p.family === "stone_hops" ? { check: "Check the trip", last: "Last stone", tour: "Tap the trip" }[p.question_type] : kind;
+    : p.family === "stone_hops" ? { check: "Check the trip", last: "Last stone", tour: "Tap the trip" }[p.question_type]
+    : p.family === "gossip_rounds" ? { trace: "Count the pieces", finish: "Plan the last round", fewest: "Fewest rounds" }[p.question_type] : kind;
   const famTitle = page.mode === PRACTICE || servedAs !== "ladder" ? `<span>${esc(COACH.titles[p.fam])}</span>` : "";
   let body = `<div class="meta">${famTitle}<span>Level ${p.level}</span><span>${kindShown}</span></div>`
     + (why ? `<p class="why">${esc(why)}</p>` : "") + `<p class="prompt">${esc(p.prompt)}</p>`;
@@ -210,7 +212,7 @@ function render() {
   } else if (p.entry === "number") {
     body += `<form class="row" id="numform"><input id="numans" type="number" inputmode="numeric" min="0" class="numin" aria-label="Your answer"><button class="btn" type="submit">Check</button></form>`;
   } else {
-    body += `<div class="options${["signal_code", "conveyor", "bead_grammar"].includes(p.family) || (p.family === "stone_hops" && p.question_type === "check") ? " wide" : ""}">${p.options.map((o, i) => `<button class="opt" data-i="${i}">${optionHTML(o)}</button>`).join("")}</div>`;
+    body += `<div class="options${["signal_code", "conveyor", "bead_grammar"].includes(p.family) || (p.family === "stone_hops" && p.question_type === "check") || (p.family === "gossip_rounds" && p.question_type === "finish") ? " wide" : ""}">${p.options.map((o, i) => `<button class="opt" data-i="${i}">${optionHTML(o)}</button>`).join("")}</div>`;
   }
   body += `<div id="fb"></div><div class="row"><button class="btn ghost" id="hint">Show a hint</button><button class="btn" id="next" hidden>Next puzzle</button><span class="tally"></span></div>`;
   card.innerHTML = body;

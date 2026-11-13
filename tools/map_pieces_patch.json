@@ -1,0 +1,196 @@
+{
+  "patch_id": "map-pieces-family",
+  "built": "2026-11-12",
+  "analyst": "Claude",
+  "method": "Claude built a new generator family, gossip_rounds (folder map-pieces, shown as Map Pieces), from the Spies generator candidate. It keeps the task's idea (friends meet in pairs, at most one meeting each per round, and every meeting pools what both know; how few rounds can spread everything?) under an original story, friends copying pieces of a treasure map, with our own wording and pictures. The source asks only for the fewest rounds when anyone can meet anyone, which depends on the group size alone, so Claude added three things that vary: a meeting plan to trace, a last round to choose, and friend networks where only friends joined by a line can meet. In those networks the answer is kept above both quick lower bounds (doubling, plus one for an odd group; and the distance between the farthest pair), so the student has to find a plan and also see why one round fewer fails. While building the checker Claude caught a wrong bound in its own first draft: a single friend's pile can more than double in one meeting (meeting someone who has everything), but the biggest pile, and the number of friends holding any one piece, cannot. Every problem passes check_gossip_rounds.py, which rebuilds the scene from the picture, replays plans with bitmasks, finds the fewest rounds by a pruned depth-first search (the generator uses breadth-first search), and replays the plan printed in the explanation; every corrupted answer key and tag is caught in the mutation trials.",
+  "generator_families": [
+    {
+      "id": "gossip_rounds",
+      "module": "gossip_rounds.py",
+      "checker": "check_gossip_rounds.py",
+      "folder": "map-pieces",
+      "source_tasks": [
+        "spies"
+      ],
+      "concepts": [
+        "PARALLEL_SPREAD",
+        "SIMULATION",
+        "LOWER_BOUND",
+        "IMPOSSIBILITY_PROOF"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "trace",
+          "people": [
+            5
+          ],
+          "rounds": 2,
+          "pairs": [
+            2
+          ],
+          "entry": "choice",
+          "note": "Follow a two-round meeting plan for five friends and count one friend's pieces (multiple choice)."
+        },
+        {
+          "level": 2,
+          "question": "trace",
+          "people": [
+            6,
+            7
+          ],
+          "rounds": 3,
+          "pairs": [
+            2,
+            3
+          ],
+          "entry": "number",
+          "note": "Follow a three-round plan for six or seven friends and type how many pieces one friend has."
+        },
+        {
+          "level": 3,
+          "question": "finish",
+          "people": [
+            6
+          ],
+          "sizes": [
+            3,
+            2
+          ],
+          "entry": "choice",
+          "note": "Two rounds are done. Pick the third round that gives everyone all six pieces."
+        },
+        {
+          "level": 4,
+          "question": "fewest",
+          "people": [
+            6,
+            7
+          ],
+          "gap": 2,
+          "entry": "choice",
+          "note": "Only friends joined by a line can meet. What is the fewest rounds? Six or seven friends."
+        },
+        {
+          "level": 5,
+          "question": "fewest",
+          "people": [
+            7,
+            8
+          ],
+          "gap": 3,
+          "entry": "number",
+          "note": "Fewest rounds for seven or eight friends, typed. The lines slow things down."
+        }
+      ]
+    }
+  ],
+  "generator_candidate_updates": [
+    {
+      "source_task": "spies",
+      "status": "built",
+      "built_as": "gossip_rounds"
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "PARTNERS_OWN_PIECE_ONLY",
+      "concept": "PARALLEL_SPREAD",
+      "description": "Gives a friend only each partner's own piece, forgetting that the partner also hands over pieces they collected in earlier rounds.",
+      "remediation": "Write what each friend has after every round, and copy the whole pile at each meeting.",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "LEAVES_OUT_OWN_PIECE",
+      "concept": "SIMULATION",
+      "description": "Counts the pieces a friend got from others but forgets the friend's own piece.",
+      "remediation": "Start each friend's list with their own letter before any meeting.",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "IGNORES_ROUND_ORDER",
+      "concept": "PARALLEL_SPREAD",
+      "description": "Lets a piece travel through a meeting that happened before the friend had that piece, as if all meetings happened at once.",
+      "remediation": "Go round by round. A meeting can only pass on pieces the friends already have at that moment.",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "COUNTS_SHARED_PIECES_TWICE",
+      "concept": "SIMULATION",
+      "description": "Adds the two friends' piles together at a meeting, so a piece both already had is counted twice.",
+      "remediation": "List the letters, not just how many. A letter both friends have counts once.",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "NEW_FACES_FIRST",
+      "concept": "PARALLEL_SPREAD",
+      "description": "Pairs up friends who have not met yet, assuming that brings new pieces, instead of checking which pieces each one is missing.",
+      "remediation": "For each friend, list the missing letters, then find a partner who has all of them.",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "WASTED_MEETING",
+      "concept": "PARALLEL_SPREAD",
+      "description": "Pairs two friends who already have exactly the same pieces, so the meeting gives neither of them anything.",
+      "remediation": "Before pairing two friends, compare their letters. If they match, the meeting is wasted.",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "IGNORES_LINKS",
+      "concept": "LOWER_BOUND",
+      "description": "Gives the fewest rounds as if any two friends could meet, ignoring that only friends joined by a line can.",
+      "remediation": "Try to write the fast plan using only the lines in the picture. Where does it get stuck?",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "ODD_ONE_OUT_FREE",
+      "concept": "IMPOSSIBILITY_PROOF",
+      "description": "Uses only the doubling count and forgets that with an odd number of friends someone sits out every round, including the last.",
+      "remediation": "Ask who sits out in the last round. That friend must already have every piece one round earlier.",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "FARTHEST_PAIR_ONLY",
+      "concept": "LOWER_BOUND",
+      "description": "Counts only how many meetings apart the two farthest friends are, as if pieces could travel every way at once.",
+      "remediation": "Distance is one limit, but each friend meets only one other per round. Try to write a plan that short.",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "ONE_PIECE_PER_ROUND",
+      "concept": "PARALLEL_SPREAD",
+      "description": "Thinks a friend gains only one new piece per round, so it takes one round for each other friend.",
+      "remediation": "Show a meeting where a friend with two pieces meets another friend with two: both end with four.",
+      "families": [
+        "gossip_rounds"
+      ]
+    },
+    {
+      "id": "FIRST_PLAN_IS_BEST",
+      "concept": "LOWER_BOUND",
+      "description": "Finds one plan that works and gives its number of rounds as the fewest, without trying to do better.",
+      "remediation": "After finding a plan, ask whether any round was weak, and try to do the same with one round fewer.",
+      "families": [
+        "gossip_rounds"
+      ]
+    }
+  ]
+}

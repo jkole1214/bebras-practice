@@ -286,6 +286,7 @@ const brickText = (p, s) => p.question_type === "fill"
 const codeText = (c) => [...String(c)].map(ch => SYMBOL[ch] || ch).join(", ");
 const hopText = (p, a) => p.entry === "hops" ? [p.scene.start, ...(Array.isArray(a) ? a : [])].join(" → ")
   : p.question_type === "last" ? "stone " + a.option : a.option.join(" → ");
+const pairText = (m) => m.map(p => p.join(" & ")).join(", ");
 const cellName = (k) => { const [r, c] = String(k).split(",").map(Number); return `row ${r + 1}, column ${c + 1}`; };
 function optionText(o) {
   if (Array.isArray(o)) return o.every(v => typeof v === "number") ? o.join(", ") : o.map(place).join(" → ");
@@ -296,6 +297,7 @@ function answerText(p, a) {
   if (typeof a === "number") return String(a);
   if (p.family === "code_clues") return codeText(typeof a === "string" ? a : a.option);
   if (p.family === "stone_hops") return hopText(p, a);
+  if (p.family === "gossip_rounds" && a && Array.isArray(a.option)) return pairText(a.option);
   if (p.entry === "bricks") return brickText(p, a);
   if (a && a.option !== undefined) return p.family === "logic_gates" ? (a.option.length ? "buttons " + a.option.join(", ") : "nobody") : optionText(a.option);
   if (Array.isArray(a)) {
@@ -312,6 +314,7 @@ function rightText(p) {
   if (p.entry === "number") return String(p.answer_value);
   if (p.family === "code_clues") return codeText(p.answer_value);
   if (p.family === "stone_hops") return p.question_type === "last" ? "stone " + p.answer_value : p.answer_value.join(" → ");
+  if (p.family === "gossip_rounds" && p.question_type === "finish") return pairText(p.answer_value);
   if (p.entry === "bricks") return p.question_type === "fill" ? "every brick by the rule" : brickText(p, p.scene.edit.map(k => p.answer_value[k]).join(""));
   const o = p.options[p.answer_index];
   return p.family === "logic_gates" ? (o.length ? "buttons " + o.join(", ") : "nobody") : optionText(o);

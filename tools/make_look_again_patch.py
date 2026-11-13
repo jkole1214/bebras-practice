@@ -128,6 +128,19 @@ LOOK_AGAIN = {
     "HOPS_WRONG_SIZE": "Count the spots on each hop, water spots too. Is every hop exactly the right size?",
     "SWAPS_HOP_DIRECTIONS": "Which hop goes forward, and which goes back? Check each hop against the rule again.",
     "LANDS_TWICE": "Does the frog land on any stone more than once?",
+
+    # Map Pieces (friends meet in pairs each round and copy each other's pieces)
+    "PARTNERS_OWN_PIECE_ONLY": "When two friends meet, do they swap only their own letters, or every letter they have collected so far?",
+    "LEAVES_OUT_OWN_PIECE": "Did you count the friend's own letter too?",
+    "IGNORES_ROUND_ORDER": "Go round by round. Could a letter pass through a meeting that happened before anyone in it had that letter?",
+    "COUNTS_SHARED_PIECES_TWICE": "Write the letters, not just how many. If both friends had the same letter, does it count twice?",
+    "NEW_FACES_FIRST": "Meeting someone new does not always help. For each friend, which letters are missing, and who has them all?",
+    "WASTED_MEETING": "Compare the letters of the two friends in each meeting. Do any two already have exactly the same letters?",
+    "IGNORES_LINKS": "Only friends joined by a line can meet. Can you really write that fast plan using only the lines?",
+    "ODD_ONE_OUT_FREE": "With an odd number of friends, someone sits out the last round. How many pieces must they have before it?",
+    "FARTHEST_PAIR_ONLY": "Each friend meets only one other per round. Can you write a plan that short, or does someone have to wait?",
+    "ONE_PIECE_PER_ROUND": "When a friend with two letters meets another friend with two different letters, how many does each end with?",
+    "FIRST_PLAN_IS_BEST": "Your plan works. Is there a round where someone learned little? Try to finish with one round fewer.",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -138,7 +151,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (87 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (98 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

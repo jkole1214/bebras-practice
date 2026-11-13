@@ -2,7 +2,7 @@
   "patch_id": "look-again",
   "built": "2026-11-12",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (87 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (98 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
     {
       "id": "BOTH_AS_EITHER",
@@ -61,6 +61,10 @@
       "look_again": "Read the question again. Does the person with the news count as hearing it?"
     },
     {
+      "id": "COUNTS_SHARED_PIECES_TWICE",
+      "look_again": "Write the letters, not just how many. If both friends had the same letter, does it count twice?"
+    },
+    {
       "id": "COUNTS_SHORTER_TOO",
       "look_again": "Does every necklace you counted have exactly the number of beads asked for?"
     },
@@ -85,6 +89,10 @@
       "look_again": "The bulb lights. Could it light with fewer buttons pressed?"
     },
     {
+      "id": "FARTHEST_PAIR_ONLY",
+      "look_again": "Each friend meets only one other per round. Can you write a plan that short, or does someone have to wait?"
+    },
+    {
       "id": "FAR_END_IS_LAST",
       "look_again": "Does the frog have to finish at the far end? Follow its hops one at a time and see where it really stops."
     },
@@ -103,6 +111,10 @@
     {
       "id": "FIRST_PARSE_ONLY",
       "look_again": "Could the signal start with a different first word?"
+    },
+    {
+      "id": "FIRST_PLAN_IS_BEST",
+      "look_again": "Your plan works. Is there a round where someone learned little? Try to finish with one round fewer."
     },
     {
       "id": "FLOWS_ALL_THE_WAY",
@@ -169,6 +181,14 @@
       "look_again": "When the belt is empty, how many nuts are still in the bucket?"
     },
     {
+      "id": "IGNORES_LINKS",
+      "look_again": "Only friends joined by a line can meet. Can you really write that fast plan using only the lines?"
+    },
+    {
+      "id": "IGNORES_ROUND_ORDER",
+      "look_again": "Go round by round. Could a letter pass through a meeting that happened before anyone in it had that letter?"
+    },
+    {
       "id": "INDEX_CONFUSION",
       "look_again": "Number the dice 1, 2, 3 from the left before you check any test. Did you use the right die each time?"
     },
@@ -187,6 +207,10 @@
     {
       "id": "LANDS_TWICE",
       "look_again": "Does the frog land on any stone more than once?"
+    },
+    {
+      "id": "LEAVES_OUT_OWN_PIECE",
+      "look_again": "Did you count the friend's own letter too?"
     },
     {
       "id": "LEFTOVER_ONLY",
@@ -225,8 +249,16 @@
       "look_again": "Read the rule about mud again. Can a mud tank push paint anywhere?"
     },
     {
+      "id": "NEW_FACES_FIRST",
+      "look_again": "Meeting someone new does not always help. For each friend, which letters are missing, and who has them all?"
+    },
+    {
       "id": "NO_BACKTRACKING",
       "look_again": "Does any rule say you must always head south? Try a route that steps back north."
+    },
+    {
+      "id": "ODD_ONE_OUT_FREE",
+      "look_again": "With an odd number of friends, someone sits out the last round. How many pieces must they have before it?"
     },
     {
       "id": "ONE_ANSWER_ONLY",
@@ -235,6 +267,10 @@
     {
       "id": "ONE_CHEAPEST_ONLY",
       "look_again": "Is there a different route with exactly the same total?"
+    },
+    {
+      "id": "ONE_PIECE_PER_ROUND",
+      "look_again": "When a friend with two letters meets another friend with two different letters, how many does each end with?"
     },
     {
       "id": "ONE_STEP_ONLY",
@@ -267,6 +303,10 @@
     {
       "id": "PARITY_ROWS_ONLY",
       "look_again": "Every row is even now. Count each column too, including the check row at the bottom."
+    },
+    {
+      "id": "PARTNERS_OWN_PIECE_ONLY",
+      "look_again": "When two friends meet, do they swap only their own letters, or every letter they have collected so far?"
     },
     {
       "id": "PASSES_IT_ON_TOO_FAR",
@@ -339,6 +379,10 @@
     {
       "id": "TOTAL_NUTS_FOR_DEPTH",
       "look_again": "Bolts take nuts out as the belt moves. Follow the bucket after each part."
+    },
+    {
+      "id": "WASTED_MEETING",
+      "look_again": "Compare the letters of the two friends in each meeting. Do any two already have exactly the same letters?"
     },
     {
       "id": "WRAP_ONE_END",

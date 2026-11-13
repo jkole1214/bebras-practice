@@ -26,8 +26,8 @@ function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push(
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 14);
-  assert.ok(all.length >= 900, String(all.length));
+  assert.equal(B.fams.length, 15);
+  assert.ok(all.length >= 960, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {
@@ -111,6 +111,29 @@ test("frog trips: played back from the start, with dead ends, wrong hops and rep
     const water = [...Array(sc.spots).keys()].map(i => i + 1).find(n => !stones.has(n));
     if (water) assert.ok(E.check(p, { hops: [water] }).invalid);
     assert.ok(E.check(p, { hops: [] }).invalid);
+  }
+});
+
+test("map pieces: replaying each plan gives the stored count, and only the marked last round finishes", () => {
+  const play = (names, rounds) => {
+    let have = Object.fromEntries(names.map(x => [x, new Set([x[0]])]));
+    for (const r of rounds) {
+      const next = { ...have };
+      for (const [a, b] of r) next[a] = next[b] = new Set([...have[a], ...have[b]]);
+      have = next;
+    }
+    return have;
+  };
+  const maps = all.filter(([f]) => f === "map-pieces").map(([, p]) => p);
+  assert.equal(maps.length, 60);
+  for (const p of maps.filter(p => p.question_type === "trace")) {
+    assert.equal(play(p.scene.people, p.scene.rounds)[p.scene.ask].size, p.answer_value);
+  }
+  for (const p of maps.filter(p => p.question_type === "finish")) {
+    const n = p.scene.people.length;
+    const done = p.options.map(o => Object.values(play(p.scene.people, [...p.scene.rounds, o])).every(s => s.size === n));
+    assert.deepEqual(done.map((d, i) => d === (i === p.answer_index)), done.map(() => true));
+    assert.ok(!E.publicPuzzle("map-pieces", p).svg.includes("answer"));
   }
 });
 

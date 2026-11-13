@@ -41,6 +41,7 @@ import code_clues as ccg                # noqa: E402
 import brick_rule as brg                # noqa: E402
 import friend_reach as frg              # noqa: E402
 import stone_hops as shg                # noqa: E402
+import gossip_rounds as gsg             # noqa: E402
 
 FAMILIES = {
     "rule-tracer": {
@@ -122,6 +123,12 @@ FAMILIES = {
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints"],
     },
+    "map-pieces": {
+        "module": gsg, "checker": "check_gossip_rounds", "levels": len(gsg.LADDER), "title": "Map Pieces",
+        "keep": ["family", "level", "question_type", "seed", "scene", "svg", "prompt", "question", "options",
+                 "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
+                 "explanation", "hints"],
+    },
     "box-rows": {
         "module": plg, "checker": "check_pointer_lists", "levels": len(plg.LADDER), "title": "Box Rows",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
@@ -174,7 +181,7 @@ def write_coach():
     extra = {**scg.MISCONCEPTIONS, **grg.MISCONCEPTIONS, **sp.COUNT_MISCONCEPTIONS, **ct.COUNT_EXTRA_MISCONCEPTIONS,
              **cvg.MISCONCEPTIONS, **plg.MISCONCEPTIONS, **lgg.MISCONCEPTIONS, **bgg.MISCONCEPTIONS,
              **pgg.MISCONCEPTIONS, **psg.MISCONCEPTIONS, **ccg.MISCONCEPTIONS, **brg.MISCONCEPTIONS, **frg.MISCONCEPTIONS,
-             **shg.MISCONCEPTIONS}
+             **shg.MISCONCEPTIONS, **gsg.MISCONCEPTIONS}
     for k, v in extra.items():
         if k not in {x["id"] for x in m["misconceptions"]}:
             m["misconceptions"].append({"id": k, **v})
@@ -199,7 +206,8 @@ def write_coach():
                     "code-lock": [l["note"] for l in ccg.LADDER],
                     "brick-pyramid": [l["note"] for l in brg.LADDER],
                     "pass-it-on": [l["note"] for l in frg.LADDER],
-                    "frog-hops": [l["note"] for l in shg.LADDER]},
+                    "frog-hops": [l["note"] for l in shg.LADDER],
+                    "map-pieces": [l["note"] for l in gsg.LADDER]},
         # for the tutor (tutor.js): the prerequisite graph and the domains
         "prereqs": {c["id"]: [[p["id"], p["strength"]] for p in c["prerequisites"]] for c in m["concepts"]},
         "conceptDomain": {c["id"]: c["domain"] for c in m["concepts"]},
