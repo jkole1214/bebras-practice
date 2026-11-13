@@ -26,8 +26,8 @@ function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push(
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 19);
-  assert.ok(all.length >= 1200, String(all.length));
+  assert.equal(B.fams.length, 20);
+  assert.ok(all.length >= 1260, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {
@@ -255,6 +255,39 @@ test("puppy picks: crossing out, greedy counting and following each favourite gi
     }
     const pub = E.publicPuzzle("puppy-picks", p);
     assert.ok(pub.answer_value === undefined && pub.answer_index === undefined);
+  }
+});
+
+test("round and round: counting one place at a time gives the marked answer", () => {
+  const rings = all.filter(([f]) => f === "round-and-round").map(([, p]) => p);
+  assert.equal(rings.length, 60);
+  // step from a round a ring of 1..n, one place at a time
+  const step = (a, k, n) => { let x = a; for (let i = 0; i < k; i++) x = x === n ? 1 : x + 1; return x; };
+  const dist = (a, b, n) => { let up = 0; while (step(a, up, n) !== b) up++; return Math.min(up, n - up); };
+  for (const p of rings) {
+    const sc = p.scene;
+    if (p.question_type === "step") {
+      assert.equal(p.answer_value, step(sc.start, sc.move, sc.n));
+    } else if (p.question_type === "label") {
+      const ks = new Set([...sc.lines].map(([a, b]) => dist(a, b, sc.n)));
+      assert.deepEqual([...ks], [p.answer_value]);
+    } else if (p.question_type === "visits") {
+      const seen = new Set([1]);
+      for (let x = step(1, sc.k, sc.n); x !== 1; x = step(x, sc.k, sc.n)) seen.add(x);
+      assert.equal(p.answer_value, seen.size);
+    } else if (p.question_type === "turns") {
+      let at = 1, total = 0;
+      for (const c of sc.order) { total += dist(at, c, sc.n); at = c; }
+      assert.equal(p.answer_value, total);
+    } else {
+      const next = (c) => c < sc.lead + sc.loop ? c + 1 : sc.lead + 1;
+      let slow = 1, fast = 1;
+      do { slow = next(slow); fast = next(next(fast)); } while (slow !== fast);
+      assert.equal(p.answer_value, slow);
+    }
+    assert.ok(!(String(p.answer_value) in p.value_tags));
+    const pub = E.publicPuzzle("round-and-round", p);
+    assert.ok(pub.answer_value === undefined && pub.answer_index === undefined && pub.value_tags === undefined);
   }
 });
 

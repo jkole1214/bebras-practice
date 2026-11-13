@@ -190,6 +190,21 @@ LOOK_AGAIN = {
     "TOY_LEFT_OUT": "Check off the toys one by one. Is every toy in the plan somewhere?",
     "CARRIES_TOY_NOT_WINNER": "A named toy goes on to the next round, but is that the toy the puppy grabbed?",
     "BIGGEST_ROUND_ONLY": "The rounds are different sizes. How many toys does each one leave behind on its own?",
+
+    # Round and Round (counting round a ring, string-art stars, a Ferris wheel, two karts on a looped track)
+    "NO_WRAP": "The numbers go round in a circle. What comes after the last one?",
+    "COUNTS_START_SQUARE": "Did you count the square the counter started on? The first step takes it to the next square.",
+    "WRAP_NOT_A_STEP": "Going from the last square back to square 1 is a step too. Did you count it?",
+    "COUNTS_SKIPPED_PINS": "You counted the pins in between. How many moves does it take to get from one end to the other?",
+    "COUNTS_BOTH_ENDS": "Did you count the pin the string starts at? Count the moves, not the pins.",
+    "LONG_WAY_ROUND": "There are two ways round the circle. Which one is shorter?",
+    "EVERY_PIN": "Write down each pin the string lands on. Does it get back to pin 1 before it has been to every pin?",
+    "ONE_LAP": "Going past pin 1 doesn't stop the string. Did it land exactly on pin 1?",
+    "COUNTS_START_TWICE": "Pin 1 is where the loop starts and ends. Did you count it twice?",
+    "ONE_WAY_ONLY": "For each move, try both ways round. Is the other way shorter?",
+    "FROM_START_EACH_TIME": "After the first riders get off, which car is at the platform? Count the next move from there.",
+    "LOOP_ENTRANCE": "Where is each kart after a few seconds? Write it down second by second.",
+    "BACK_TO_START": "Follow the arrow from the last square of the loop. Does it go back to square 1?",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -200,7 +215,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (139 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (152 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

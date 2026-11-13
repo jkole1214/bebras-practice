@@ -1,6 +1,6 @@
 # Kerbopple
 
-A practice page for nineteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
+A practice page for twenty puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
 ## The tutor
 
@@ -124,6 +124,7 @@ acorn-game/           Acorn Game problems, one file each, plus manifest.js
 bowl-belt/            Bowl Belt problems, one file each, plus manifest.js
 mole-tunnels/         Mole Tunnels problems, one file each, plus manifest.js
 puppy-picks/          Puppy Picks problems, one file each, plus manifest.js
+round-and-round/      Round and Round problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
@@ -156,7 +157,7 @@ python3 tools/check_bead_grammar.py problems.json
 python3 tools/check_parity_grid.py problems.json
 ```
 
-`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces), `check_best_play.py` (Acorn Game) `check_bubble_passes.py` (Bowl Belt) `check_layered_maze.py` (Mole Tunnels) and `check_knockout_picks.py` (Puppy Picks) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
+`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces), `check_best_play.py` (Acorn Game) `check_bubble_passes.py` (Bowl Belt) and `check_layered_maze.py` (Mole Tunnels) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`. `check_knockout_picks.py` (Puppy Picks) and `check_circle_steps.py` (Round and Round), run on their own, generate and check seeds 1000-1039 at every level.
 
 ## Levels
 
@@ -314,6 +315,15 @@ The two levels are drawn side by side with letters and numbers along the edges, 
 
 A round can include the winner of an earlier round (W2 is the toy grabbed in round 2). Each round leaves behind all but one of its toys, every toy but the favourite has to be left behind once, and a knockout that carries the winner forward reaches that limit. At level 1 the order of the rounds doesn't matter, so the favourite is not always the toy grabbed last. Level 2 uses only sizes where every tagged habit gives a different number. Every plan at level 4 has one or two spare places (a gap or a toy shown again), so the right plan can't be spotted by having no repeats. The checker counts with a search over (toys never shown, toys still in the running) instead of the formula, follows every toy as the favourite through each plan, and replays the knockout written in each explanation. Wrong answers are tagged by habit: taking the last, first or most-often grabbed toy, counting k new toys a round, counting the favourite among the toys to rule out, groups then a final, rounding the rounds down, a plan that drops a winner, leaves a toy out or carries a named toy instead of the winner, and treating every round as the biggest.
 
+**Round and Round** (going round in circles: counting past the end of a ring, steps mod n, and a loop after a lead-in, from the ideas of Drawing Stars, Hangar Carousel, Cipher 8 and Tortoise and Hare, with our own fun-fair story)
+1. A counter moves k squares clockwise round a ring-shaped board: type the square it lands on (it always goes past the last square)
+2. A finished string-art star: type how many places round each string goes, counting the short way
+3. Keep running the string k pins round from pin 1: type how many pins it touches before it lands on pin 1 again
+4. A Ferris wheel lets riders off at the platform in a set order: type the fewest presses, each move the shorter way from where the wheel is now
+5. A slow and a fast go-kart on a straight road into a loop: type the square where they first meet
+
+All answers are typed. Level 3 uses only pin counts and steps that share a factor, because otherwise "the string reaches every pin" would give the right answer; the explanation writes the whole loop out. On the kart track the fast kart gains exactly one square a second, so the karts can't jump past each other. The checker orders the squares, pins and cars by their angle in the picture and steps round one place at a time (turning a list of cars both ways, following the track's arrows for both karts) instead of using modular arithmetic, and checks every line of the explanation. Wrong answers are tagged by habit: not wrapping past the last number, counting the start square as a step, not counting the step from the last square to 1, counting the pins skipped over or both ends of a string, counting the long way round, assuming the loop reaches every pin, stopping after one lap, counting pin 1 twice, turning the wheel one way only, measuring every move from where the wheel started, and expecting the karts to meet where the loop begins or back at the start.
+
 Box Rows never shows an item where a wrong habit (reading outside-in, counting from 0) happens to give the right answer, so a right answer always means the habit is not there.
 
 With "Adjust level automatically" on, two first-try wins move up a level and two first-try misses move down.
@@ -325,7 +335,7 @@ With "Adjust level automatically" on, two first-try wins move up a level and two
 - the 2015 example sets (38 distinct tasks);
 - the 2022-23 practice challenge (31 distinct tasks).
 
-In total: 69 distinct tasks, 61 concepts with prerequisite edges, 151 tagged misconceptions, the nineteen built generator families, and 17 ranked candidates for new families (all now built and marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
+In total: 69 distinct tasks, 61 concepts with prerequisite edges, 164 tagged misconceptions, the twenty built generator families, and 20 candidates for new families. The first 17 are ranked and built (Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes); Drawing Stars was added and built as Round and Round; Bracelet (matching a ring under rotation and reflection) and Binary Hotel (trees) are open. Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
 
 Both analyses after the original Benjamin/Cadet map were added as patches. To apply them to another copy of the map:
 

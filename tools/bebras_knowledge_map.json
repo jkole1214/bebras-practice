@@ -124,9 +124,14 @@
         "method": "Claude built a new generator family, knockout_picks (folder puppy-picks, shown as Puppy Picks), from the Favorite Gem generator candidate. It keeps the task's idea (each comparison of k items rules out at most k - 1 of them, every item but the best has to be ruled out once, and carrying the winner forward reaches the bound 1 + q(k - 1)) under an original story and pictures: a puppy that is shown a few toys per round and grabs the one it likes best, where a round may include the winner of an earlier round (written W2). The candidate's closed form alone would make one question, so the family spreads it over five: level 1 shows the rounds and grabs and asks which toy is the favourite (the toy never left behind, whatever order the rounds come in); level 2 asks for the fewest rounds for n toys; level 3 is the source task's question, the most toys for q rounds of k; level 4 asks which of four plans always finds the favourite, the others leaving a toy out, dropping a winner, or carrying a named toy instead of the winner; level 5 has rounds of different sizes. Every problem passes check_knockout_picks.py, which rebuilds the problem from the picture and solves it without the formula: crossing out toys (and checking the grabs fit one order of liking) for level 1, a search over (toys never shown, toys shown and never left behind) for the counting levels, and following every toy as the favourite through each plan for level 4; it also replays the knockout written in each explanation. All corrupted answer keys, tags, explanation endings and steps, and pictures in the mutation trials are caught. Two findings from building it. First, several natural wrong counts land on the right answer for many sizes (counting the favourite among the toys to rule out gives the right number of rounds whenever the division does not come out even, and groups-then-a-final is often optimal), so level 2 uses only sizes where every tagged habit gives a different number, and the groups-then-final habit is kept only for level 3. Second, a plan where every toy appears exactly once is a giveaway when every wrong plan repeats a toy, so all plans get one or two spare places, filled with a gap or a harmless repeat. The map already had WINNER_NOT_CARRIED from the Favorite Gem analysis with no family; this family is the first to use it, and its wording is made general."
       },
       {
+        "id": "round-and-round-family",
+        "built": "2026-11-13",
+        "method": "Claude built a new generator family, circle_steps (folder round-and-round, shown as Round and Round), for the 'going round in circles' concepts, which had no family: SEQUENCES_CYCLIC, MODULAR_ARITHMETIC and CYCLE_DETECTION. It draws on four tasks from the map (Drawing Stars, Hangar Carousel, Cipher 8 and Tortoise and Hare) under an original fun-fair story with our own wording and pictures. Level 1 counts a counter round a ring-shaped game board past the last square; level 2 reads the step of a finished string-art star (the Drawing Stars idea); level 3 asks how many pins a loop of every k-th pin touches, which is n / gcd(n, k); level 4 counts the fewest presses to bring Ferris wheel cars to the platform in a set order, the shorter way round and measured from where the wheel is now (the circular distance of Hangar Carousel and the relative counting of Cipher 8, asked as a best case rather than the source's worst case); level 5 moves a slow and a fast go-kart along a straight road into a loop and asks where they first meet (the Tortoise and Hare idea). All answers are typed, and every wrong value a habit gives is tagged. Every problem passes check_circle_steps.py, which rebuilds the problem from the picture, puts the spots in clockwise order by their angle in the drawing, and solves it again by stepping one place at a time (turning a list of cars both ways, following the track's arrows for both karts) instead of using modular arithmetic; it also checks every line of the explanation. All 2097 corrupted answers, tags, explanations and pictures in the mutation trials are caught. Two findings from building it. First, the 'every pin' habit gives the right count whenever n and k share no factor, so level 3 only uses pairs that share one; the answer is then always smaller than n, which the explanation's written-out loop makes plain rather than leaving it as a pattern to spot. Second, on the kart track the slow and fast karts close the gap by exactly one square a second once both are on the loop, so they can never jump past each other and the first meeting is always a shared square, at the first whole number of laps that is at least the length of the road. The Bracelet idea (matching a ring under rotation and reflection) is not built here; it is listed as a candidate together with a trees candidate, the next largest group of concepts with no family."
+      },
+      {
         "id": "look-again",
         "built": "2026-11-12",
-        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (139 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
+        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (152 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
       }
     ]
   },
@@ -6235,6 +6240,136 @@
         "knockout_picks"
       ],
       "look_again": "The rounds are different sizes. How many toys does each one leave behind on its own?"
+    },
+    {
+      "id": "NO_WRAP",
+      "concept": "SEQUENCES_CYCLIC",
+      "description": "Treats a circle of numbered spots as a straight line, so a count never goes past the last number back to 1.",
+      "remediation": "Point to the last number on the circle. What comes after it? Keep counting from there.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "The numbers go round in a circle. What comes after the last one?"
+    },
+    {
+      "id": "COUNTS_START_SQUARE",
+      "concept": "SEQUENCES_CYCLIC",
+      "description": "Counts the square the counter starts on as the first step, so it lands one square short.",
+      "remediation": "The first step takes the counter off its square. Count the squares it lands on, not the one it leaves.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "Did you count the square the counter started on? The first step takes it to the next square."
+    },
+    {
+      "id": "WRAP_NOT_A_STEP",
+      "concept": "MODULAR_ARITHMETIC",
+      "description": "Doesn't count the step from the last number back to 1, so it lands one square too far.",
+      "remediation": "Going from the last square to square 1 is a step like any other. Count it.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "Going from the last square back to square 1 is a step too. Did you count it?"
+    },
+    {
+      "id": "COUNTS_SKIPPED_PINS",
+      "concept": "MODULAR_ARITHMETIC",
+      "description": "Counts the pins a line skips over instead of how many places on it goes, one too few.",
+      "remediation": "Count the steps from the pin where the line starts to the pin where it ends, landing on each pin in between.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "You counted the pins in between. How many moves does it take to get from one end to the other?"
+    },
+    {
+      "id": "COUNTS_BOTH_ENDS",
+      "concept": "MODULAR_ARITHMETIC",
+      "description": "Counts the pins from one end of a line to the other, both ends included, one too many.",
+      "remediation": "Put a finger on the start pin and count each move to the next pin. The start pin is not a move.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "Did you count the pin the string starts at? Count the moves, not the pins."
+    },
+    {
+      "id": "LONG_WAY_ROUND",
+      "concept": "MODULAR_ARITHMETIC",
+      "description": "Counts from one end of a line to the other the long way round the circle.",
+      "remediation": "A line joins two pins. Count the steps between them the short way round.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "There are two ways round the circle. Which one is shorter?"
+    },
+    {
+      "id": "EVERY_PIN",
+      "concept": "MODULAR_ARITHMETIC",
+      "description": "Assumes that joining every k-th pin always reaches every pin, which is only true when k and the number of pins share no factor.",
+      "remediation": "Follow the lines and write down each pin you land on. Do you come back to 1 before you have been everywhere?",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "Write down each pin the string lands on. Does it get back to pin 1 before it has been to every pin?"
+    },
+    {
+      "id": "ONE_LAP",
+      "concept": "MODULAR_ARITHMETIC",
+      "description": "Stops when the loop first goes past pin 1, rather than when it lands on pin 1 again.",
+      "remediation": "The pencil only stops when it lands on pin 1. Going past it doesn't count; keep going round.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "Going past pin 1 doesn't stop the string. Did it land exactly on pin 1?"
+    },
+    {
+      "id": "COUNTS_START_TWICE",
+      "concept": "MODULAR_ARITHMETIC",
+      "description": "Counts pin 1 again when the loop gets back to it, so the count is one too many.",
+      "remediation": "Pin 1 is where the loop begins and ends. Count it once.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "Pin 1 is where the loop starts and ends. Did you count it twice?"
+    },
+    {
+      "id": "ONE_WAY_ONLY",
+      "concept": "MODULAR_ARITHMETIC",
+      "description": "Always turns the circle the same way, even when the other way is shorter.",
+      "remediation": "For each move, count both ways round and take the shorter one.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "For each move, try both ways round. Is the other way shorter?"
+    },
+    {
+      "id": "FROM_START_EACH_TIME",
+      "concept": "MODULAR_ARITHMETIC",
+      "description": "Measures every move from where the circle started, not from where it is now.",
+      "remediation": "After each move the circle stays where it stopped. Measure the next move from there.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "After the first riders get off, which car is at the platform? Count the next move from there."
+    },
+    {
+      "id": "LOOP_ENTRANCE",
+      "concept": "CYCLE_DETECTION",
+      "description": "Thinks a slow and a fast runner meet where the loop begins.",
+      "remediation": "Move both runners one second at a time and write down where each one is. Stop when they share a square.",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "Where is each kart after a few seconds? Write it down second by second."
+    },
+    {
+      "id": "BACK_TO_START",
+      "concept": "CYCLE_DETECTION",
+      "description": "Thinks the loop leads back to the start of the track, so the runners meet where they began.",
+      "remediation": "Follow the arrows from the last square of the loop. Where does it lead: back to the start, or round the loop again?",
+      "families": [
+        "circle_steps"
+      ],
+      "look_again": "Follow the arrow from the last square of the loop. Does it go back to square 1?"
     }
   ],
   "generator_families": [
@@ -7961,6 +8096,102 @@
           "note": "Rounds of different sizes: add up what each round leaves behind, then add the favourite."
         }
       ]
+    },
+    {
+      "id": "circle_steps",
+      "module": "circle_steps.py",
+      "checker": "check_circle_steps.py",
+      "folder": "round-and-round",
+      "source_tasks": [
+        "drawing_stars",
+        "hangar_carousel",
+        "cipher_8",
+        "tortoise_and_hare"
+      ],
+      "concepts": [
+        "SEQUENCES_CYCLIC",
+        "MODULAR_ARITHMETIC",
+        "CYCLE_DETECTION"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "step",
+          "n": [
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "entry": "number",
+          "note": "Count round the board one square at a time. After the last square comes square 1 again."
+        },
+        {
+          "level": 2,
+          "question": "label",
+          "n": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "entry": "number",
+          "note": "Follow one line from pin 1 and count the steps round to its other end, the short way."
+        },
+        {
+          "level": 3,
+          "question": "visits",
+          "n": [
+            8,
+            9,
+            10,
+            12,
+            14,
+            15
+          ],
+          "entry": "number",
+          "note": "Keep jumping k pins until you land on pin 1 again. The loop can come back before it has been everywhere."
+        },
+        {
+          "level": 4,
+          "question": "turns",
+          "n": [
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "stops": 4,
+          "entry": "number",
+          "note": "Each move starts from where the wheel is now. Count both ways round and take the shorter one."
+        },
+        {
+          "level": 5,
+          "question": "meet",
+          "lead": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "loop": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "entry": "number",
+          "note": "Move both karts one second at a time and write down their squares until they share one."
+        }
+      ]
     }
   ],
   "generator_candidates": [
@@ -8056,6 +8287,22 @@
       "why": "Game trees had no family. Random small trails (max and min forks) and take-away piles with varied move sets and endings; the winning move is unique and checked by full search; distractors from heading for the biggest prize, grabbing the most, and the wrong repeating pattern.",
       "status": "built",
       "built_as": "best_play"
+    },
+    {
+      "source_task": "drawing_stars",
+      "why": "Stepping round a circle had no family. A counter round a ring board, string-art stars (read the step; count the pins one loop touches, n / gcd), a Ferris wheel (shortest way round, from where it is now) and two karts on a road into a loop (where they first meet); every answer typed and checked by stepping one place at a time.",
+      "status": "built",
+      "built_as": "circle_steps"
+    },
+    {
+      "source_task": "bracelet",
+      "why": "Matching a ring under rotation and reflection (SEQUENCES_CYCLIC) is the one idea in the circles group that circle_steps does not ask. A string of beads and four rings; the wrong rings come from an adjacent swap, reading one way only, or matching only from the first bead. Could become a level 1 below circle_steps' counting or a family of its own.",
+      "status": "open"
+    },
+    {
+      "source_task": "binary_hotel",
+      "why": "Trees (TREE, BST, SCHEMA) are the largest group of concepts with no family, across Beaver Dam, Binary Hotel, Beaver Lunch and Super Power Family. Placing keys in a search tree, following left and right to find one, and counting levels; distractors from going the wrong way at a node, comparing with the root only, and counting nodes instead of levels.",
+      "status": "open"
     }
   ]
 }

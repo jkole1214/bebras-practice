@@ -2,8 +2,12 @@
   "patch_id": "look-again",
   "built": "2026-11-12",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (139 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (152 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
+    {
+      "id": "BACK_TO_START",
+      "look_again": "Follow the arrow from the last square of the loop. Does it go back to square 1?"
+    },
     {
       "id": "BIGGEST_BASKET",
       "look_again": "Could you really reach that big basket? At the grey fork before it, which way would the raccoon send you?"
@@ -43,6 +47,10 @@
     {
       "id": "COUNTS_ALL_CROSSINGS",
       "look_again": "The question counts only crossings with the fewest planks. Did some of yours cost more?"
+    },
+    {
+      "id": "COUNTS_BOTH_ENDS",
+      "look_again": "Did you count the pin the string starts at? Count the moves, not the pins."
     },
     {
       "id": "COUNTS_BOX_INTERSECTIONS",
@@ -93,6 +101,18 @@
       "look_again": "Does every necklace you counted have exactly the number of beads asked for?"
     },
     {
+      "id": "COUNTS_SKIPPED_PINS",
+      "look_again": "You counted the pins in between. How many moves does it take to get from one end to the other?"
+    },
+    {
+      "id": "COUNTS_START_SQUARE",
+      "look_again": "Did you count the square the counter started on? The first step takes it to the next square."
+    },
+    {
+      "id": "COUNTS_START_TWICE",
+      "look_again": "Pin 1 is where the loop starts and ends. Did you count it twice?"
+    },
+    {
       "id": "COUNTS_WORD_SETS",
       "look_again": "Are 'east, fog' and 'fog, east' the same message? Count each order on its own."
     },
@@ -115,6 +135,10 @@
     {
       "id": "EVEN_PILES_LOSE",
       "look_again": "Try a pile of 2. Can the player whose turn it is take both acorns?"
+    },
+    {
+      "id": "EVERY_PIN",
+      "look_again": "Write down each pin the string lands on. Does it get back to pin 1 before it has been to every pin?"
     },
     {
       "id": "EXTRA_BUTTONS",
@@ -187,6 +211,10 @@
     {
       "id": "FORWARD_NOT_INVERSE",
       "look_again": "Work backward: which box in the outer row holds the target?"
+    },
+    {
+      "id": "FROM_START_EACH_TIME",
+      "look_again": "After the first riders get off, which car is at the platform? Count the next move from there."
     },
     {
       "id": "GOES_DOWN_ANYWAY",
@@ -293,6 +321,14 @@
       "look_again": "When a run of nuts starts, are some nuts already in the bucket?"
     },
     {
+      "id": "LONG_WAY_ROUND",
+      "look_again": "There are two ways round the circle. Which one is shorter?"
+    },
+    {
+      "id": "LOOP_ENTRANCE",
+      "look_again": "Where is each kart after a few seconds? Write it down second by second."
+    },
+    {
       "id": "MATCH_MEANS_CHANGE",
       "look_again": "Find a brick that rests on two bricks of the same colour. Does the rule let all three be the same?"
     },
@@ -337,6 +373,10 @@
       "look_again": "Does any rule say you must always head south? Try a route that steps back north."
     },
     {
+      "id": "NO_WRAP",
+      "look_again": "The numbers go round in a circle. What comes after the last one?"
+    },
+    {
       "id": "ODD_ONE_OUT_FREE",
       "look_again": "With an odd number of friends, someone sits out the last round. How many pieces must they have before it?"
     },
@@ -357,6 +397,10 @@
       "look_again": "Is there a shortcut underneath? Work out the trip through the lower level too."
     },
     {
+      "id": "ONE_LAP",
+      "look_again": "Going past pin 1 doesn't stop the string. Did it land exactly on pin 1?"
+    },
+    {
       "id": "ONE_PASS_SORTS",
       "look_again": "Walk the row once, pair by pair, and look at the end. Is every bowl in order yet?"
     },
@@ -375,6 +419,10 @@
     {
       "id": "ONE_SWITCH_COST",
       "look_again": "The mole went down and came back up. How many climbs is that?"
+    },
+    {
+      "id": "ONE_WAY_ONLY",
+      "look_again": "For each move, try both ways round. Is the other way shorter?"
     },
     {
       "id": "ONLY_CARRIED_MOVES",
@@ -547,6 +595,10 @@
     {
       "id": "WINNER_NOT_CARRIED",
       "look_again": "The winner of a round goes on into the next one and takes a place. How many new toys fit then?"
+    },
+    {
+      "id": "WRAP_NOT_A_STEP",
+      "look_again": "Going from the last square back to square 1 is a step too. Did you count it?"
     },
     {
       "id": "WRAP_ONE_END",
