@@ -298,6 +298,7 @@ function answerText(p, a) {
   if (p.family === "code_clues") return codeText(typeof a === "string" ? a : a.option);
   if (p.family === "stone_hops") return hopText(p, a);
   if (p.family === "gossip_rounds" && a && Array.isArray(a.option)) return pairText(a.option);
+  if (p.family === "best_play" && p.question_type === "path" && a && a.option !== undefined) return "path " + a.option;
   if (p.entry === "bricks") return brickText(p, a);
   if (a && a.option !== undefined) return p.family === "logic_gates" ? (a.option.length ? "buttons " + a.option.join(", ") : "nobody") : optionText(a.option);
   if (Array.isArray(a)) {
@@ -315,6 +316,7 @@ function rightText(p) {
   if (p.family === "code_clues") return codeText(p.answer_value);
   if (p.family === "stone_hops") return p.question_type === "last" ? "stone " + p.answer_value : p.answer_value.join(" → ");
   if (p.family === "gossip_rounds" && p.question_type === "finish") return pairText(p.answer_value);
+  if (p.family === "best_play" && p.question_type === "path") return "path " + p.answer_value;
   if (p.entry === "bricks") return p.question_type === "fill" ? "every brick by the rule" : brickText(p, p.scene.edit.map(k => p.answer_value[k]).join(""));
   const o = p.options[p.answer_index];
   return p.family === "logic_gates" ? (o.length ? "buttons " + o.join(", ") : "nobody") : optionText(o);

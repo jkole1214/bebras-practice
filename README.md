@@ -1,6 +1,6 @@
 # Kerbopple
 
-A practice page for fifteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
+A practice page for sixteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
 ## The tutor
 
@@ -120,6 +120,7 @@ brick-pyramid/        Brick Pyramid problems, one file each, plus manifest.js
 pass-it-on/           Pass It On problems, one file each, plus manifest.js
 frog-hops/            Frog Hops problems, one file each, plus manifest.js
 map-pieces/           Map Pieces problems, one file each, plus manifest.js
+acorn-game/           Acorn Game problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
@@ -152,7 +153,7 @@ python3 tools/check_bead_grammar.py problems.json
 python3 tools/check_parity_grid.py problems.json
 ```
 
-`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops) and `check_gossip_rounds.py` (Map Pieces) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
+`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces) and `check_best_play.py` (Acorn Game) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
 
 ## Levels
 
@@ -274,6 +275,15 @@ With two hop sizes, every row that needs backing up has exactly one full trip, a
 
 The source task asks only for the fewest rounds when anyone can meet anyone, and that depends on the group size alone. So levels 4 and 5 use friend networks, and the answer is always above both quick lower bounds: doubling (the biggest pile can at most double each round, plus one round when the group is odd, since someone sits out the last round) and the distance between the two farthest friends. The student has to find a plan and see why one round fewer fails. The explanation prints a working plan, and the checker replays it. Note that a single friend's pile can more than double in one meeting (by meeting someone who has everything); only the biggest pile, and the number of friends holding any one piece, are limited to doubling.
 
+**Acorn Game** (you against a raccoon that always plays its best; game trees and optimal play, the idea of Seashells and Pebbles and Pirate Hunters, with our own games)
+1. A forked trail: you choose at yellow forks, the raccoon at grey ones. Pick the first path. The path with the biggest basket is a trap
+2. Three forks deep (you, the raccoon, you): type how many acorns you can be sure of
+3. Take turns taking acorns from a pile. Type how many to take first so you are sure to win
+4. Pick the full list of lose-piles from 1 up: the pattern repeats
+5. A big pile with a twist (the moves allowed have gaps, or the last acorn loses): type the winning first move
+
+The opponent is a character in the story, so the puzzle stays single-player: the student reasons about a rival who never makes a mistake. Every pile has exactly one winning first move. The checker solves trails from the bottom up and piles from the top down (the generator does the reverse). Wrong answers are tagged by habit: heading for the biggest basket, treating the raccoon as random, grabbing the most acorns, using a pattern that is one off, and using the pattern for the other ending.
+
 Box Rows never shows an item where a wrong habit (reading outside-in, counting from 0) happens to give the right answer, so a right answer always means the habit is not there.
 
 With "Adjust level automatically" on, two first-try wins move up a level and two first-try misses move down.
@@ -285,7 +295,7 @@ With "Adjust level automatically" on, two first-try wins move up a level and two
 - the 2015 example sets (38 distinct tasks);
 - the 2022-23 practice challenge (31 distinct tasks).
 
-In total: 69 distinct tasks, 61 concepts with prerequisite edges, 113 tagged misconceptions, the fifteen built generator families, and 16 ranked candidates for new families (the thirteen now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
+In total: 69 distinct tasks, 61 concepts with prerequisite edges, 124 tagged misconceptions, the sixteen built generator families, and 17 ranked candidates for new families (the fourteen now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
 
 Both analyses after the original Benjamin/Cadet map were added as patches. To apply them to another copy of the map:
 

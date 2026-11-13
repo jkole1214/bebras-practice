@@ -2,8 +2,12 @@
   "patch_id": "look-again",
   "built": "2026-11-12",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (98 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (109 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
+    {
+      "id": "BIGGEST_BASKET",
+      "look_again": "Could you really reach that big basket? At the grey fork before it, which way would the raccoon send you?"
+    },
     {
       "id": "BOTH_AS_EITHER",
       "look_again": "Does that box need one wire on, or both wires on?"
@@ -85,6 +89,10 @@
       "look_again": "Turn your answer back into flashes. Is it as long as the signal?"
     },
     {
+      "id": "EVEN_PILES_LOSE",
+      "look_again": "Try a pile of 2. Can the player whose turn it is take both acorns?"
+    },
+    {
       "id": "EXTRA_BUTTONS",
       "look_again": "The bulb lights. Could it light with fewer buttons pressed?"
     },
@@ -117,6 +125,10 @@
       "look_again": "Your plan works. Is there a round where someone learned little? Try to finish with one round fewer."
     },
     {
+      "id": "FLIPS_TURNS",
+      "look_again": "At your yellow forks, do you take the bigger or the smaller basket? And what does the raccoon want at the grey ones?"
+    },
+    {
       "id": "FLOWS_ALL_THE_WAY",
       "look_again": "Paint moves through one pipe each minute. How far can it get in the first minute?"
     },
@@ -135,6 +147,10 @@
     {
       "id": "FORWARD_NOT_INVERSE",
       "look_again": "Work backward: which box in the outer row holds the target?"
+    },
+    {
+      "id": "GRABS_MOST",
+      "look_again": "After you take that many, what pile does the raccoon face? Can it win from there?"
     },
     {
       "id": "GRAMMAR_ANY_OBJECT",
@@ -233,6 +249,10 @@
       "look_again": "Write 'minute 1', 'minute 2' and so on, with what changes under each. How many minutes does the question ask about?"
     },
     {
+      "id": "MISERE_MIXUP",
+      "look_again": "Read the sign again. Does taking the last acorn win or lose? Try a pile of 1 by hand."
+    },
+    {
       "id": "MISREAD_SYMBOL",
       "look_again": "Write the signal as S and L letters first. Did you read every flash right?"
     },
@@ -261,6 +281,10 @@
       "look_again": "With an odd number of friends, someone sits out the last round. How many pieces must they have before it?"
     },
     {
+      "id": "OFF_BY_ONE_PATTERN",
+      "look_again": "Try the small case: if the pile equals the biggest move, can the player whose turn it is win right away?"
+    },
+    {
       "id": "ONE_ANSWER_ONLY",
       "look_again": "Is there another set of buttons that also works? Try listing them in order."
     },
@@ -273,8 +297,16 @@
       "look_again": "When a friend with two letters meets another friend with two different letters, how many does each end with?"
     },
     {
+      "id": "ONE_STEP_AHEAD",
+      "look_again": "You headed for the biggest basket. Work back from the bottom: what does the raccoon let you have on that side?"
+    },
+    {
       "id": "ONE_STEP_ONLY",
       "look_again": "The friends hear it first. What does each of them do with the news next?"
+    },
+    {
+      "id": "ONLY_FIRST_TRAP",
+      "look_again": "You found the first lose-pile. Keep going up: is there another pile where every move leaves a win-pile?"
     },
     {
       "id": "ONLY_SECOND_STEP",
@@ -313,12 +345,24 @@
       "look_again": "Mark the friends, then their friends. Does anyone tell the news a third time?"
     },
     {
+      "id": "PLAIN_PATTERN",
+      "look_again": "Some move sizes are missing from the sign. Does the usual pattern still hold? Build the list from pile 1 up."
+    },
+    {
       "id": "POSITION_AS_ANSWER",
       "look_again": "Is your answer the box's number, or what is written inside the box?"
     },
     {
       "id": "PROTECTED_SOURCES",
       "look_again": "The starting tanks follow the same rules as every other tank. What flows into each of them, and when?"
+    },
+    {
+      "id": "RACCOON_PICKS_ALL",
+      "look_again": "Look at the colours. At a yellow fork, who chooses: you or the raccoon?"
+    },
+    {
+      "id": "RACCOON_PICKS_RANDOMLY",
+      "look_again": "You only get one basket, and the raccoon picks it. On each path, which basket would it leave you?"
     },
     {
       "id": "REVERSED_COMPARISON",

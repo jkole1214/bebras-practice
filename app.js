@@ -152,6 +152,7 @@ function optionHTML(o) {
   if (cur && cur.family === "bead_grammar") return tokensHTML(o);
   if (cur && cur.family === "stone_hops") return Array.isArray(o) ? `<span class="trip">${o.join(" → ")}</span>` : "Stone " + o;
   if (cur && cur.family === "gossip_rounds") return Array.isArray(o) ? o.map(m => `<span class="pair">${esc(m.join(" & "))}</span>`).join("") : esc(o + (cur.question_type === "fewest" ? " rounds" : " pieces"));
+  if (cur && cur.family === "best_play") return Array.isArray(o) ? `<span class="nums">${o.join(", ")}</span>` : esc("Path " + o);
   if (cur && cur.family === "logic_gates") return esc(o.length ? "Buttons " + o.join(", ") : "Nobody");
   if (Array.isArray(o)) return `<span class="dice" aria-hidden="true">${o.map(v => FACES[v]).join("")}</span><span class="nums">${o.join(", ")}</span>`;
   if (cur && cur.family === "signal_code" && cur.question_type === "inverse") return flashHTML(o);
@@ -182,7 +183,8 @@ function render() {
     : p.family === "brick_rule" ? { fill: "Build the pyramid", count: "Count the bricks", hidden: "Work backward" }[p.question_type]
     : p.family === "friend_reach" ? { reach: "Who hears it", who: "Whose news spreads most", befriend: "One new friend" }[p.question_type]
     : p.family === "stone_hops" ? { check: "Check the trip", last: "Last stone", tour: "Tap the trip" }[p.question_type]
-    : p.family === "gossip_rounds" ? { trace: "Count the pieces", finish: "Plan the last round", fewest: "Fewest rounds" }[p.question_type] : kind;
+    : p.family === "gossip_rounds" ? { trace: "Count the pieces", finish: "Plan the last round", fewest: "Fewest rounds" }[p.question_type]
+    : p.family === "best_play" ? { path: "Pick a path", sure: "Sure acorns", first: "First move", traps: "Lose-piles" }[p.question_type] : kind;
   const famTitle = page.mode === PRACTICE || servedAs !== "ladder" ? `<span>${esc(COACH.titles[p.fam])}</span>` : "";
   let body = `<div class="meta">${famTitle}<span>Level ${p.level}</span><span>${kindShown}</span></div>`
     + (why ? `<p class="why">${esc(why)}</p>` : "") + `<p class="prompt">${esc(p.prompt)}</p>`;

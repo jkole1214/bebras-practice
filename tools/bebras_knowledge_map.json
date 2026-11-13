@@ -104,9 +104,14 @@
         "method": "Claude built a new generator family, gossip_rounds (folder map-pieces, shown as Map Pieces), from the Spies generator candidate. It keeps the task's idea (friends meet in pairs, at most one meeting each per round, and every meeting pools what both know; how few rounds can spread everything?) under an original story, friends copying pieces of a treasure map, with our own wording and pictures. The source asks only for the fewest rounds when anyone can meet anyone, which depends on the group size alone, so Claude added three things that vary: a meeting plan to trace, a last round to choose, and friend networks where only friends joined by a line can meet. In those networks the answer is kept above both quick lower bounds (doubling, plus one for an odd group; and the distance between the farthest pair), so the student has to find a plan and also see why one round fewer fails. While building the checker Claude caught a wrong bound in its own first draft: a single friend's pile can more than double in one meeting (meeting someone who has everything), but the biggest pile, and the number of friends holding any one piece, cannot. Every problem passes check_gossip_rounds.py, which rebuilds the scene from the picture, replays plans with bitmasks, finds the fewest rounds by a pruned depth-first search (the generator uses breadth-first search), and replays the plan printed in the explanation; every corrupted answer key and tag is caught in the mutation trials."
       },
       {
+        "id": "acorn-game-family",
+        "built": "2026-11-13",
+        "method": "Claude built a new generator family, best_play (folder acorn-game, shown as Acorn Game), for game trees and optimal play, a concept that two analysed tasks use (Seashells and Pebbles, Pirate Hunters) but no family covered. It keeps their idea (a side wins only with a move that works against every reply) under original games: a forked trail where the student chooses at yellow forks and a raccoon chooses at grey ones, and a take-away pile game against the same raccoon. The opponent is a story character that always plays its best, so the puzzle stays single-player. Levels 1-2 are trails (pick the first path; type how many acorns you can be sure of, three forks deep); levels 3-5 are piles (type the winning first move; pick the full list of lose-piles; a big pile where the moves allowed have gaps or the last acorn loses). Every problem passes check_best_play.py, which rebuilds the game from the picture and solves trails bottom-up and piles top-down (the generator does the reverse), and every corrupted answer key, tag, scene, picture and explanation ending in the mutation trials is caught. While building the checker Claude found that the generator had left the off-by-one habit untagged when the pile is already a multiple of the biggest move; a student with that habit takes the biggest move there, and the generator now tags it."
+      },
+      {
         "id": "look-again",
         "built": "2026-11-12",
-        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (98 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
+        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (109 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
       }
     ]
   },
@@ -5826,6 +5831,116 @@
         "gossip_rounds"
       ],
       "look_again": "Your plan works. Is there a round where someone learned little? Try to finish with one round fewer."
+    },
+    {
+      "id": "BIGGEST_BASKET",
+      "concept": "GAME_TREE",
+      "description": "Heads for the biggest basket on the trail, forgetting that the raccoon chooses at its forks and will not let you reach it.",
+      "remediation": "Play the raccoon's side yourself: at each grey fork, which way would you send your opponent?",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "Could you really reach that big basket? At the grey fork before it, which way would the raccoon send you?"
+    },
+    {
+      "id": "RACCOON_PICKS_RANDOMLY",
+      "concept": "WORST_CASE",
+      "description": "Picks the path with the most acorns in all its baskets, as if the raccoon chose at random instead of choosing its best.",
+      "remediation": "Ask which single basket the raccoon would leave you on each path. The others do not count.",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "You only get one basket, and the raccoon picks it. On each path, which basket would it leave you?"
+    },
+    {
+      "id": "ONE_STEP_AHEAD",
+      "concept": "GAME_TREE",
+      "description": "Chooses the first way toward the biggest basket, then plays well from there, without checking what the raccoon does on that side.",
+      "remediation": "Work back from the baskets, fork by fork, before choosing the first way.",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "You headed for the biggest basket. Work back from the bottom: what does the raccoon let you have on that side?"
+    },
+    {
+      "id": "RACCOON_PICKS_ALL",
+      "concept": "GAME_TREE",
+      "description": "Lets the raccoon choose at every fork after the first, even at forks where it is your turn to choose.",
+      "remediation": "Mark each fork with whose turn it is before working out any values.",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "Look at the colours. At a yellow fork, who chooses: you or the raccoon?"
+    },
+    {
+      "id": "FLIPS_TURNS",
+      "concept": "GAME_TREE",
+      "description": "Mixes up whose fork is whose, taking the smaller basket at your own forks and the bigger at the raccoon's.",
+      "remediation": "Colour the forks: at yours take the most, at the raccoon's expect the least.",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "At your yellow forks, do you take the bigger or the smaller basket? And what does the raccoon want at the grey ones?"
+    },
+    {
+      "id": "GRABS_MOST",
+      "concept": "GAME_TREE",
+      "description": "Takes as many acorns as allowed, as if getting the pile smaller fast were the goal.",
+      "remediation": "After your move, ask what the raccoon can do. Can it reach a pile that is bad for you?",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "After you take that many, what pile does the raccoon face? Can it win from there?"
+    },
+    {
+      "id": "OFF_BY_ONE_PATTERN",
+      "concept": "INVARIANT",
+      "description": "Thinks the lose-piles come every (biggest move) acorns, instead of every (biggest move + 1).",
+      "remediation": "Check the smallest case: with the biggest move 3, can the player to move win from a pile of 3?",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "Try the small case: if the pile equals the biggest move, can the player whose turn it is win right away?"
+    },
+    {
+      "id": "MISERE_MIXUP",
+      "concept": "GAME_TREE",
+      "description": "Uses the pattern for the other ending: plays as if the last acorn wins when it loses, or the other way round.",
+      "remediation": "Reread the sign, then work out piles 1 and 2 by hand before using any pattern.",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "Read the sign again. Does taking the last acorn win or lose? Try a pile of 1 by hand."
+    },
+    {
+      "id": "PLAIN_PATTERN",
+      "concept": "INVARIANT",
+      "description": "Uses the 'every biggest move + 1' pattern even though some move sizes are missing from the sign, which breaks that pattern.",
+      "remediation": "Build the win and lose list from pile 1 upward with only the moves on the sign.",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "Some move sizes are missing from the sign. Does the usual pattern still hold? Build the list from pile 1 up."
+    },
+    {
+      "id": "EVEN_PILES_LOSE",
+      "concept": "PERIODIC",
+      "description": "Guesses that even piles are the lose-piles, as if each player could take only one acorn.",
+      "remediation": "Try pile 2 by hand: can the player to move take both acorns?",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "Try a pile of 2. Can the player whose turn it is take both acorns?"
+    },
+    {
+      "id": "ONLY_FIRST_TRAP",
+      "concept": "PERIODIC",
+      "description": "Finds the first lose-pile but does not see that the pattern repeats further up.",
+      "remediation": "After the first lose-pile, keep going: which pile is next where every move leaves a win-pile?",
+      "families": [
+        "best_play"
+      ],
+      "look_again": "You found the first lose-pile. Keep going up: is there another pile where every move leaves a win-pile?"
     }
   ],
   "generator_families": [
@@ -7183,6 +7298,156 @@
           "note": "Fewest rounds for seven or eight friends, typed. The lines slow things down."
         }
       ]
+    },
+    {
+      "id": "best_play",
+      "module": "best_play.py",
+      "checker": "check_best_play.py",
+      "folder": "acorn-game",
+      "source_tasks": [
+        "seashells_and_pebbles",
+        "pirate_hunters"
+      ],
+      "concepts": [
+        "GAME_TREE",
+        "WORST_CASE",
+        "INVARIANT",
+        "PERIODIC"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "path",
+          "paths": 3,
+          "baskets": [
+            2,
+            3
+          ],
+          "entry": "choice",
+          "note": "Pick the first path on a trail where the raccoon chooses next. The path with the biggest basket is a trap."
+        },
+        {
+          "level": 2,
+          "question": "sure",
+          "entry": "number",
+          "note": "Three forks deep (you, the raccoon, you): type how many acorns you can be sure of."
+        },
+        {
+          "level": 3,
+          "question": "first",
+          "moves": [
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3,
+              4
+            ]
+          ],
+          "pile": [
+            6,
+            13
+          ],
+          "last": [
+            "wins"
+          ],
+          "entry": "number",
+          "note": "A small pile: type how many acorns to take first so you are sure to win."
+        },
+        {
+          "level": 4,
+          "question": "traps",
+          "moves": [
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3,
+              4
+            ]
+          ],
+          "upto": [
+            12,
+            15
+          ],
+          "entry": "choice",
+          "note": "Find every lose-pile from 1 up: the pattern repeats."
+        },
+        {
+          "level": 5,
+          "question": "first",
+          "moves": [
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              1,
+              2,
+              3,
+              4
+            ],
+            [
+              1,
+              2,
+              4
+            ],
+            [
+              1,
+              3,
+              4
+            ],
+            [
+              1,
+              2,
+              3,
+              5
+            ],
+            [
+              1,
+              2,
+              3,
+              6
+            ],
+            [
+              1,
+              2,
+              4,
+              6
+            ],
+            [
+              1,
+              2,
+              3,
+              4,
+              6
+            ]
+          ],
+          "pile": [
+            14,
+            28
+          ],
+          "last": [
+            "wins",
+            "loses"
+          ],
+          "entry": "number",
+          "note": "A big pile with a twist (moves with gaps, or the last acorn loses): type the winning first move."
+        }
+      ]
     }
   ],
   "generator_candidates": [
@@ -7266,6 +7531,12 @@
       "source_task": "treasure_box",
       "why": "Mastermind clues generated from a hidden code; checker enumerates all codes for uniqueness.",
       "status": "built"
+    },
+    {
+      "source_task": "seashells_and_pebbles",
+      "why": "Game trees had no family. Random small trails (max and min forks) and take-away piles with varied move sets and endings; the winning move is unique and checked by full search; distractors from heading for the biggest prize, grabbing the most, and the wrong repeating pattern.",
+      "status": "built",
+      "built_as": "best_play"
     }
   ]
 }

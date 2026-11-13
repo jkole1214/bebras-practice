@@ -141,6 +141,19 @@ LOOK_AGAIN = {
     "FARTHEST_PAIR_ONLY": "Each friend meets only one other per round. Can you write a plan that short, or does someone have to wait?",
     "ONE_PIECE_PER_ROUND": "When a friend with two letters meets another friend with two different letters, how many does each end with?",
     "FIRST_PLAN_IS_BEST": "Your plan works. Is there a round where someone learned little? Try to finish with one round fewer.",
+
+    # Acorn Game (you against a raccoon that always plays its best)
+    "BIGGEST_BASKET": "Could you really reach that big basket? At the grey fork before it, which way would the raccoon send you?",
+    "RACCOON_PICKS_RANDOMLY": "You only get one basket, and the raccoon picks it. On each path, which basket would it leave you?",
+    "ONE_STEP_AHEAD": "You headed for the biggest basket. Work back from the bottom: what does the raccoon let you have on that side?",
+    "RACCOON_PICKS_ALL": "Look at the colours. At a yellow fork, who chooses: you or the raccoon?",
+    "FLIPS_TURNS": "At your yellow forks, do you take the bigger or the smaller basket? And what does the raccoon want at the grey ones?",
+    "GRABS_MOST": "After you take that many, what pile does the raccoon face? Can it win from there?",
+    "OFF_BY_ONE_PATTERN": "Try the small case: if the pile equals the biggest move, can the player whose turn it is win right away?",
+    "MISERE_MIXUP": "Read the sign again. Does taking the last acorn win or lose? Try a pile of 1 by hand.",
+    "PLAIN_PATTERN": "Some move sizes are missing from the sign. Does the usual pattern still hold? Build the list from pile 1 up.",
+    "EVEN_PILES_LOSE": "Try a pile of 2. Can the player whose turn it is take both acorns?",
+    "ONLY_FIRST_TRAP": "You found the first lose-pile. Keep going up: is there another pile where every move leaves a win-pile?",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -151,7 +164,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (98 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (109 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

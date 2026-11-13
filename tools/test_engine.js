@@ -26,8 +26,8 @@ function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push(
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 15);
-  assert.ok(all.length >= 960, String(all.length));
+  assert.equal(B.fams.length, 16);
+  assert.ok(all.length >= 1020, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {
@@ -111,6 +111,35 @@ test("frog trips: played back from the start, with dead ends, wrong hops and rep
     const water = [...Array(sc.spots).keys()].map(i => i + 1).find(n => !stones.has(n));
     if (water) assert.ok(E.check(p, { hops: [water] }).invalid);
     assert.ok(E.check(p, { hops: [] }).invalid);
+  }
+});
+
+test("acorn game: the marked answer is best play, worked out again here", () => {
+  const acorns = all.filter(([f]) => f === "acorn-game").map(([, p]) => p);
+  assert.equal(acorns.length, 60);
+  const trail = (t, n) => t[n].turn === "end" ? t[n].acorns
+    : (t[n].turn === "you" ? Math.max : Math.min)(...t[n].kids.map(k => trail(t, k)));
+  const loses = (n, moves, last) => {
+    const L = [last === "wins"];
+    for (let x = 1; x <= n; x++) L.push(moves.filter(m => m <= x).every(m => !L[x - m]));
+    return L;
+  };
+  for (const p of acorns) {
+    const sc = p.scene;
+    if (p.question_type === "path") {
+      const v = sc.tree.s.kids.map(k => trail(sc.tree, k));
+      assert.equal(p.answer_index, v.indexOf(Math.max(...v)));
+      assert.equal(v.filter(x => x === Math.max(...v)).length, 1);
+    } else if (p.question_type === "sure") {
+      assert.equal(p.answer_value, trail(sc.tree, "s"));
+    } else if (p.question_type === "first") {
+      const L = loses(sc.pile, sc.moves, sc.last);
+      assert.equal(JSON.stringify(sc.moves.filter(m => m <= sc.pile && L[sc.pile - m])), JSON.stringify([p.answer_value]));
+    } else {
+      const L = loses(sc.upto, sc.moves, "wins");
+      assert.equal(JSON.stringify(p.options[p.answer_index]), JSON.stringify([...Array(sc.upto).keys()].map(i => i + 1).filter(x => L[x])));
+    }
+    assert.ok(!E.publicPuzzle("acorn-game", p).svg.includes("answer"));
   }
 });
 
