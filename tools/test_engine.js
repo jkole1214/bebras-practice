@@ -26,8 +26,8 @@ function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push(
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 16);
-  assert.ok(all.length >= 1020, String(all.length));
+  assert.equal(B.fams.length, 17);
+  assert.ok(all.length >= 1080, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {
@@ -140,6 +140,39 @@ test("acorn game: the marked answer is best play, worked out again here", () => 
       assert.equal(JSON.stringify(p.options[p.answer_index]), JSON.stringify([...Array(sc.upto).keys()].map(i => i + 1).filter(x => L[x])));
     }
     assert.ok(!E.publicPuzzle("acorn-game", p).svg.includes("answer"));
+  }
+});
+
+test("bowl belt: walking the rows here gives the marked answer", () => {
+  const bowls = all.filter(([f]) => f === "bowl-belt").map(([, p]) => p);
+  assert.equal(bowls.length, 60);
+  const walk = (row, d) => {
+    const a = [...row], n = a.length, idx = d === "right" ? [...Array(n - 1).keys()] : [...Array(n - 1).keys()].reverse();
+    let swaps = 0;
+    for (const i of idx) if (a[i] > a[i + 1]) { [a[i], a[i + 1]] = [a[i + 1], a[i]]; swaps++; }
+    return { a, swaps };
+  };
+  const sorted = (r) => r.every((x, i) => i === 0 || r[i - 1] < x);
+  const same = (x, y) => JSON.stringify(x) === JSON.stringify(y);
+  for (const p of bowls) {
+    const sc = p.scene;
+    if (p.question_type === "after1" || p.question_type === "afterk") {
+      let r = sc.row;
+      for (let k = 0; k < (sc.workers || 1); k++) r = walk(r, sc.dir).a;
+      assert.ok(same(p.options[p.answer_index], r));
+    } else if (p.question_type === "swaps") {
+      assert.equal(p.answer_value, walk(sc.row, sc.dir).swaps);
+    } else if (p.question_type === "workers") {
+      let r = sc.row, k = 0;
+      while (!sorted(r)) { r = walk(r, sc.dir).a; k++; }
+      assert.equal(p.answer_value, k);
+    } else {
+      const hits = p.options.filter(o => same(walk(o, sc.dir).a, sc.after));
+      assert.equal(hits.length, 1);
+      assert.ok(same(hits[0], p.options[p.answer_index]));
+    }
+    const pub = E.publicPuzzle("bowl-belt", p);
+    assert.ok(pub.answer_value === undefined && pub.answer_index === undefined);
   }
 });
 

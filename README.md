@@ -1,6 +1,6 @@
 # Kerbopple
 
-A practice page for sixteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
+A practice page for seventeen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
 ## The tutor
 
@@ -121,6 +121,7 @@ pass-it-on/           Pass It On problems, one file each, plus manifest.js
 frog-hops/            Frog Hops problems, one file each, plus manifest.js
 map-pieces/           Map Pieces problems, one file each, plus manifest.js
 acorn-game/           Acorn Game problems, one file each, plus manifest.js
+bowl-belt/            Bowl Belt problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
@@ -153,7 +154,7 @@ python3 tools/check_bead_grammar.py problems.json
 python3 tools/check_parity_grid.py problems.json
 ```
 
-`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces) and `check_best_play.py` (Acorn Game) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
+`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces), `check_best_play.py` (Acorn Game) and `check_bubble_passes.py` (Bowl Belt) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
 
 ## Levels
 
@@ -284,6 +285,15 @@ The source task asks only for the fewest rounds when anyone can meet anyone, and
 
 The opponent is a character in the story, so the puzzle stays single-player: the student reasons about a rival who never makes a mistake. Every pile has exactly one winning first move. The checker solves trails from the bottom up and piles from the top down (the generator does the reverse). Wrong answers are tagged by habit: heading for the biggest basket, treating the raccoon as random, grabbing the most acorns, using a pattern that is one off, and using the pattern for the other ending.
 
+**Bowl Belt** (passes of neighbour swaps, the idea of Bowl Factory, with our own story)
+1. One worker walks along five bowls, swapping neighbours that are out of order. Pick the row it leaves
+2. Six bowls: type how many swaps one worker makes
+3. Two or three workers in a row: pick the row they leave
+4. Seven bowls: type how many workers it takes to put them in order
+5. The row after one worker is shown: pick the row it started as
+
+An arrow shows which way the worker walks, and both directions appear at every level. A walk to the right carries the biggest bowl it meets all the way to the end, but no bowl moves more than one place to the left, so the number of workers is set by the slow bowls. At level 4 the bowl farthest from its place always rides the fast way, so counting its distance gives a wrong answer. The checker walks each row with different code (it carries the biggest bowl so far, and mirrors the row for walks to the left) and counts workers with a formula instead of simulating them: the most bigger bowls any bowl has to its left. Wrong answers are tagged by habit: stopping the carried bowl after one place, thinking one worker sorts the row, walking the wrong way, moving only the carried bowl, counting the pairs checked instead of the swaps, counting swaps instead of workers, counting the farthest bowl's distance, and adding a last worker who only checks the row.
+
 Box Rows never shows an item where a wrong habit (reading outside-in, counting from 0) happens to give the right answer, so a right answer always means the habit is not there.
 
 With "Adjust level automatically" on, two first-try wins move up a level and two first-try misses move down.
@@ -295,7 +305,7 @@ With "Adjust level automatically" on, two first-try wins move up a level and two
 - the 2015 example sets (38 distinct tasks);
 - the 2022-23 practice challenge (31 distinct tasks).
 
-In total: 69 distinct tasks, 61 concepts with prerequisite edges, 124 tagged misconceptions, the sixteen built generator families, and 17 ranked candidates for new families (the fourteen now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
+In total: 69 distinct tasks, 61 concepts with prerequisite edges, 131 tagged misconceptions, the seventeen built generator families, and 17 ranked candidates for new families (the fifteen now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
 
 Both analyses after the original Benjamin/Cadet map were added as patches. To apply them to another copy of the map:
 

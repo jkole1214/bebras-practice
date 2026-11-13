@@ -154,6 +154,16 @@ LOOK_AGAIN = {
     "PLAIN_PATTERN": "Some move sizes are missing from the sign. Does the usual pattern still hold? Build the list from pile 1 up.",
     "EVEN_PILES_LOSE": "Try a pile of 2. Can the player whose turn it is take both acorns?",
     "ONLY_FIRST_TRAP": "You found the first lose-pile. Keep going up: is there another pile where every move leaves a win-pile?",
+
+    # Bowl Belt (one worker walks the row, swapping neighbours that are out of order)
+    "CARRY_STOPS": "After a swap, the bowl that moved is in the next pair. Did you check it again, or leave it behind?",
+    "ONE_PASS_SORTS": "Walk the row once, pair by pair, and look at the end. Is every bowl in order yet?",
+    "PASS_WRONG_WAY": "Look at the arrow. Which end does the worker start from?",
+    "ONLY_CARRIED_MOVES": "Every swap moves two bowls. What happened to the bowls the worker passed?",
+    "COUNTS_COMPARISONS": "Did the worker swap at every pair, or only where the left bowl was bigger?",
+    "SWAPS_FOR_PASSES": "The question asks for workers, not swaps. One worker can make many swaps on one walk.",
+    "FARTHEST_BOWL": "That bowl is far from home, but which way does it travel? Can it ride many places on one walk?",
+    "COUNTS_CHECK_PASS": "Stop as soon as the row is in order. Did your last worker change anything?",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -164,7 +174,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (109 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (117 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

@@ -111,7 +111,12 @@
       {
         "id": "look-again",
         "built": "2026-11-12",
-        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (109 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
+        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (117 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
+      },
+      {
+        "id": "bowl-belt-family",
+        "built": "2026-11-13",
+        "method": "Claude built a new generator family, bubble_passes (folder bowl-belt, shown as Bowl Belt), for passes of neighbour swaps (bubble sort), the one concept of Bowl Factory that no family covered. It keeps the task's idea (one worker makes one pass of neighbour swaps; count the passes that sort a row) under an original story and pictures: bowls of sizes 1 to N on a belt, a worker who walks left to right or right to left as an arrow shows. Level 1 asks for the row after one worker, level 2 for the number of swaps one worker makes, level 3 for the row after two or three workers, level 4 for how many workers sort seven bowls (chosen so the bowl farthest from its place rides the fast way and does not set the count), and level 5 shows the row after one worker and asks which of four rows it started as. Every problem passes check_bubble_passes.py, which rebuilds the row from the picture, walks it with a carry formulation (and the mirrored row for walks to the left) instead of pair-by-pair swaps, and counts workers with a formula (the most bigger bowls any bowl has to its left) instead of simulation; every corrupted answer key, tag, scene, picture, arrow and explanation ending in the mutation trials is caught. The map already had SWAPS_FOR_PASSES from the Bowl Factory analysis with no family; this family is the first to use it. One finding from building it: on every row of seven (all 5,040, both directions) where the farthest bowl rides the fast way and is farther from its place than the true count, its distance equals the number of workers needed in the other direction, so those two habits give the same wrong number and share a tag on that value."
       }
     ]
   },
@@ -4891,7 +4896,10 @@
       "concept": "BUBBLE_SORT",
       "description": "Counts individual swaps when asked for the number of passes (workers).",
       "remediation": "Ask what one worker does to the whole set as it goes by.",
-      "families": []
+      "families": [
+        "bubble_passes"
+      ],
+      "look_again": "The question asks for workers, not swaps. One worker can make many swaps on one walk."
     },
     {
       "id": "SHARED_INTERMEDIATE",
@@ -5941,6 +5949,76 @@
         "best_play"
       ],
       "look_again": "You found the first lose-pile. Keep going up: is there another pile where every move leaves a win-pile?"
+    },
+    {
+      "id": "CARRY_STOPS",
+      "concept": "BUBBLE_SORT",
+      "description": "Moves each bowl at most one place per worker, even the big bowl the worker keeps swapping along, so the carried bowl stops after one swap.",
+      "remediation": "Follow one bowl with a finger. After it is swapped, it is in the next pair the worker checks.",
+      "families": [
+        "bubble_passes"
+      ],
+      "look_again": "After a swap, the bowl that moved is in the next pair. Did you check it again, or leave it behind?"
+    },
+    {
+      "id": "ONE_PASS_SORTS",
+      "concept": "BUBBLE_SORT",
+      "description": "Thinks one worker walking along the row puts every bowl in order.",
+      "remediation": "Do one walk slowly, pair by pair, and look at the row at the end. Is it in order yet?",
+      "families": [
+        "bubble_passes"
+      ],
+      "look_again": "Walk the row once, pair by pair, and look at the end. Is every bowl in order yet?"
+    },
+    {
+      "id": "PASS_WRONG_WAY",
+      "concept": "SIMULATION",
+      "description": "Walks the row in the other direction from the one the arrow shows.",
+      "remediation": "Find the arrow first and start at the end it points away from.",
+      "families": [
+        "bubble_passes"
+      ],
+      "look_again": "Look at the arrow. Which end does the worker start from?"
+    },
+    {
+      "id": "ONLY_CARRIED_MOVES",
+      "concept": "SIMULATION",
+      "description": "Moves the bowl the worker carries to the end and leaves every other bowl in its old order, forgetting the bowls it passes shift one place.",
+      "remediation": "Each swap moves two bowls. Write the whole row again after every swap.",
+      "families": [
+        "bubble_passes"
+      ],
+      "look_again": "Every swap moves two bowls. What happened to the bowls the worker passed?"
+    },
+    {
+      "id": "COUNTS_COMPARISONS",
+      "concept": "BUBBLE_SORT",
+      "description": "Counts every pair the worker checks, not only the pairs that are swapped.",
+      "remediation": "Mark each pair as swap or keep. Count only the swaps.",
+      "families": [
+        "bubble_passes"
+      ],
+      "look_again": "Did the worker swap at every pair, or only where the left bowl was bigger?"
+    },
+    {
+      "id": "FARTHEST_BOWL",
+      "concept": "BUBBLE_SORT",
+      "description": "Counts how far the bowl furthest from its place has to go, even when that bowl moves the fast way and can ride many places in one walk.",
+      "remediation": "Ask which way a bowl can move many places in one walk, and which way only one place.",
+      "families": [
+        "bubble_passes"
+      ],
+      "look_again": "That bowl is far from home, but which way does it travel? Can it ride many places on one walk?"
+    },
+    {
+      "id": "COUNTS_CHECK_PASS",
+      "concept": "SIMULATION",
+      "description": "Adds one more worker at the end who walks the row and finds nothing to swap.",
+      "remediation": "Stop counting as soon as the row is in order. Does the last worker you counted change anything?",
+      "families": [
+        "bubble_passes"
+      ],
+      "look_again": "Stop as soon as the row is in order. Did your last worker change anything?"
     }
   ],
   "generator_families": [
@@ -7448,6 +7526,60 @@
           "note": "A big pile with a twist (moves with gaps, or the last acorn loses): type the winning first move."
         }
       ]
+    },
+    {
+      "id": "bubble_passes",
+      "module": "bubble_passes.py",
+      "checker": "check_bubble_passes.py",
+      "folder": "bowl-belt",
+      "source_tasks": [
+        "bowl_factory"
+      ],
+      "concepts": [
+        "BUBBLE_SORT",
+        "SIMULATION"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "after1",
+          "n": 5,
+          "entry": "choice",
+          "note": "One worker walks along five bowls: pick the row it leaves. The bowl being carried keeps going."
+        },
+        {
+          "level": 2,
+          "question": "swaps",
+          "n": 6,
+          "entry": "number",
+          "note": "Six bowls: type how many swaps one worker makes (not how many pairs it checks)."
+        },
+        {
+          "level": 3,
+          "question": "afterk",
+          "n": 6,
+          "workers": [
+            2,
+            3
+          ],
+          "entry": "choice",
+          "note": "Two or three workers in a row: pick the row they leave. Bowls they pass shift too."
+        },
+        {
+          "level": 4,
+          "question": "workers",
+          "n": 7,
+          "entry": "number",
+          "note": "Seven bowls: type how many workers it takes to put them in order. The slow bowl sets the count."
+        },
+        {
+          "level": 5,
+          "question": "start",
+          "n": 6,
+          "entry": "choice",
+          "note": "Work backward: the row after one worker is shown; pick the row it started as."
+        }
+      ]
     }
   ],
   "generator_candidates": [
@@ -7482,7 +7614,9 @@
     },
     {
       "source_task": "bowl_factory",
-      "why": "Pure simulation; vary direction and permutation; distractors from swaps and inversions."
+      "why": "Pure simulation; vary direction and permutation; distractors from swaps and inversions.",
+      "status": "built",
+      "built_as": "bubble_passes"
     },
     {
       "source_task": "nuts_and_bolts",

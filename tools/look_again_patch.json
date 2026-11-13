@@ -2,7 +2,7 @@
   "patch_id": "look-again",
   "built": "2026-11-12",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (109 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (117 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
     {
       "id": "BIGGEST_BASKET",
@@ -11,6 +11,10 @@
     {
       "id": "BOTH_AS_EITHER",
       "look_again": "Does that box need one wire on, or both wires on?"
+    },
+    {
+      "id": "CARRY_STOPS",
+      "look_again": "After a swap, the bowl that moved is in the next pair. Did you check it again, or leave it behind?"
     },
     {
       "id": "CHECKS_START_ONLY",
@@ -35,6 +39,14 @@
     {
       "id": "COUNTS_BOX_INTERSECTIONS",
       "look_again": "Two routes can pass the same corners in a different order. Are you counting routes or corners?"
+    },
+    {
+      "id": "COUNTS_CHECK_PASS",
+      "look_again": "Stop as soon as the row is in order. Did your last worker change anything?"
+    },
+    {
+      "id": "COUNTS_COMPARISONS",
+      "look_again": "Did the worker swap at every pair, or only where the left bowl was bigger?"
     },
     {
       "id": "COUNTS_DEAD_ENDS",
@@ -95,6 +107,10 @@
     {
       "id": "EXTRA_BUTTONS",
       "look_again": "The bulb lights. Could it light with fewer buttons pressed?"
+    },
+    {
+      "id": "FARTHEST_BOWL",
+      "look_again": "That bowl is far from home, but which way does it travel? Can it ride many places on one walk?"
     },
     {
       "id": "FARTHEST_PAIR_ONLY",
@@ -293,6 +309,10 @@
       "look_again": "Is there a different route with exactly the same total?"
     },
     {
+      "id": "ONE_PASS_SORTS",
+      "look_again": "Walk the row once, pair by pair, and look at the end. Is every bowl in order yet?"
+    },
+    {
       "id": "ONE_PIECE_PER_ROUND",
       "look_again": "When a friend with two letters meets another friend with two different letters, how many does each end with?"
     },
@@ -303,6 +323,10 @@
     {
       "id": "ONE_STEP_ONLY",
       "look_again": "The friends hear it first. What does each of them do with the news next?"
+    },
+    {
+      "id": "ONLY_CARRIED_MOVES",
+      "look_again": "Every swap moves two bowls. What happened to the bowls the worker passed?"
     },
     {
       "id": "ONLY_FIRST_TRAP",
@@ -343,6 +367,10 @@
     {
       "id": "PASSES_IT_ON_TOO_FAR",
       "look_again": "Mark the friends, then their friends. Does anyone tell the news a third time?"
+    },
+    {
+      "id": "PASS_WRONG_WAY",
+      "look_again": "Look at the arrow. Which end does the worker start from?"
     },
     {
       "id": "PLAIN_PATTERN",
@@ -407,6 +435,10 @@
     {
       "id": "STOPS_ONE_EARLY",
       "look_again": "Count the pairs of brackets. Each pair is one lookup. Did you do them all?"
+    },
+    {
+      "id": "SWAPS_FOR_PASSES",
+      "look_again": "The question asks for workers, not swaps. One worker can make many swaps on one walk."
     },
     {
       "id": "SWAPS_HOP_DIRECTIONS",
