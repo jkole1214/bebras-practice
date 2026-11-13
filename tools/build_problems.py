@@ -45,6 +45,7 @@ import gossip_rounds as gsg             # noqa: E402
 import best_play as bpg                 # noqa: E402
 import bubble_passes as bbg             # noqa: E402
 import layered_maze as lmg              # noqa: E402
+import knockout_picks as kpg            # noqa: E402
 
 FAMILIES = {
     "rule-tracer": {
@@ -150,6 +151,12 @@ FAMILIES = {
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints"],
     },
+    "puppy-picks": {
+        "module": kpg, "checker": "check_knockout_picks", "levels": len(kpg.LADDER), "title": "Puppy Picks",
+        "keep": ["family", "level", "question_type", "seed", "scene", "svg", "prompt", "question", "options",
+                 "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
+                 "explanation", "hints"],
+    },
     "box-rows": {
         "module": plg, "checker": "check_pointer_lists", "levels": len(plg.LADDER), "title": "Box Rows",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
@@ -202,7 +209,8 @@ def write_coach():
     extra = {**scg.MISCONCEPTIONS, **grg.MISCONCEPTIONS, **sp.COUNT_MISCONCEPTIONS, **ct.COUNT_EXTRA_MISCONCEPTIONS,
              **cvg.MISCONCEPTIONS, **plg.MISCONCEPTIONS, **lgg.MISCONCEPTIONS, **bgg.MISCONCEPTIONS,
              **pgg.MISCONCEPTIONS, **psg.MISCONCEPTIONS, **ccg.MISCONCEPTIONS, **brg.MISCONCEPTIONS, **frg.MISCONCEPTIONS,
-             **shg.MISCONCEPTIONS, **gsg.MISCONCEPTIONS, **bpg.MISCONCEPTIONS, **bbg.MISCONCEPTIONS, **lmg.MISCONCEPTIONS}
+             **shg.MISCONCEPTIONS, **gsg.MISCONCEPTIONS, **bpg.MISCONCEPTIONS, **bbg.MISCONCEPTIONS, **lmg.MISCONCEPTIONS,
+             **kpg.MISCONCEPTIONS}
     for k, v in extra.items():
         if k not in {x["id"] for x in m["misconceptions"]}:
             m["misconceptions"].append({"id": k, **v})
@@ -231,7 +239,8 @@ def write_coach():
                     "map-pieces": [l["note"] for l in gsg.LADDER],
                     "acorn-game": [l["note"] for l in bpg.LADDER],
                     "bowl-belt": [l["note"] for l in bbg.LADDER],
-                    "mole-tunnels": [l["note"] for l in lmg.LADDER]},
+                    "mole-tunnels": [l["note"] for l in lmg.LADDER],
+                    "puppy-picks": [l["note"] for l in kpg.LADDER]},
         # for the tutor (tutor.js): the prerequisite graph and the domains
         "prereqs": {c["id"]: [[p["id"], p["strength"]] for p in c["prerequisites"]] for c in m["concepts"]},
         "conceptDomain": {c["id"]: c["domain"] for c in m["concepts"]},

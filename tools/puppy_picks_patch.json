@@ -1,0 +1,217 @@
+{
+ "patch_id": "puppy-picks-family",
+ "built": "2026-11-13",
+ "analyst": "Claude",
+ "method": "Claude built a new generator family, knockout_picks (folder puppy-picks, shown as Puppy Picks), from the Favorite Gem generator candidate. It keeps the task's idea (each comparison of k items rules out at most k - 1 of them, every item but the best has to be ruled out once, and carrying the winner forward reaches the bound 1 + q(k - 1)) under an original story and pictures: a puppy that is shown a few toys per round and grabs the one it likes best, where a round may include the winner of an earlier round (written W2). The candidate's closed form alone would make one question, so the family spreads it over five: level 1 shows the rounds and grabs and asks which toy is the favourite (the toy never left behind, whatever order the rounds come in); level 2 asks for the fewest rounds for n toys; level 3 is the source task's question, the most toys for q rounds of k; level 4 asks which of four plans always finds the favourite, the others leaving a toy out, dropping a winner, or carrying a named toy instead of the winner; level 5 has rounds of different sizes. Every problem passes check_knockout_picks.py, which rebuilds the problem from the picture and solves it without the formula: crossing out toys (and checking the grabs fit one order of liking) for level 1, a search over (toys never shown, toys shown and never left behind) for the counting levels, and following every toy as the favourite through each plan for level 4; it also replays the knockout written in each explanation. All corrupted answer keys, tags, explanation endings and steps, and pictures in the mutation trials are caught. Two findings from building it. First, several natural wrong counts land on the right answer for many sizes (counting the favourite among the toys to rule out gives the right number of rounds whenever the division does not come out even, and groups-then-a-final is often optimal), so level 2 uses only sizes where every tagged habit gives a different number, and the groups-then-final habit is kept only for level 3. Second, a plan where every toy appears exactly once is a giveaway when every wrong plan repeats a toy, so all plans get one or two spare places, filled with a gap or a harmless repeat. The map already had WINNER_NOT_CARRIED from the Favorite Gem analysis with no family; this family is the first to use it, and its wording is made general.",
+ "generator_families": [
+  {
+   "id": "knockout_picks",
+   "module": "knockout_picks.py",
+   "checker": "check_knockout_picks.py",
+   "folder": "puppy-picks",
+   "source_tasks": [
+    "favorite_gem"
+   ],
+   "concepts": [
+    "TOURNAMENT_MAX",
+    "LOWER_BOUND",
+    "ELIMINATION"
+   ],
+   "ladder": [
+    {
+     "level": 1,
+     "question": "who",
+     "toys": [
+      6,
+      7,
+      8
+     ],
+     "rounds": [
+      4,
+      5
+     ],
+     "k": 3,
+     "entry": "choice",
+     "note": "Follow the rounds: a toy left behind in any round is not the favourite, whatever order the rounds come in."
+    },
+    {
+     "level": 2,
+     "question": "fewest",
+     "toys": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+     ],
+     "k": [
+      2,
+      3,
+      3
+     ],
+     "entry": "number",
+     "note": "Each round leaves behind at most all but one of its toys. How many rounds to rule out every toy but one?"
+    },
+    {
+     "level": 3,
+     "question": "most",
+     "q": [
+      3,
+      4,
+      5
+     ],
+     "k": [
+      2,
+      3,
+      4,
+      5
+     ],
+     "entry": "number",
+     "note": "Turn it round: with a set number of rounds, how many toys can you handle? The winner takes a place each time."
+    },
+    {
+     "level": 4,
+     "question": "plan",
+     "q": [
+      3,
+      4
+     ],
+     "k": [
+      3
+     ],
+     "entry": "choice",
+     "note": "Check a plan by pretending each toy is the favourite: is it shown, and does every winner play on?"
+    },
+    {
+     "level": 5,
+     "question": "mixed",
+     "q": [
+      3,
+      4
+     ],
+     "sizes": [
+      2,
+      3,
+      4,
+      5
+     ],
+     "entry": "number",
+     "note": "Rounds of different sizes: add up what each round leaves behind, then add the favourite."
+    }
+   ]
+  }
+ ],
+ "generator_candidate_updates": [
+  {
+   "source_task": "favorite_gem",
+   "status": "built",
+   "built_as": "knockout_picks"
+  }
+ ],
+ "misconceptions": [
+  {
+   "id": "LAST_ROUND_DECIDES",
+   "concept": "ELIMINATION",
+   "description": "Takes the toy grabbed in the last round shown as the favourite, even though it was left behind in another round.",
+   "remediation": "The order of the rounds doesn't matter. Cross out every toy that was left behind in any round.",
+   "families": [
+    "knockout_picks"
+   ]
+  },
+  {
+   "id": "MOST_WINS",
+   "concept": "ELIMINATION",
+   "description": "Takes the toy grabbed in the most rounds as the favourite, even though it was left behind once.",
+   "remediation": "One round where a toy is left behind is enough to rule it out, however often it was grabbed.",
+   "families": [
+    "knockout_picks"
+   ]
+  },
+  {
+   "id": "FIRST_ROUND_DECIDES",
+   "concept": "ELIMINATION",
+   "description": "Takes the toy grabbed in the first round as the favourite without checking the later rounds.",
+   "remediation": "Check every round. Was that toy left behind anywhere?",
+   "families": [
+    "knockout_picks"
+   ]
+  },
+  {
+   "id": "FAVOURITE_RULED_OUT",
+   "concept": "TOURNAMENT_MAX",
+   "description": "Counts every toy as needing to be left behind, the favourite too, so the count is off by one toy.",
+   "remediation": "The favourite is never left behind. Only the other toys need to be ruled out.",
+   "families": [
+    "knockout_picks"
+   ]
+  },
+  {
+   "id": "GROUPS_THEN_FINAL",
+   "concept": "TOURNAMENT_MAX",
+   "description": "Plays separate groups first and then a final of the winners, which wastes places when the groups don't fill the rounds.",
+   "remediation": "Count what each round leaves behind. A round with empty places rules out fewer toys.",
+   "families": [
+    "knockout_picks"
+   ]
+  },
+  {
+   "id": "ROUNDS_DOWN",
+   "concept": "LOWER_BOUND",
+   "description": "Rounds the number of rounds down, so some toys are never left behind.",
+   "remediation": "If the division doesn't come out even, the leftover toys still need a round.",
+   "families": [
+    "knockout_picks"
+   ]
+  },
+  {
+   "id": "WINNER_DROPPED",
+   "concept": "TOURNAMENT_MAX",
+   "description": "Accepts a plan where the winner of an earlier round never plays again, so the favourite could be lost there.",
+   "remediation": "Pretend the winner of that round is the favourite. Does it reach the last round?",
+   "families": [
+    "knockout_picks"
+   ]
+  },
+  {
+   "id": "TOY_LEFT_OUT",
+   "concept": "ELIMINATION",
+   "description": "Accepts a plan that never shows the puppy one of the toys.",
+   "remediation": "Check off every toy. A toy that is never shown could be the favourite.",
+   "families": [
+    "knockout_picks"
+   ]
+  },
+  {
+   "id": "CARRIES_TOY_NOT_WINNER",
+   "concept": "TOURNAMENT_MAX",
+   "description": "Carries a named toy from one round into the next instead of the toy the puppy grabbed.",
+   "remediation": "Only the grabbed toy is still in the running. Which toy goes on: a named one, or the winner?",
+   "families": [
+    "knockout_picks"
+   ]
+  },
+  {
+   "id": "BIGGEST_ROUND_ONLY",
+   "concept": "TOURNAMENT_MAX",
+   "description": "Treats every round as if it were as big as the biggest one.",
+   "remediation": "Work out each round on its own: how many toys does that round leave behind?",
+   "families": [
+    "knockout_picks"
+   ]
+  }
+ ],
+ "misconception_updates": [
+  {
+   "id": "WINNER_NOT_CARRIED",
+   "families": [
+    "knockout_picks"
+   ],
+   "description": "Counts each round as dealing with all-new items, forgetting that the winner so far is carried into the next round and takes a place.",
+   "remediation": "Ask how many items one round rules out, and where the winner of that round goes next."
+  }
+ ]
+}

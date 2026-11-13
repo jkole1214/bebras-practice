@@ -26,8 +26,8 @@ function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push(
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 18);
-  assert.ok(all.length >= 1140, String(all.length));
+  assert.equal(B.fams.length, 19);
+  assert.ok(all.length >= 1200, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {
@@ -223,6 +223,37 @@ test("mole tunnels: a search over square and level gives the marked answer", () 
       assert.equal(p.answer_value, best(fastest(sc, sc.climb, sc.climb)));
     }
     const pub = E.publicPuzzle("mole-tunnels", p);
+    assert.ok(pub.answer_value === undefined && pub.answer_index === undefined);
+  }
+});
+
+test("puppy picks: crossing out, greedy counting and following each favourite give the marked answer", () => {
+  const pups = all.filter(([f]) => f === "puppy-picks").map(([, p]) => p);
+  assert.equal(pups.length, 60);
+  // greedy: the first round takes `s` new toys, each later round keeps the winner and takes s - 1 new ones
+  const handled = (sizes) => sizes.reduce((t, s, i) => t + (i ? s - 1 : s), 0);
+  const reaches = (rounds, t) => {
+    const won = new Set();
+    rounds.forEach((r, i) => { if (r.includes(t) || r.some(x => x[0] === "W" && won.has(+x.slice(1)))) won.add(i + 1); });
+    return won.has(rounds.length);
+  };
+  for (const p of pups) {
+    const sc = p.scene;
+    if (p.question_type === "who") {
+      const out = new Set(sc.rounds.flatMap(r => r.toys.filter(t => t !== r.grabbed)));
+      assert.deepEqual([...sc.toys].filter(t => !out.has(t)), [p.answer_value]);
+    } else if (p.question_type === "fewest") {
+      let r = 1;
+      while (handled(Array(r).fill(sc.k)) < sc.n) r++;
+      assert.equal(p.answer_value, r);
+    } else if (p.question_type === "plan") {
+      const toys = [...Array(sc.n)].map((_, i) => String.fromCharCode(65 + i));
+      const ok = [...sc.plans].map(pl => toys.every(t => reaches(pl, t)));
+      assert.deepEqual(ok.map((v, i) => v ? i : -1).filter(i => i >= 0), [p.answer_index]);
+    } else {
+      assert.equal(p.answer_value, handled(sc.sizes));
+    }
+    const pub = E.publicPuzzle("puppy-picks", p);
     assert.ok(pub.answer_value === undefined && pub.answer_index === undefined);
   }
 });

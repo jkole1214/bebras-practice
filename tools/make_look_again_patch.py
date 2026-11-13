@@ -177,6 +177,19 @@ LOOK_AGAIN = {
     "UP_FOR_DOWN": "Follow the trip from S. Is that the first climb, or the climb back up?",
     "DEAD_END_BELOW": "Follow the lower tunnel from that spot. Can the mole climb back up anywhere else?",
     "TIE_COUNTS_AS_FASTER": "Try that climb time. Do both ways take the same time? A tie is not faster.",
+
+    # Puppy Picks (the puppy grabs its favourite of the toys in each round; winners can play again)
+    "LAST_ROUND_DECIDES": "Was that toy left behind in any other round? The order of the rounds doesn't matter.",
+    "MOST_WINS": "That toy was grabbed a lot, but was it ever left behind? Once is enough to rule it out.",
+    "FIRST_ROUND_DECIDES": "Check the later rounds. Was the toy from round 1 left behind somewhere?",
+    "WINNER_NOT_CARRIED": "The winner of a round goes on into the next one and takes a place. How many new toys fit then?",
+    "FAVOURITE_RULED_OUT": "Does the favourite ever get left behind? Count only the toys that have to be ruled out.",
+    "GROUPS_THEN_FINAL": "Separate groups and then a final can waste places. Can each round start with the last winner instead?",
+    "ROUNDS_DOWN": "The division didn't come out even. Are there toys left over that still need a round?",
+    "WINNER_DROPPED": "Pretend the winner of each round is the favourite. Does every one of them play again?",
+    "TOY_LEFT_OUT": "Check off the toys one by one. Is every toy in the plan somewhere?",
+    "CARRIES_TOY_NOT_WINNER": "A named toy goes on to the next round, but is that the toy the puppy grabbed?",
+    "BIGGEST_ROUND_ONLY": "The rounds are different sizes. How many toys does each one leave behind on its own?",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -187,7 +200,7 @@ if __name__ == "__main__":
         "built": "2026-11-12",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (128 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (139 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

@@ -2,15 +2,23 @@
   "patch_id": "look-again",
   "built": "2026-11-12",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (128 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (139 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
     {
       "id": "BIGGEST_BASKET",
       "look_again": "Could you really reach that big basket? At the grey fork before it, which way would the raccoon send you?"
     },
     {
+      "id": "BIGGEST_ROUND_ONLY",
+      "look_again": "The rounds are different sizes. How many toys does each one leave behind on its own?"
+    },
+    {
       "id": "BOTH_AS_EITHER",
       "look_again": "Does that box need one wire on, or both wires on?"
+    },
+    {
+      "id": "CARRIES_TOY_NOT_WINNER",
+      "look_again": "A named toy goes on to the next round, but is that the toy the puppy grabbed?"
     },
     {
       "id": "CARRY_STOPS",
@@ -125,6 +133,10 @@
       "look_again": "Does the frog have to finish at the far end? Follow its hops one at a time and see where it really stops."
     },
     {
+      "id": "FAVOURITE_RULED_OUT",
+      "look_again": "Does the favourite ever get left behind? Count only the toys that have to be ruled out."
+    },
+    {
       "id": "FEWEST_WALKWAYS",
       "look_again": "A route with fewer walkways can still need more planks. Did you add up the numbers?"
     },
@@ -147,6 +159,10 @@
     {
       "id": "FIRST_PLAN_IS_BEST",
       "look_again": "Your plan works. Is there a round where someone learned little? Try to finish with one round fewer."
+    },
+    {
+      "id": "FIRST_ROUND_DECIDES",
+      "look_again": "Check the later rounds. Was the toy from round 1 left behind somewhere?"
     },
     {
       "id": "FLIPS_TURNS",
@@ -209,6 +225,10 @@
       "look_again": "Write how far each corner is from the start, nearest first. Is heading straight for the goal really shortest?"
     },
     {
+      "id": "GROUPS_THEN_FINAL",
+      "look_again": "Separate groups and then a final can waste places. Can each round start with the last winner instead?"
+    },
+    {
       "id": "HOPS_WRONG_SIZE",
       "look_again": "Count the spots on each hop, water spots too. Is every hop exactly the right size?"
     },
@@ -253,6 +273,10 @@
       "look_again": "Does the frog land on any stone more than once?"
     },
     {
+      "id": "LAST_ROUND_DECIDES",
+      "look_again": "Was that toy left behind in any other round? The order of the rounds doesn't matter."
+    },
+    {
       "id": "LEAVES_OUT_OWN_PIECE",
       "look_again": "Did you count the friend's own letter too?"
     },
@@ -295,6 +319,10 @@
     {
       "id": "MOST_FRIENDS_WINS",
       "look_again": "Count two steps out from the person with the most friends. Does that really reach the most people?"
+    },
+    {
+      "id": "MOST_WINS",
+      "look_again": "That toy was grabbed a lot, but was it ever left behind? Once is enough to rule it out."
     },
     {
       "id": "MUD_STILL_FLOWS",
@@ -421,6 +449,10 @@
       "look_again": "Read each test out loud with the real numbers in it. Which die has to be bigger?"
     },
     {
+      "id": "ROUNDS_DOWN",
+      "look_again": "The division didn't come out even. Are there toys left over that still need a round?"
+    },
+    {
       "id": "SAME_ROW_EVERY_STEP",
       "look_again": "Before each step, which row's name is in front of the bracket?"
     },
@@ -497,12 +529,24 @@
       "look_again": "Bolts take nuts out as the belt moves. Follow the bucket after each part."
     },
     {
+      "id": "TOY_LEFT_OUT",
+      "look_again": "Check off the toys one by one. Is every toy in the plan somewhere?"
+    },
+    {
       "id": "UP_FOR_DOWN",
       "look_again": "Follow the trip from S. Is that the first climb, or the climb back up?"
     },
     {
       "id": "WASTED_MEETING",
       "look_again": "Compare the letters of the two friends in each meeting. Do any two already have exactly the same letters?"
+    },
+    {
+      "id": "WINNER_DROPPED",
+      "look_again": "Pretend the winner of each round is the favourite. Does every one of them play again?"
+    },
+    {
+      "id": "WINNER_NOT_CARRIED",
+      "look_again": "The winner of a round goes on into the next one and takes a place. How many new toys fit then?"
     },
     {
       "id": "WRAP_ONE_END",

@@ -1,6 +1,6 @@
 # Kerbopple
 
-A practice page for eighteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
+A practice page for nineteen puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
 ## The tutor
 
@@ -123,6 +123,7 @@ map-pieces/           Map Pieces problems, one file each, plus manifest.js
 acorn-game/           Acorn Game problems, one file each, plus manifest.js
 bowl-belt/            Bowl Belt problems, one file each, plus manifest.js
 mole-tunnels/         Mole Tunnels problems, one file each, plus manifest.js
+puppy-picks/          Puppy Picks problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
@@ -155,7 +156,7 @@ python3 tools/check_bead_grammar.py problems.json
 python3 tools/check_parity_grid.py problems.json
 ```
 
-`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces), `check_best_play.py` (Acorn Game) `check_bubble_passes.py` (Bowl Belt) and `check_layered_maze.py` (Mole Tunnels) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
+`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces), `check_best_play.py` (Acorn Game) `check_bubble_passes.py` (Bowl Belt) `check_layered_maze.py` (Mole Tunnels) and `check_knockout_picks.py` (Puppy Picks) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`.
 
 ## Levels
 
@@ -304,6 +305,15 @@ An arrow shows which way the worker walks, and both directions appear at every l
 
 The two levels are drawn side by side with letters and numbers along the edges, and the mole can climb only where both levels have a tunnel. To make shortcuts that are worth two climbs, the generator puts a wall of earth across the upper level with one gap near an edge, puts S and G on either side away from the gap, and opens a short lower tunnel under the wall. The checker solves each burrow with a 0-1 breadth-first search in which a climb is a chain of one-minute links (the generator uses Dijkstra), follows every walk and climb line of the explanation through the burrow, and at level 5 tries climb times one by one. Wrong answers are tagged by habit: leaving out the climbs, climbing only at S or G, walking both levels as one map, walking through earth, counting a there-and-back climb once, staying on top without checking below, taking the shortcut when two climbs cost more than it saves, climbing at the nearest spot, giving the climb-up square, climbing down into a dead end, and treating a tie as faster.
 
+**Puppy Picks** (finding the best with as few comparisons as possible, the idea of Favorite Gem, with our own story)
+1. The rounds and what the puppy grabbed are shown: pick its favourite toy
+2. n toys, up to k a round: type the fewest rounds that always find the favourite
+3. q rounds of up to k toys: type the most toys the favourite can always be found among
+4. Pick the one plan of four that always finds the favourite
+5. Rounds of different sizes: type the most toys
+
+A round can include the winner of an earlier round (W2 is the toy grabbed in round 2). Each round leaves behind all but one of its toys, every toy but the favourite has to be left behind once, and a knockout that carries the winner forward reaches that limit. At level 1 the order of the rounds doesn't matter, so the favourite is not always the toy grabbed last. Level 2 uses only sizes where every tagged habit gives a different number. Every plan at level 4 has one or two spare places (a gap or a toy shown again), so the right plan can't be spotted by having no repeats. The checker counts with a search over (toys never shown, toys still in the running) instead of the formula, follows every toy as the favourite through each plan, and replays the knockout written in each explanation. Wrong answers are tagged by habit: taking the last, first or most-often grabbed toy, counting k new toys a round, counting the favourite among the toys to rule out, groups then a final, rounding the rounds down, a plan that drops a winner, leaves a toy out or carries a named toy instead of the winner, and treating every round as the biggest.
+
 Box Rows never shows an item where a wrong habit (reading outside-in, counting from 0) happens to give the right answer, so a right answer always means the habit is not there.
 
 With "Adjust level automatically" on, two first-try wins move up a level and two first-try misses move down.
@@ -315,7 +325,7 @@ With "Adjust level automatically" on, two first-try wins move up a level and two
 - the 2015 example sets (38 distinct tasks);
 - the 2022-23 practice challenge (31 distinct tasks).
 
-In total: 69 distinct tasks, 61 concepts with prerequisite edges, 141 tagged misconceptions, the eighteen built generator families, and 17 ranked candidates for new families (the sixteen now built are marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
+In total: 69 distinct tasks, 61 concepts with prerequisite edges, 151 tagged misconceptions, the nineteen built generator families, and 17 ranked candidates for new families (all now built and marked; Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes). Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
 
 Both analyses after the original Benjamin/Cadet map were added as patches. To apply them to another copy of the map:
 
