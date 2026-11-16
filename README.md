@@ -1,6 +1,6 @@
 # Kerbopple
 
-A practice page for twenty puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
+A practice page for twenty-one puzzle families built from the Bebras example and practice tasks. The problems are original; they reuse the concepts, not the official tasks.
 
 ## The tutor
 
@@ -125,6 +125,7 @@ bowl-belt/            Bowl Belt problems, one file each, plus manifest.js
 mole-tunnels/         Mole Tunnels problems, one file each, plus manifest.js
 puppy-picks/          Puppy Picks problems, one file each, plus manifest.js
 round-and-round/      Round and Round problems, one file each, plus manifest.js
+rabbit-warren/        Rabbit Warren problems, one file each, plus manifest.js
 tools/                generators, independent checkers, build script, knowledge map
 ```
 
@@ -157,7 +158,7 @@ python3 tools/check_bead_grammar.py problems.json
 python3 tools/check_parity_grid.py problems.json
 ```
 
-`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces), `check_best_play.py` (Acorn Game) `check_bubble_passes.py` (Bowl Belt) and `check_layered_maze.py` (Mole Tunnels) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`. `check_knockout_picks.py` (Puppy Picks) and `check_circle_steps.py` (Round and Round), run on their own, generate and check seeds 1000-1039 at every level.
+`check_parallel_spread.py` (Paint Pipes), `check_code_clues.py` (Code Lock), `check_brick_rule.py` (Brick Pyramid), `check_friend_reach.py` (Pass It On), `check_stone_hops.py` (Frog Hops), `check_gossip_rounds.py` (Map Pieces), `check_best_play.py` (Acorn Game) `check_bubble_passes.py` (Bowl Belt) and `check_layered_maze.py` (Mole Tunnels) take problem files instead: `python3 tools/check_code_clues.py code-lock/L*.js`. `check_knockout_picks.py` (Puppy Picks), `check_circle_steps.py` (Round and Round) and `check_search_tree.py` (Rabbit Warren), run on their own, generate and check seeds 1000-1039 at every level.
 
 ## Levels
 
@@ -324,6 +325,15 @@ A round can include the winner of an earlier round (W2 is the toy grabbed in rou
 
 All answers are typed. Level 3 uses only pin counts and steps that share a factor, because otherwise "the string reaches every pin" would give the right answer; the explanation writes the whole loop out. On the kart track the fast kart gains exactly one square a second, so the karts can't jump past each other. The checker orders the squares, pins and cars by their angle in the picture and steps round one place at a time (turning a list of cars both ways, following the track's arrows for both karts) instead of using modular arithmetic, and checks every line of the explanation. Wrong answers are tagged by habit: not wrapping past the last number, counting the start square as a step, not counting the step from the last square to 1, counting the pins skipped over or both ends of a string, counting the long way round, assuming the loop reaches every pin, stopping after one lap, counting pin 1 twice, turning the wheel one way only, measuring every move from where the wheel started, and expecting the karts to meet where the loop begins or back at the start.
 
+**Rabbit Warren** (trees: a binary search tree and a schema with allowed counts, from the ideas of Binary Hotel and Beaver Lunch, with our own story of a rabbit that keeps numbered jars in its warren, a smaller number always going down the left tunnel and a bigger one down the right)
+1. The rabbit looks for a jar: type how many rooms it looks in, the top room and the jar's room included
+2. A new jar arrives: type the room its new room is dug below
+3. Jars arrive one at a time into an empty warren: type how many rows of rooms they make
+4. Pick the one arrival order of four that could have built the warren in the picture
+5. A packing plan drawn as a tree with allowed counts: pick the one picnic basket of four that follows every rule
+
+The rule is told, not left to discover as in Binary Hotel, because the levels build on it. A new jar's room always hangs below one of the two numbers closest to it, and the other one is always higher up on the same path, so level 2 only uses jars where the closer number is the wrong room. Level 3 only uses orders that make more rows than the fewest possible and fewer than one row per jar. Each wrong basket at level 5 breaks exactly one kind of rule. The checker rebuilds the warren from the picture (a room lower down and to the left is the left child), confirms the rule by reading the rooms left to right, and solves each question another way: it counts rooms by climbing up from the jar, places a new jar below whichever of its two nearest numbers is lower, works out each jar's rooms above it from the arrival order alone, accepts an order when every jar arrives after the jar just above it, and checks every basket against every rule. Wrong answers are tagged by habit: counting tunnels instead of rooms, looking row by row, counting down to the bottom row, putting a new jar by the closest number, deciding at the top room only, swapping left and right, assuming the rows fill evenly or that every jar starts a new row, reading the picture left to right as the arrival order, building from the bottom up, a jar arriving before the room above it, missing a required thing, not checking inside the bags and tins, and counting a thing that is in the wrong place.
+
 Box Rows never shows an item where a wrong habit (reading outside-in, counting from 0) happens to give the right answer, so a right answer always means the habit is not there.
 
 With "Adjust level automatically" on, two first-try wins move up a level and two first-try misses move down.
@@ -335,7 +345,7 @@ With "Adjust level automatically" on, two first-try wins move up a level and two
 - the 2015 example sets (38 distinct tasks);
 - the 2022-23 practice challenge (31 distinct tasks).
 
-In total: 69 distinct tasks, 61 concepts with prerequisite edges, 164 tagged misconceptions, the twenty built generator families, and 20 candidates for new families. The first 17 are ranked and built (Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes); Drawing Stars was added and built as Round and Round; Bracelet (matching a ring under rotation and reflection) and Binary Hotel (trees) are open. Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
+In total: 69 distinct tasks, 61 concepts with prerequisite edges, 178 tagged misconceptions, the twenty-one built generator families, and 20 candidates for new families. The first 17 are ranked and built (Hard Fireworks and Building a Chip were built early, as Signal Lamp and Robot Routes); Drawing Stars was added and built as Round and Round; Binary Hotel was built as Rabbit Warren; Bracelet (matching a ring under rotation and reflection) is open. Each task lists every group, tier and site question id it appears under. `tools/notes.md` has the per-task working notes for both sources.
 
 Both analyses after the original Benjamin/Cadet map were added as patches. To apply them to another copy of the map:
 

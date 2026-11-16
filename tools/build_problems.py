@@ -47,6 +47,7 @@ import bubble_passes as bbg             # noqa: E402
 import layered_maze as lmg              # noqa: E402
 import knockout_picks as kpg            # noqa: E402
 import circle_steps as csg              # noqa: E402
+import search_tree as stg               # noqa: E402
 
 FAMILIES = {
     "rule-tracer": {
@@ -164,6 +165,12 @@ FAMILIES = {
                  "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
                  "explanation", "hints"],
     },
+    "rabbit-warren": {
+        "module": stg, "checker": "check_search_tree", "levels": len(stg.LADDER), "title": "Rabbit Warren",
+        "keep": ["family", "level", "question_type", "seed", "scene", "svg", "prompt", "question", "options",
+                 "answer_index", "answer_value", "entry", "distractors", "value_tags", "concepts",
+                 "explanation", "hints"],
+    },
     "box-rows": {
         "module": plg, "checker": "check_pointer_lists", "levels": len(plg.LADDER), "title": "Box Rows",
         "keep": ["family", "level", "question_type", "seed", "scene", "prompt", "question", "options",
@@ -217,7 +224,7 @@ def write_coach():
              **cvg.MISCONCEPTIONS, **plg.MISCONCEPTIONS, **lgg.MISCONCEPTIONS, **bgg.MISCONCEPTIONS,
              **pgg.MISCONCEPTIONS, **psg.MISCONCEPTIONS, **ccg.MISCONCEPTIONS, **brg.MISCONCEPTIONS, **frg.MISCONCEPTIONS,
              **shg.MISCONCEPTIONS, **gsg.MISCONCEPTIONS, **bpg.MISCONCEPTIONS, **bbg.MISCONCEPTIONS, **lmg.MISCONCEPTIONS,
-             **kpg.MISCONCEPTIONS, **csg.MISCONCEPTIONS}
+             **kpg.MISCONCEPTIONS, **csg.MISCONCEPTIONS, **stg.MISCONCEPTIONS}
     for k, v in extra.items():
         if k not in {x["id"] for x in m["misconceptions"]}:
             m["misconceptions"].append({"id": k, **v})
@@ -248,7 +255,8 @@ def write_coach():
                     "bowl-belt": [l["note"] for l in bbg.LADDER],
                     "mole-tunnels": [l["note"] for l in lmg.LADDER],
                     "puppy-picks": [l["note"] for l in kpg.LADDER],
-                    "round-and-round": [l["note"] for l in csg.LADDER]},
+                    "round-and-round": [l["note"] for l in csg.LADDER],
+                    "rabbit-warren": [l["note"] for l in stg.LADDER]},
         # for the tutor (tutor.js): the prerequisite graph and the domains
         "prereqs": {c["id"]: [[p["id"], p["strength"]] for p in c["prerequisites"]] for c in m["concepts"]},
         "conceptDomain": {c["id"]: c["domain"] for c in m["concepts"]},

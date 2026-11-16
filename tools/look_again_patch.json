@@ -1,9 +1,13 @@
 {
   "patch_id": "look-again",
-  "built": "2026-11-12",
+  "built": "2026-11-15",
   "analyst": "Claude",
-  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (152 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
+  "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (166 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away.",
   "misconception_updates": [
+    {
+      "id": "ALWAYS_BALANCED",
+      "look_again": "Draw the warren one jar at a time. Does each row fill up before the next one starts?"
+    },
     {
       "id": "BACK_TO_START",
       "look_again": "Follow the arrow from the last square of the loop. Does it go back to square 1?"
@@ -21,6 +25,10 @@
       "look_again": "Does that box need one wire on, or both wires on?"
     },
     {
+      "id": "BOTTOM_UP",
+      "look_again": "A new room is dug below a room that is already there. Which room had to come first?"
+    },
+    {
       "id": "CARRIES_TOY_NOT_WINNER",
       "look_again": "A named toy goes on to the next round, but is that the toy the puppy grabbed?"
     },
@@ -31,6 +39,10 @@
     {
       "id": "CHECKS_START_ONLY",
       "look_again": "Did you keep your count going all the way to the end of the belt?"
+    },
+    {
+      "id": "CHILD_BEFORE_PARENT",
+      "look_again": "For each jar, find the room just above it. Did that jar arrive earlier?"
     },
     {
       "id": "CLUE_FEEDBACK_SWAPPED",
@@ -55,6 +67,10 @@
     {
       "id": "COUNTS_BOX_INTERSECTIONS",
       "look_again": "Two routes can pass the same corners in a different order. Are you counting routes or corners?"
+    },
+    {
+      "id": "COUNTS_BRANCHES",
+      "look_again": "Did you count the tunnels or the rooms? Point to each room on the way, the top one too."
     },
     {
       "id": "COUNTS_CHECK_PASS",
@@ -125,12 +141,20 @@
       "look_again": "Equal totals are not enough. Do any bolts arrive before there is a nut for them?"
     },
     {
+      "id": "DOWN_TO_THE_BOTTOM",
+      "look_again": "The rabbit stops when it finds the jar. Is the jar in the bottom row?"
+    },
+    {
       "id": "DROPS_SHORE_WALKWAY",
       "look_again": "Point to every walkway on your route as you add. Did you count the ones touching the shores?"
     },
     {
       "id": "DROPS_WORD",
       "look_again": "Turn your answer back into flashes. Is it as long as the signal?"
+    },
+    {
+      "id": "EACH_NEW_ROW",
+      "look_again": "Draw the warren one jar at a time. Do any two jars end up in the same row?"
     },
     {
       "id": "EVEN_PILES_LOSE",
@@ -189,6 +213,10 @@
       "look_again": "Check the later rounds. Was the toy from round 1 left behind somewhere?"
     },
     {
+      "id": "FIRST_TURN_ONLY",
+      "look_again": "After the top room, did you compare with each room on the way down?"
+    },
+    {
       "id": "FLIPS_TURNS",
       "look_again": "At your yellow forks, do you take the bigger or the smaller basket? And what does the raccoon want at the grey ones?"
     },
@@ -203,6 +231,10 @@
     {
       "id": "FORGETS_FREE_DIE",
       "look_again": "Is there a die the rules never look at? How many faces could it show?"
+    },
+    {
+      "id": "FORGETS_REQUIRED",
+      "look_again": "Some parts of the plan say at least 1. Is each of them really in the basket?"
     },
     {
       "id": "FORGETS_START",
@@ -275,6 +307,10 @@
     {
       "id": "IGNORES_LINKS",
       "look_again": "Only friends joined by a line can meet. Can you really write that fast plan using only the lines?"
+    },
+    {
+      "id": "IGNORES_NESTING",
+      "look_again": "Is everything where the plan puts it? Some things may only go inside a bag or tin."
     },
     {
       "id": "IGNORES_ROUND_ORDER",
@@ -363,6 +399,10 @@
     {
       "id": "MUD_STILL_FLOWS",
       "look_again": "Read the rule about mud again. Can a mud tank push paint anywhere?"
+    },
+    {
+      "id": "NEAREST_NUMBER",
+      "look_again": "Start at the top room and use the rule at every room. Where do you end up?"
     },
     {
       "id": "NEW_FACES_FIRST",
@@ -493,12 +533,20 @@
       "look_again": "You only get one basket, and the raccoon picks it. On each path, which basket would it leave you?"
     },
     {
+      "id": "READS_LEFT_TO_RIGHT",
+      "look_again": "If the smallest jar came first, which room would it have? Is that the top room?"
+    },
+    {
       "id": "REVERSED_COMPARISON",
       "look_again": "Read each test out loud with the real numbers in it. Which die has to be bigger?"
     },
     {
       "id": "ROUNDS_DOWN",
       "look_again": "The division didn't come out even. Are there toys left over that still need a round?"
+    },
+    {
+      "id": "ROW_BY_ROW",
+      "look_again": "The rule tells the rabbit which way to go at each room. Does it need to look in every room?"
     },
     {
       "id": "SAME_ROW_EVERY_STEP",
@@ -549,6 +597,10 @@
       "look_again": "Which hop goes forward, and which goes back? Check each hop against the rule again."
     },
     {
+      "id": "SWAPS_LEFT_RIGHT",
+      "look_again": "Look at any room and the room down its left tunnel. Which number is smaller?"
+    },
+    {
       "id": "SWITCH_AT_ENDS",
       "look_again": "Could the mole climb somewhere in the middle of the trip, not only at S or G?"
     },
@@ -567,6 +619,10 @@
     {
       "id": "TIE_COUNTS_AS_FASTER",
       "look_again": "Try that climb time. Do both ways take the same time? A tie is not faster."
+    },
+    {
+      "id": "TOP_LEVEL_ONLY",
+      "look_again": "Did you check inside every bag and tin? Look at the numbers under them in the plan."
     },
     {
       "id": "TOTALS_ONLY_MATCHING",

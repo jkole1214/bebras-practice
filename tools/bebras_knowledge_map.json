@@ -130,8 +130,13 @@
       },
       {
         "id": "look-again",
-        "built": "2026-11-12",
-        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (152 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
+        "built": "2026-11-15",
+        "method": "Claude wrote one short question for the student per misconception tag that the generators or the answer checker can produce (166 tags). The practice page shows it after a wrong try with that tag. Each question points at the likely mistake without giving the answer away."
+      },
+      {
+        "id": "rabbit-warren-family",
+        "built": "2026-11-15",
+        "method": "Claude built a new generator family, search_tree (folder rabbit-warren, shown as Rabbit Warren), for the tree concepts, the largest group with no family: TREE, BST and SCHEMA, with ORDERING, which BST builds on. It draws on Binary Hotel (a search tree explored room by room) and Beaver Lunch (a tree diagram with allowed counts that a tray must follow), under an original story with our own wording and pictures: a rabbit keeps numbered jars in the rooms of its warren, a smaller number always going down the left tunnel and a bigger one down the right, and packs picnic baskets from a plan. Unlike Binary Hotel, the rule is told rather than discovered, because the levels build on it. Level 1 counts the rooms looked in to find a jar; level 2 asks which room a new jar's room is dug below; level 3 asks how many rows an arrival order makes; level 4 asks which of four arrival orders could have built a drawn warren; level 5 asks which of four baskets follows every rule of a packing plan (the Beaver Lunch idea, asked as 'which one is right' instead of 'which one is wrong'). Levels 1 to 3 are typed with every wrong value tagged; levels 4 and 5 are multiple choice with one tagged habit per wrong option. Every problem passes check_search_tree.py, which rebuilds the warren from the drawing (a room lower down and to the left is the left child), confirms the left-smaller rule by reading the rooms left to right, and solves each question another way: it counts rooms by climbing up from the jar; it places a new jar below whichever of its two nearest numbers sits lower; it works out each jar's rooms above it from the arrival order alone (a jar is above another when it arrived first and no number between them arrived before it); it accepts an order when every jar comes after the jar just above it; and it checks every basket against every rule. All 2219 corrupted answers, tags, explanations and pictures in the mutation trials are caught. Three findings from building it. First, a new jar's room always hangs below one of the two numbers closest to it, and the other one is always higher up on the same path, so 'put it next to the closest number' is a natural trap; level 2 only uses jars where the closer number is the wrong room. Second, 'as few rows as possible' and 'one row per jar' are the two ends of what an arrival order can make, so level 3 only uses orders strictly between them. Third, in a schema the lower bounds are what students skip, as the Beaver Lunch notes found, so each level 5 set has exactly one basket that breaks a lower bound and nothing else."
       }
     ]
   },
@@ -6370,6 +6375,146 @@
         "circle_steps"
       ],
       "look_again": "Follow the arrow from the last square of the loop. Does it go back to square 1?"
+    },
+    {
+      "id": "COUNTS_BRANCHES",
+      "concept": "TREE",
+      "description": "Counts the tunnels (edges) between rooms instead of the rooms (nodes), so the count is one too few.",
+      "remediation": "Point to each room on the way, the top one too, and count the rooms, not the tunnels between them.",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "Did you count the tunnels or the rooms? Point to each room on the way, the top one too."
+    },
+    {
+      "id": "ROW_BY_ROW",
+      "concept": "BST",
+      "description": "Looks in every room row by row, left to right, instead of using the rule to go straight down to the jar.",
+      "remediation": "At each room the rule says which way to go. Which rooms does the rabbit never need to look in?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "The rule tells the rabbit which way to go at each room. Does it need to look in every room?"
+    },
+    {
+      "id": "DOWN_TO_THE_BOTTOM",
+      "concept": "TREE",
+      "description": "Counts every row down to the bottom of the tree, even though the search stops when it finds the jar.",
+      "remediation": "The rabbit stops as soon as it finds the jar. Which row is the jar in?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "The rabbit stops when it finds the jar. Is the jar in the bottom row?"
+    },
+    {
+      "id": "NEAREST_NUMBER",
+      "concept": "BST",
+      "description": "Puts a new number below the room with the closest number, instead of following the rule from the top.",
+      "remediation": "Start at the top room and follow the rule one room at a time until there is no tunnel the way you need to go.",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "Start at the top room and use the rule at every room. Where do you end up?"
+    },
+    {
+      "id": "FIRST_TURN_ONLY",
+      "concept": "BST",
+      "description": "Compares with the top room only, then keeps going the same way to the bottom.",
+      "remediation": "Compare the number with every room on the way down, not just the top one.",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "After the top room, did you compare with each room on the way down?"
+    },
+    {
+      "id": "SWAPS_LEFT_RIGHT",
+      "concept": "BST",
+      "description": "Sends bigger numbers down the left tunnel and smaller numbers down the right.",
+      "remediation": "Look at a room and the room down its left tunnel. Which number is smaller?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "Look at any room and the room down its left tunnel. Which number is smaller?"
+    },
+    {
+      "id": "ALWAYS_BALANCED",
+      "concept": "BST",
+      "description": "Assumes the tree fills each row before starting the next, so it is as short as it can be, whatever the order the numbers arrive in.",
+      "remediation": "Add the jars one at a time and draw each new room. Does every row fill up before the next one starts?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "Draw the warren one jar at a time. Does each row fill up before the next one starts?"
+    },
+    {
+      "id": "EACH_NEW_ROW",
+      "concept": "BST",
+      "description": "Thinks every new number starts a new row, as if the tree were a list.",
+      "remediation": "Add the jars one at a time. Can two jars end up side by side in the same row?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "Draw the warren one jar at a time. Do any two jars end up in the same row?"
+    },
+    {
+      "id": "READS_LEFT_TO_RIGHT",
+      "concept": "ORDERING",
+      "description": "Takes the numbers in the picture from left to right (smallest to largest) as the order they arrived in.",
+      "remediation": "Jars arriving smallest first would all go down the right tunnel, one below the other. Does this warren look like that?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "If the smallest jar came first, which room would it have? Is that the top room?"
+    },
+    {
+      "id": "BOTTOM_UP",
+      "concept": "ORDERING",
+      "description": "Thinks the rooms at the bottom were made first and the top room last.",
+      "remediation": "A new room is always dug below a room that is already there. Which room had to come first?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "A new room is dug below a room that is already there. Which room had to come first?"
+    },
+    {
+      "id": "CHILD_BEFORE_PARENT",
+      "concept": "BST",
+      "description": "Lets a number arrive before the number in the room it hangs below.",
+      "remediation": "For each jar, find the room just above it. Did that jar arrive earlier?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "For each jar, find the room just above it. Did that jar arrive earlier?"
+    },
+    {
+      "id": "FORGETS_REQUIRED",
+      "concept": "SCHEMA",
+      "description": "Checks only the most of each thing the plan allows, not the fewest, so misses something required.",
+      "remediation": "Find the parts of the plan whose smaller number is not 0. Is each of them really there?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "Some parts of the plan say at least 1. Is each of them really in the basket?"
+    },
+    {
+      "id": "TOP_LEVEL_ONLY",
+      "concept": "SCHEMA",
+      "description": "Checks the counts at the top of the plan but not inside the containers lower down.",
+      "remediation": "The plan has rules for what goes inside each bag and tin too. Check every one of them.",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "Did you check inside every bag and tin? Look at the numbers under them in the plan."
+    },
+    {
+      "id": "IGNORES_NESTING",
+      "concept": "SCHEMA",
+      "description": "Counts a thing wherever it is, not only in the place the plan puts it.",
+      "remediation": "Each thing in the plan sits under the only place it may go. Is everything in its place?",
+      "families": [
+        "search_tree"
+      ],
+      "look_again": "Is everything where the plan puts it? Some things may only go inside a bag or tin."
     }
   ],
   "generator_families": [
@@ -8192,6 +8337,88 @@
           "note": "Move both karts one second at a time and write down their squares until they share one."
         }
       ]
+    },
+    {
+      "id": "search_tree",
+      "module": "search_tree.py",
+      "checker": "check_search_tree.py",
+      "folder": "rabbit-warren",
+      "source_tasks": [
+        "binary_hotel",
+        "beaver_lunch"
+      ],
+      "concepts": [
+        "TREE",
+        "BST",
+        "SCHEMA",
+        "ORDERING"
+      ],
+      "ladder": [
+        {
+          "level": 1,
+          "question": "find",
+          "n": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "rows": [
+            4,
+            5
+          ],
+          "entry": "number",
+          "note": "Start at the top room. At each room compare the numbers and go left for smaller, right for bigger, counting the rooms."
+        },
+        {
+          "level": 2,
+          "question": "insert",
+          "n": [
+            7,
+            8,
+            9,
+            10
+          ],
+          "rows": [
+            3,
+            4,
+            5
+          ],
+          "entry": "number",
+          "note": "Follow the rule from the top room until there is no tunnel the way you need to go. The new room is dug there."
+        },
+        {
+          "level": 3,
+          "question": "rows",
+          "n": [
+            6,
+            7,
+            8
+          ],
+          "entry": "number",
+          "note": "Add the jars one at a time, each by the rule from the top room, and draw each new room as you go."
+        },
+        {
+          "level": 4,
+          "question": "order",
+          "n": [
+            6,
+            7
+          ],
+          "rows": [
+            3,
+            4
+          ],
+          "entry": "choice",
+          "note": "A room can only be dug below a room that is already there, so every jar arrives after the jar just above it."
+        },
+        {
+          "level": 5,
+          "question": "pack",
+          "entry": "choice",
+          "note": "Check every rule in the plan: the fewest as well as the most, inside every bag and tin too, and that each thing is in its place."
+        }
+      ]
     }
   ],
   "generator_candidates": [
@@ -8301,8 +8528,9 @@
     },
     {
       "source_task": "binary_hotel",
-      "why": "Trees (TREE, BST, SCHEMA) are the largest group of concepts with no family, across Beaver Dam, Binary Hotel, Beaver Lunch and Super Power Family. Placing keys in a search tree, following left and right to find one, and counting levels; distractors from going the wrong way at a node, comparing with the root only, and counting nodes instead of levels.",
-      "status": "open"
+      "why": "Trees (TREE, BST, SCHEMA) were the largest group of concepts with no family. A warren of numbered jars kept by the left-smaller, right-bigger rule: finding a jar, placing a new one, how tall an arrival order makes it, which order built it, and a packing plan with allowed counts (the Beaver Lunch idea). Built as search_tree (Rabbit Warren).",
+      "status": "built",
+      "built_as": "search_tree"
     }
   ]
 }

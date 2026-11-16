@@ -205,6 +205,22 @@ LOOK_AGAIN = {
     "FROM_START_EACH_TIME": "After the first riders get off, which car is at the platform? Count the next move from there.",
     "LOOP_ENTRANCE": "Where is each kart after a few seconds? Write it down second by second.",
     "BACK_TO_START": "Follow the arrow from the last square of the loop. Does it go back to square 1?",
+
+    # Rabbit Warren (a warren kept by the left-smaller, right-bigger rule, and a picnic packing plan)
+    "COUNTS_BRANCHES": "Did you count the tunnels or the rooms? Point to each room on the way, the top one too.",
+    "ROW_BY_ROW": "The rule tells the rabbit which way to go at each room. Does it need to look in every room?",
+    "DOWN_TO_THE_BOTTOM": "The rabbit stops when it finds the jar. Is the jar in the bottom row?",
+    "NEAREST_NUMBER": "Start at the top room and use the rule at every room. Where do you end up?",
+    "FIRST_TURN_ONLY": "After the top room, did you compare with each room on the way down?",
+    "SWAPS_LEFT_RIGHT": "Look at any room and the room down its left tunnel. Which number is smaller?",
+    "ALWAYS_BALANCED": "Draw the warren one jar at a time. Does each row fill up before the next one starts?",
+    "EACH_NEW_ROW": "Draw the warren one jar at a time. Do any two jars end up in the same row?",
+    "READS_LEFT_TO_RIGHT": "If the smallest jar came first, which room would it have? Is that the top room?",
+    "BOTTOM_UP": "A new room is dug below a room that is already there. Which room had to come first?",
+    "CHILD_BEFORE_PARENT": "For each jar, find the room just above it. Did that jar arrive earlier?",
+    "FORGETS_REQUIRED": "Some parts of the plan say at least 1. Is each of them really in the basket?",
+    "TOP_LEVEL_ONLY": "Did you check inside every bag and tin? Look at the numbers under them in the plan.",
+    "IGNORES_NESTING": "Is everything where the plan puts it? Some things may only go inside a bag or tin.",
 }
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -212,10 +228,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if __name__ == "__main__":
     patch = {
         "patch_id": "look-again",
-        "built": "2026-11-12",
+        "built": "2026-11-15",
         "analyst": "Claude",
         "method": ("Claude wrote one short question for the student per misconception tag that the generators or the "
-                   "answer checker can produce (152 tags). The practice page shows it after a wrong try with that tag. "
+                   "answer checker can produce (166 tags). The practice page shows it after a wrong try with that tag. "
                    "Each question points at the likely mistake without giving the answer away."),
         "misconception_updates": [{"id": k, "look_again": v} for k, v in sorted(LOOK_AGAIN.items())],
     }

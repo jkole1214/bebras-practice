@@ -26,8 +26,8 @@ function subsets(n) { const out = []; for (let m = 0; m < 1 << n; m++) out.push(
 function fewest(p) { return subsets(p.scene.buttons).find(s => s.length === p.answer_value && E.check(p, { buttons: s }).lit); }
 
 test(`all ${all.length} problems load, in ${B.fams.length} puzzle types`, () => {
-  assert.equal(B.fams.length, 20);
-  assert.ok(all.length >= 1260, String(all.length));
+  assert.equal(B.fams.length, 21);
+  assert.ok(all.length >= 1320, String(all.length));
 });
 
 test("the right answer is graded right for every problem", () => {
@@ -288,6 +288,68 @@ test("round and round: counting one place at a time gives the marked answer", ()
     assert.ok(!(String(p.answer_value) in p.value_tags));
     const pub = E.publicPuzzle("round-and-round", p);
     assert.ok(pub.answer_value === undefined && pub.answer_index === undefined && pub.value_tags === undefined);
+  }
+});
+
+test("rabbit warren: walking the rule, building each order and checking each basket gives the marked answer", () => {
+  const warren = all.filter(([f]) => f === "rabbit-warren").map(([, p]) => p);
+  assert.equal(warren.length, 60);
+  const build = (order) => {
+    const kids = {};
+    for (const k of order) {
+      kids[k] = [null, null];
+      let x = order[0];
+      while (x !== k) {
+        const side = k < x ? 0 : 1;
+        if (kids[x][side] === null) { kids[x][side] = k; break; }
+        x = kids[x][side];
+      }
+    }
+    return kids;
+  };
+  const walk = (kids, root, x) => {          // rooms looked in on the way to x, or to where x would go
+    const path = [];
+    for (let y = root; y !== null; y = y === x ? null : kids[y][x < y ? 0 : 1]) path.push(y);
+    return path;
+  };
+  const height = (kids, k) => k === null ? 0 : 1 + Math.max(height(kids, kids[k][0]), height(kids, kids[k][1]));
+  for (const p of warren) {
+    const sc = p.scene;
+    if (p.question_type === "find") {
+      assert.equal(p.answer_value, walk(sc.kids, sc.root, sc.target).length);
+    } else if (p.question_type === "insert") {
+      const path = walk(sc.kids, sc.root, sc.new);
+      assert.equal(p.answer_value, path[path.length - 1]);
+    } else if (p.question_type === "rows") {
+      assert.equal(p.answer_value, height(build(sc.order), sc.order[0]));
+    } else if (p.question_type === "order") {
+      const same = p.options.filter(o => JSON.stringify(build(o.split(", ").map(Number))) ===
+        JSON.stringify(build(walkOrder(sc))));
+      assert.equal(same.join(" | "), p.answer_value);
+    } else {
+      const ok = sc.cards.filter(c => {
+        for (const r of sc.rules) {
+          const n = r.parent === "basket"
+            ? (r.box ? c.boxes.filter(b => b.type === r.name).length : c.top[r.name] || 0) : null;
+          if (n !== null && (n < r.min || n > r.max)) return false;
+          if (r.parent !== "basket") for (const b of c.boxes.filter(b => b.type === r.parent)) {
+            const m = b.items[r.name] || 0;
+            if (m < r.min || m > r.max) return false;
+          }
+        }
+        return Object.entries(c.top).every(([k, n]) => !n || sc.rules.some(r => r.name === k && r.parent === "basket"));
+      }).map(c => c.option);
+      assert.equal(ok.join(" | "), p.answer_value);
+    }
+    assert.ok(!(String(p.answer_value) in p.value_tags));
+    const pub = E.publicPuzzle("rabbit-warren", p);
+    assert.ok(pub.answer_value === undefined && pub.answer_index === undefined);
+  }
+  // the rooms row by row, top first: one order that builds the drawn warren
+  function walkOrder(sc) {
+    const out = [], q = [sc.root];
+    while (q.length) { const k = q.shift(); out.push(k); for (const c of sc.kids[k]) if (c !== null) q.push(c); }
+    return out;
   }
 });
 

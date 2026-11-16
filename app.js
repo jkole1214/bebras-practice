@@ -191,7 +191,8 @@ function render() {
     : p.family === "bubble_passes" ? { after1: "One worker", swaps: "Count the swaps", afterk: "Several workers", workers: "How many workers", start: "Work backward" }[p.question_type]
     : p.family === "layered_maze" ? { down: "Down to G", detour: "Shortcut underneath", compare: "Is it worth it", where: "Where to climb", limit: "Longest climb" }[p.question_type]
     : p.family === "knockout_picks" ? { who: "Find the favourite", fewest: "Fewest rounds", most: "Most toys", plan: "Which plan works", mixed: "Mixed rounds" }[p.question_type]
-    : p.family === "circle_steps" ? { step: "Count round", label: "Read the star", visits: "Follow the loop", turns: "Turn the wheel", meet: "Fast and slow" }[p.question_type] : kind;
+    : p.family === "circle_steps" ? { step: "Count round", label: "Read the star", visits: "Follow the loop", turns: "Turn the wheel", meet: "Fast and slow" }[p.question_type]
+    : p.family === "search_tree" ? { find: "Find the jar", insert: "Dig a new room", rows: "Count the rows", order: "Which order", pack: "Check the baskets" }[p.question_type] : kind;
   const famTitle = page.mode === PRACTICE || servedAs !== "ladder" ? `<span>${esc(COACH.titles[p.fam])}</span>` : "";
   let body = `<div class="meta">${famTitle}<span>Level ${p.level}</span><span>${kindShown}</span></div>`
     + (why ? `<p class="why">${esc(why)}</p>` : "") + `<p class="prompt">${esc(p.prompt)}</p>`;
